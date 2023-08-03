@@ -38,8 +38,8 @@ Type: `number`
 
 Default value: `0`
 
-Alphabet of output text: 0. cyrillic
-
+Alphabet of output text:
+0. cyrillic
 1. latin
 2. arabic
 
@@ -49,8 +49,8 @@ Type: `number`
 
 Default value: `0`
 
-When to replace `і`(`i`) by `й`(`j`) after vowels: 0. never
-
+When to replace `і`(`i`) by `й`(`j`) after vowels:
+0. never
 1. random
 2. always
 
