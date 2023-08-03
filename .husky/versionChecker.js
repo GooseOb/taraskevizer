@@ -12,5 +12,5 @@ const version = JSON.parse(stdout).version;
 
 if (version === pjson.version)
 	throw new Error(
-		"\x1b[31mVersion isn't changed. Increase the package version or add \x1b[32m[skip ci]\x1b[31m to the commit message to commit without triggering CI pipeline\x1b[0m"
+		"\x1b[31mVersion hasn't been changed. Increase the package version or add \x1b[32m[skip ci]\x1b[31m to the commit message to commit without triggering CI pipeline\x1b[0m"
 	);
