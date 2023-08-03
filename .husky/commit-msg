@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-cat $1 | node .husky/versionChecker
+COMMIT_MSG=`cat $1`
+
+node .husky/versionChecker "$COMMIT_MSG"
