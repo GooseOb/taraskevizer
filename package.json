@@ -2,11 +2,12 @@
 	"name": "taraskevizer",
 	"author": "GooseOb",
 	"license": "MIT",
-	"version": "0.0.2",
+	"version": "0.0.1",
+	"private": false,
+	"homepage": "https://gooseob.github.io/taraskevizatar/",
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
 	"types": "dist/index.d.ts",
-	"homepage": "https://gooseob.github.io/taraskevizatar/",
 	"scripts": {
 		"build": "tsup",
 		"release": "npm run build && changeset publish"
@@ -16,7 +17,7 @@
 		"url": "git+https://github.com/GooseOb/taraskevizer.git"
 	},
 	"keywords": [
-		"taraskevizatar", "taraskevica", "тарашкевіца", "тарашкевізатар", ""
+		"taraskevizatar", "taraskevica", "тарашкевіца", "тарашкевізатар", "belarusian"
 	],
 	"devDependencies": {
 		"@changesets/cli": "^2.26.0",
