@@ -9,8 +9,7 @@
 	"module": "dist/index.mjs",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"build": "tsup",
-		"release": "npm run build && npm publish"
+		"build": "tsup"
 	},
 	"repository": {
 		"type": "git",
