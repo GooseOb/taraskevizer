@@ -3,4 +3,4 @@
 
 COMMIT_MSG=`cat $1`
 
-node .husky/versionChecker "$COMMIT_MSG"
+node .husky/version-checker "$COMMIT_MSG"
