@@ -2,14 +2,15 @@
 	"name": "taraskevizer",
 	"author": "GooseOb",
 	"license": "MIT",
-	"version": "0.0.3",
+	"version": "1.0.0",
 	"private": false,
 	"homepage": "https://gooseob.github.io/taraskevizatar/",
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
 	"types": "dist/index.d.ts",
 	"files": [
-		"dist/**/*"
+		"dist/**/*",
+		"README.md"
 	],
 	"scripts": {
 		"build": "tsup --config build-config/index.js"
