@@ -13,7 +13,8 @@
 		"README.md"
 	],
 	"scripts": {
-		"build": "tsup --config build-config/index.js"
+		"build": "tsup --config build-config/index.js",
+		"prepare": "husky install"
 	},
 	"repository": {
 		"type": "git",
@@ -27,6 +28,7 @@
 		"belarusian"
 	],
 	"devDependencies": {
+		"husky": "^8.0.3",
 		"prettier": "^3.0.0",
 		"tsup": "^6.5.0",
 		"typescript": "^4.9.4"
