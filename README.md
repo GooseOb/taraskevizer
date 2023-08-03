@@ -39,6 +39,7 @@ Type: `number`
 Default value: `0`
 
 Alphabet of output text:
+
 ```
 0 = cyrillic
 1 = latin
@@ -52,6 +53,7 @@ Type: `number`
 Default value: `0`
 
 When to replace `і`(`i`) by `й`(`j`) after vowels:
+
 ```
 0 = never
 1 = random
@@ -75,7 +77,9 @@ Default value: `false`
 Do replace `г`(`h`) by `ґ`(`g`) in cyrillic alphabet?
 
 ```html
-false: <tarH>г</tarH> <tarH>Г</tarH> true: <tarH>ґ</tarH> <tarH>Ґ</tarH>
+false: <tarH>г</tarH> <tarH>Г</tarH>
+
+true: <tarH>ґ</tarH> <tarH>Ґ</tarH>
 ```
 
 ## HTML tags
