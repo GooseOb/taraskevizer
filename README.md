@@ -4,7 +4,6 @@
 $ npm i taraskevizer
 ```
 
-
 ## Usage
 
 ```js
@@ -18,38 +17,45 @@ const result = await tarask(text);
 ## API
 
 ### tarask(text, options?)
+
 Returns a `Promise<string>`
 
 ### taraskSync(text, options?)
+
 Returns a `string`
 
 #### text
+
 Type: `string`
 
 ## Options
+
 Type: `object`
 
 ### abc
+
 Type: `number`
 
 Default value: `0`
 
-Alphabet of output text:
-0. cyrillic
+Alphabet of output text: 0. cyrillic
+
 1. latin
 2. arabic
 
 ### j
+
 Type: `number`
 
 Default value: `0`
 
-When to replace `і`(`i`) by `й`(`j`) after vowels:
-0. never
+When to replace `і`(`i`) by `й`(`j`) after vowels: 0. never
+
 1. random
 2. always
 
 ### html
+
 Type: `false|object`
 
 Default value: `false`
@@ -57,19 +63,21 @@ Default value: `false`
 If `object`, some parts of a text are wrapped in HTML tags.
 
 #### g
+
 Type: `boolean`
 
 Default value: `false`
 
 Do replace `г`(`h`) by `ґ`(`g`) in cyrillic alphabet?
+
 ```html
-false: <tarH>г</tarH> <tarH>Г</tarH>
-true:  <tarH>ґ</tarH> <tarH>Ґ</tarH>
+false: <tarH>г</tarH> <tarH>Г</tarH> true: <tarH>ґ</tarH> <tarH>Ґ</tarH>
 ```
 
 ## HTML tags
 
 ### tarF
+
 Difference between an input and an output word.
 
 ```html
@@ -79,6 +87,7 @@ Difference between an input and an output word.
 ```
 
 ### tarL
+
 A part of a word wrapped in this tag is variable,
 variations are mentioned in a `data-l` attribute
 and are separated by commas
@@ -90,6 +99,7 @@ and are separated by commas
 ```
 
 ### tarH
+
 Can be replaced by `ґ`(`g`) letter. appears only if alphabet is cyrillic
 
 ```html
