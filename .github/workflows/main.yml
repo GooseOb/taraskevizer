@@ -21,3 +21,9 @@ jobs:
       - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  trigger-app-build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -XPOST -u "${{secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/GooseOb/taraskevizatar/actions/workflows/build.yml/dispatches --data '{"ref": "main"}'
+      - uses: actions/checkout@v3
