@@ -9,7 +9,7 @@ export type TaraskOptions = {
 type Promisify<T> = T extends (...args: infer TArgs) => infer TReturn
 	? (...args: TArgs) => Promise<TReturn>
 	: never;
-export type Tarask = (text: string, options: TaraskOptions) => string;
+export type Tarask = (text: string, options?: TaraskOptions) => string;
 export type TaraskAsync = Promisify<Tarask>;
 export type Dict = Record<string, RegExp>;
 export type AlphabetDependentDict = { [key in Alphabet]?: Dict };

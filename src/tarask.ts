@@ -48,7 +48,8 @@ const additionalReplacements = {
 	[ARABIC]: {},
 } satisfies AlphabetDependentDict;
 
-export const taraskSync: Tarask = (text, { abc = 0, j = 0, html }) => {
+export const taraskSync: Tarask = (text, options) => {
+	const { abc = 0, j = 0, html = false } = options || {};
 	const noFix: string[] = [];
 
 	const LEFT_ANGLE_BRACKET = html ? '&lt;' : '<';
@@ -60,7 +61,7 @@ export const taraskSync: Tarask = (text, { abc = 0, j = 0, html }) => {
 			return NOFIX_CHAR;
 		})
 		.replace(/г'(?![еёіюя])/g, 'ґ')
-		.replace(/(\n|\t)/g, ' $1 ')
+		.replace(/([\n\t])/g, ' $1 ')
 		.replace(/ - /g, ' — ')
 		.replace(/(\p{P}|\p{S}|\d)/gu, ' $1 ')
 		.replace(/ ['`’] (?=\S)/g, 'ʼ')
@@ -170,8 +171,10 @@ function toHtmlTags(
 		let fromOWordEnd = oWordEnd;
 
 		while (wordH[fromStart] === oWord[fromStart]) ++fromStart;
-		while (wordH[fromWordEnd] === oWord[fromOWordEnd])
-			--fromWordEnd, --fromOWordEnd;
+		while (wordH[fromWordEnd] === oWord[fromOWordEnd]) {
+			--fromWordEnd;
+			--fromOWordEnd;
+		}
 
 		if (oWord.length < word.length) {
 			if (fromOWordEnd === oWordEnd) {
@@ -217,7 +220,7 @@ function toTarask(text: string): string {
 		);
 }
 
-function replaceWithDict(text: string, dict: Dict = null): string {
+function replaceWithDict(text: string, dict: Dict = {}): string {
 	for (const key in dict) text = text.replace(dict[key], key);
 
 	return text;

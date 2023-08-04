@@ -17,7 +17,7 @@ export default (source, execOnlyOnce) => {
 		beenExecuted = true;
 	}
 	let wordlist, softers, gobj, latinLetters, latinLettersUpperCase;
-	eval(source.replace(/const|let|var|exports\.|"use strict";/g, ''));
+	eval(source.replace(/const(!= \{)|let|var|exports\.|"use strict";/g, ''));
 	exists(outputPath)
 		.then((exists) => exists || mkdir(outputPath))
 		.then(() =>
