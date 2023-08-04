@@ -1,5 +1,5 @@
 import { print, test } from './lib.js';
-import { tarask, taraskSync } from '../src/index.js';
+import { tarask, taraskSync } from '../dist/index.js';
 
 print('test', 'start', '35');
 

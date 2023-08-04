@@ -14,7 +14,7 @@
 	],
 	"scripts": {
 		"build": "tsup --config build-config/index.js",
-		"test": "esrun test",
+		"test": "node test",
 		"prepare": "husky install"
 	},
 	"repository": {
