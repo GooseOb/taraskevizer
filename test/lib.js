@@ -15,7 +15,7 @@ export const test = (name, fn, cases) => {
 		if (output !== expectedValue)
 			fail(
 				name,
-				`\ninput: ${input}\noutput: ${output}\nexpected: ${expectedValue}`,
+				`\ninput: ${input}\noutput: ${output}\nexpected: ${expectedValue}`
 			);
 	}
 	passed(name);
