@@ -30,7 +30,6 @@
 		"belarusian"
 	],
 	"devDependencies": {
-		"@digitak/esrun": "^3.2.24",
 		"husky": "^8.0.3",
 		"prettier": "^3.0.0",
 		"tsup": "^6.5.0",
