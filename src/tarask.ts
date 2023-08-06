@@ -50,6 +50,9 @@ const additionalReplacements = {
 
 export const taraskSync: Tarask = (text, options) => {
 	const { abc = 0, j = 0, html = false } = options || {};
+	if (typeof html === 'object') {
+		html.g ||= false;
+	}
 	const noFix: string[] = [];
 
 	const LEFT_ANGLE_BRACKET = html ? '&lt;' : '<';
