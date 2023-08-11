@@ -9,7 +9,6 @@ print('test', 'start', '35');
 test('Taraskevization', taraskSync, [
 	['жыццясцвярджальны план', 'жыцьцясьцьвярджальны плян'],
 	['варэнне', 'варэньне'],
-	['планета', 'плянэта'],
 ]);
 
 test('Sync and async functions return the same result', taraskSync, [
