@@ -21,7 +21,7 @@ export const test = (name, fn, cases) => {
 	passed(name);
 };
 
-export const benchmark = async (name, fn) => {
+export const benchmark = (name, fn) => {
 	print('benchmark', `${name}, start`, '36');
 	const startTimeStamp = performance.now();
 	fn();
