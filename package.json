@@ -14,7 +14,8 @@
 	],
 	"scripts": {
 		"build": "tsup --config build-config/index.js",
-		"dev:build": "tsup --config build-config/dev.js && npm run test",
+		"dev": "tsup --config build-config/dev.js --watch",
+		"dev:build": "tsup --config build-config/dev.js",
 		"test": "node test",
 		"prepare": "husky install"
 	},

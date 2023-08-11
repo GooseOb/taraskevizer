@@ -20,5 +20,5 @@ export type Tarask = (
 	options?: DeepPartial<TaraskOptions>
 ) => string;
 export type TaraskAsync = Promisify<Tarask>;
-export type Dict = Record<string, RegExp>;
+export type Dict<T = RegExp> = [string, T][];
 export type AlphabetDependentDict = { [key in Alphabet]?: Dict };

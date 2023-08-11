@@ -37,15 +37,15 @@ const lettersUpperCase = {
 	[LATIN]: latinLettersUpperCase,
 } satisfies AlphabetDependentDict;
 const additionalReplacements = {
-	[CYRILLIC]: {
-		$1У: /([АЕЁІОУЫЭЮЯ])<tarF>Ў<\/tarF>/g,
-		' У': / <tarF>Ў<\/tarF>(?=\p{Lu})/gu,
-	},
-	[LATIN]: {
-		$1U: /([AEIOUY])<tarF>Ŭ<\/tarF>/g,
-		' U': / <tarF>Ŭ<\/tarF>(?=\p{Lu})/gu,
-	},
-	[ARABIC]: {},
+	[CYRILLIC]: [
+		['$1У', /([АЕЁІОУЫЭЮЯ])<tarF>Ў<\/tarF>/g],
+		[' У', / <tarF>Ў<\/tarF>(?=\p{Lu})/gu],
+	],
+	[LATIN]: [
+		['$1U', /([AEIOUY])<tarF>Ŭ<\/tarF>/g],
+		[' U', / <tarF>Ŭ<\/tarF>(?=\p{Lu})/gu],
+	],
+	[ARABIC]: [],
 } satisfies AlphabetDependentDict;
 
 export const taraskSync: Tarask = (text, options) => {
@@ -202,8 +202,8 @@ function toTarask(text: string): string {
 	text = replaceWithDict(text, wordlist);
 	loop: do {
 		text = replaceWithDict(text, softers);
-		for (const key in softers)
-			if (key !== '$1дзьдз' && softers[key].test(text)) continue loop;
+		for (const [result, pattern] of softers)
+			if (result !== '$1дзьдз' && pattern.test(text)) continue loop;
 		break;
 	} while (true);
 
@@ -223,8 +223,8 @@ function toTarask(text: string): string {
 		);
 }
 
-function replaceWithDict(text: string, dict: Dict = {}): string {
-	for (const key in dict) text = text.replace(dict[key], key);
+function replaceWithDict(text: string, dict: Dict = []): string {
+	for (const [result, pattern] of dict) text = text.replace(pattern, result);
 
 	return text;
 }

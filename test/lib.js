@@ -20,3 +20,11 @@ export const test = (name, fn, cases) => {
 	}
 	passed(name);
 };
+
+export const benchmark = async (name, fn, args) => {
+	print('benchmark', `${name}, start`, '36');
+	const startTimeStamp = performance.now();
+	fn(...args);
+	const benchmarkResult = performance.now() - startTimeStamp;
+	print('benchmark', `${name}, result: ${benchmarkResult} ms`, '36');
+};
