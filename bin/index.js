@@ -26,7 +26,6 @@ const stgs = {
 		nodeColors: true,
 	},
 };
-let noColors = false;
 
 const optionDict = [
 	[
@@ -77,6 +76,12 @@ const optionDict = [
 			stgs.nonHtml.nodeColors = false;
 		},
 	],
+	[
+		['--html', '-html'],
+		() => {
+			stgs.html = {};
+		},
+	],
 ];
 
 optionEater: while (true) {
@@ -90,6 +95,5 @@ optionEater: while (true) {
 }
 
 const text = process.argv.join(' ');
-if (!text) process.exit(0);
 
 console.log(taraskSync(text, stgs));
