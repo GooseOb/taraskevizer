@@ -2,7 +2,7 @@
 	"name": "taraskevizer",
 	"author": "GooseOb",
 	"license": "MIT",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"private": false,
 	"homepage": "https://gooseob.github.io/taraskevizatar/",
 	"main": "dist/index.js",
@@ -14,6 +14,7 @@
 	},
 	"files": [
 		"dist/**/*",
+		"bin/**/*",
 		"README.md"
 	],
 	"scripts": {
