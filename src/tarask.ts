@@ -50,7 +50,7 @@ const additionalReplacements = {
 
 type SpecificApplyObj = Record<'F' | 'H' | 'L', (content: string) => string>;
 
-const applyObj = {
+const tagApplications = {
 	html: {
 		F: (content) => `<tarF>${content}</tarF>`,
 		H: (content) => `<tarH>${content}</tarH>`,
@@ -69,7 +69,7 @@ export const taraskSync: Tarask = (text, options) => {
 	if (typeof nonHtml === 'object') {
 		nonHtml.variations ||= 0;
 	}
-	const apply = html ? applyObj.html : applyObj.nonHtml;
+	const apply = html ? tagApplications.html : tagApplications.nonHtml;
 	const noFix: string[] = [];
 
 	const LEFT_ANGLE_BRACKET = html ? '&lt;' : '<';
@@ -101,7 +101,7 @@ export const taraskSync: Tarask = (text, options) => {
 	if (abc !== ARABIC) splitted = restoreCase(splitted, splittedOrig);
 	const nodeColors = nonHtml && nonHtml.nodeColors;
 	if (html || nodeColors)
-		splitted = toHtmlTags(splitted, splittedOrig, abc, apply.F);
+		splitted = toTags(splitted, splittedOrig, abc, apply.F);
 
 	text = splitted
 		.join(' ')
@@ -164,7 +164,7 @@ function restoreCase(text: string[], orig: string[]): string[] {
 	return text;
 }
 
-function toHtmlTags(
+function toTags(
 	text: string[],
 	orig: string[],
 	abc: TaraskOptions['abc'],
