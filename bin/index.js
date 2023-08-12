@@ -1,32 +1,30 @@
 #!/usr/bin/env node
 import { taraskSync } from '../dist/index.js';
+import { readFile } from 'fs/promises';
 
 const print = (...msgs) => {
 	console.log('\x1b[34m[taraskevizer]\x1b[0m', ...msgs);
 };
 
-process.argv.shift();
-process.argv.shift();
+const getPkg = () =>
+	readFile(new URL('../package.json', import.meta.url)).then(JSON.parse);
 
-const checkForOptions = (options) => {
-	for (const option of options)
-		if (process.argv[0] === option) {
-			process.argv.shift();
-			return true;
-		}
-	return false;
-};
+process.argv.splice(0, 2);
 
-if (checkForOptions(['-v', '--version'])) {
-	print(require('../package.json').version);
+if (['-v', '--version'].includes(process.argv[0])) {
+	const { version } = await getPkg();
+	print(version);
 	process.exit(0);
 }
 
 const stgs = {
 	html: {},
 };
+let noVariations = false;
+let firstVariationOnly = false;
+let noColors = false;
 
-const arr = [
+const optionDict = [
 	[
 		['--latin', '-l'],
 		() => {
@@ -54,16 +52,35 @@ const arr = [
 	[
 		['--g', '-g'],
 		() => {
-			stgs.j = 2;
+			stgs.html.g = true;
+		},
+	],
+	[
+		['--no-variations', '-nv'],
+		() => {
+			noVariations = true;
+		},
+	],
+	[
+		['--first-variation-only', '-fvo'],
+		() => {
+			firstVariationOnly = true;
+		},
+	],
+	[
+		['--no-colors', '-nc'],
+		() => {
+			noColors = true;
 		},
 	],
 ];
 
-opnionsEater: while (true) {
-	for (const [options, callback] of arr)
-		if (checkForOptions(options)) {
+optionEater: while (true) {
+	for (const [options, callback] of optionDict)
+		if (options.includes(process.argv[0])) {
+			process.argv.shift();
 			callback();
-			continue opnionsEater;
+			continue optionEater;
 		}
 	break;
 }
@@ -71,10 +88,21 @@ opnionsEater: while (true) {
 const text = process.argv.join(' ');
 if (!text) process.exit(0);
 
-const htmlTagsToNodeColors = (text) =>
-	text
-		.replace(/<tarF>/g, '\x1b[32m')
-		.replace(/<tar[LH].*?>/g, '\x1b[35m')
-		.replace(/<\/\S+>/g, '\x1b[0m');
+const htmlTagsToNodeColors = (text) => {
+	text = text.replace(
+		/<tarL data-l='(.*?)'>(.*?)<\/tarL>/g,
+		firstVariationOnly
+			? ($0, $1) => `\x1b[35m${$1.split(',')[0]}\x1b[0m`
+			: noVariations
+			? '\x1b[35m$2\x1b[0m'
+			: ($0, $1, $2) => `\x1b[35m(${$2}|${$1.replace(/,/, '|')})\x1b[0m`
+	);
+	return noColors
+		? text.replace(/<\/?tar[FH]>|\x1b\[\d+?m/g, '')
+		: text
+				.replace(/<tarF>/g, '\x1b[32m')
+				.replace(/<tarH>/g, '\x1b[35m')
+				.replace(/<\/tar[FH]>/g, '\x1b[0m');
+};
 
-print(htmlTagsToNodeColors(taraskSync(text, stgs)));
+console.log(htmlTagsToNodeColors(taraskSync(text, stgs)));
