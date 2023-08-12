@@ -4,7 +4,7 @@ import pjson from '../package.json' assert { type: 'json' };
 
 export default defineConfig({
 	entry: ['src/index.ts'],
-	format: ['cjs'],
+	format: ['esm'],
 	onSuccess() {
 		exec(pjson.scripts.test, (err, stdout, stderr) => {
 			if (stdout) console.log(stdout);

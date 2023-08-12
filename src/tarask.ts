@@ -48,11 +48,28 @@ const additionalReplacements = {
 	[ARABIC]: [],
 } satisfies AlphabetDependentDict;
 
+type SpecificApplyObj = Record<'F' | 'H' | 'L', (content: string) => string>;
+
+const applyObj = {
+	html: {
+		F: (content) => `<tarF>${content}</tarF>`,
+		H: (content) => `<tarH>${content}</tarH>`,
+	},
+	nonHtml: {
+		F: (content) => `\x1b[32m${content}\x1b[0m`,
+		H: (content) => `\x1b[35m${content}\x1b[0m`,
+		L: (content) => `\x1b[35m${content}\x1b[0m`,
+	},
+} satisfies Record<'html' | 'nonHtml', Partial<SpecificApplyObj>>;
+
 export const taraskSync: Tarask = (text, options) => {
-	const { abc = 0, j = 0, html = false } = options || {};
-	if (typeof html === 'object') {
-		html.g ||= false;
+	const { abc = 0, j = 0, html = false, nonHtml = false } = options || {};
+	// if (typeof html === 'object') {
+	// }
+	if (typeof nonHtml === 'object') {
+		nonHtml.variations ||= 0;
 	}
+	const apply = html ? applyObj.html : applyObj.nonHtml;
 	const noFix: string[] = [];
 
 	const LEFT_ANGLE_BRACKET = html ? '&lt;' : '<';
@@ -82,26 +99,39 @@ export const taraskSync: Tarask = (text, options) => {
 
 	splitted = text.split(' ');
 	if (abc !== ARABIC) splitted = restoreCase(splitted, splittedOrig);
-	if (html) splitted = toHtmlTags(splitted, splittedOrig, abc);
+	const nodeColors = nonHtml && nonHtml.nodeColors;
+	if (html || nodeColors)
+		splitted = toHtmlTags(splitted, splittedOrig, abc, apply.F);
 
 	text = splitted
 		.join(' ')
 		.replace(/&nbsp;/g, ' ')
 		.replace(/ (\p{P}|\p{S}|\d|&#40) /gu, '$1');
 
+	let gReplacer: undefined | string | ((...substrings: string[]) => string);
 	if (html) {
 		text = replaceWithDict(text, additionalReplacements[abc]);
-		if (abc === CYRILLIC)
-			text = text.replace(
-				G_REGEX,
-				// @ts-ignore
-				html.g ? '<tarH>$&</tarH>' : ($0) => `<tarH>${gobj[$0]}</tarH>`
-			);
+		if (abc === CYRILLIC) {
+			gReplacer = html.g ? apply.H('$&') : ($0) => apply.H(gobj[$0]);
+		}
+	} else if (nonHtml && abc === CYRILLIC) {
+		if (nonHtml.nodeColors) {
+			gReplacer = nonHtml.h ? ($0) => apply.H(gobj[$0]) : apply.H('$&');
+		} else if (nonHtml.h) {
+			gReplacer = ($0) => gobj[$0];
+		}
 	}
+
+	// @ts-ignore
+	if (gReplacer) text = text.replace(G_REGEX, gReplacer);
 
 	if (noFix.length) text = text.replace(NOFIX_REGEX, () => noFix.shift());
 
-	return (html ? finalizer.html : finalizer.text)(text).trim();
+	return (
+		html
+			? finalizer.html(text)
+			: finalizer.nonHtml(text, nonHtml, apply as SpecificApplyObj)
+	).trim();
 };
 
 export const tarask: TaraskAsync = (...args) =>
@@ -137,7 +167,8 @@ function restoreCase(text: string[], orig: string[]): string[] {
 function toHtmlTags(
 	text: string[],
 	orig: string[],
-	abc: TaraskOptions['abc']
+	abc: TaraskOptions['abc'],
+	applyF: (content: string) => string
 ): string[] {
 	for (let i = 0; i < text.length; i++) {
 		const word = text[i];
@@ -150,7 +181,7 @@ function toHtmlTags(
 				const LettersText = word.split('');
 				for (let x = 0; x < LettersText.length; x++) {
 					if (LettersText[x] !== oWord[x])
-						LettersText[x] = `<tarF>${LettersText[x]}</tarF>`;
+						LettersText[x] = applyF(LettersText[x]);
 				}
 				text[i] = LettersText.join('');
 				continue;
@@ -159,10 +190,10 @@ function toHtmlTags(
 				const word1 = word.replace(/ь/g, '');
 				switch (oWord) {
 					case word1:
-						text[i] = word.replace(/ь/g, '<tarF>ь</tarF>');
+						text[i] = word.replace(/ь/g, applyF('ь'));
 						continue;
 					case word1 + 'ь':
-						text[i] = word.slice(0, -1).replace(/ь/g, '<tarF>ь</tarF>') + 'ь';
+						text[i] = word.slice(0, -1).replace(/ь/g, applyF('ь')) + 'ь';
 						continue;
 				}
 			}
@@ -181,7 +212,7 @@ function toHtmlTags(
 
 		if (oWord.length < word.length) {
 			if (fromOWordEnd === oWordEnd) {
-				text[i] = `<tarF>${word}</tarF>`;
+				text[i] = applyF(word);
 				continue;
 			}
 			if (fromWordEnd < 0) fromWordEnd = 0;
@@ -189,9 +220,7 @@ function toHtmlTags(
 
 		text[i] =
 			word.slice(0, fromStart) +
-			'<tarF>' +
-			word.slice(fromStart, fromWordEnd + 1) +
-			'</tarF>' +
+			applyF(word.slice(fromStart, fromWordEnd + 1)) +
 			word.slice(fromWordEnd + 1);
 	}
 
@@ -249,7 +278,7 @@ function replaceIbyJ(text: string, always = false): string {
 }
 
 const finalizer = {
-	html: (text) =>
+	html: (text: string) =>
 		text
 			.replace(OPTIONAL_WORDS_REGEX, ($0) => {
 				const options = $0.slice(1, -1).split('|');
@@ -257,8 +286,19 @@ const finalizer = {
 				return `<tarL data-l='${options}'>${main}</tarL>`;
 			})
 			.replace(/ \n /g, '<br>'),
-	text: (text) =>
-		text
-			.replace(OPTIONAL_WORDS_REGEX, ($0) => $0.slice(1, -1).split('|')[0])
-			.replace(/&#40/g, '('),
-} satisfies Record<string, (text: string) => string>;
+	nonHtml(
+		text: string,
+		options: TaraskOptions['nonHtml'],
+		apply: SpecificApplyObj
+	) {
+		if (options && options.variations !== 2) {
+			const WORD_INDEX = options.variations;
+			const replacer = ($0: string) => $0.slice(1, -1).split('|')[WORD_INDEX];
+			text = text.replace(
+				OPTIONAL_WORDS_REGEX,
+				options.nodeColors ? ($0) => apply.L(replacer($0)) : replacer
+			);
+		}
+		return text.replace(/&#40/g, '(');
+	},
+};

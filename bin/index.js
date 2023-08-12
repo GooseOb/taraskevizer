@@ -18,10 +18,11 @@ if (['-v', '--version'].includes(process.argv[0])) {
 }
 
 const stgs = {
-	html: {},
+	nonHtml: {
+		variations: 2,
+		nodeColors: true,
+	},
 };
-let noVariations = false;
-let firstVariationOnly = false;
 let noColors = false;
 
 const optionDict = [
@@ -50,27 +51,27 @@ const optionDict = [
 		},
 	],
 	[
-		['--g', '-g'],
+		['--h', '-h'],
 		() => {
-			stgs.html.g = true;
+			stgs.nonHtml.h = true;
 		},
 	],
 	[
 		['--no-variations', '-nv'],
 		() => {
-			noVariations = true;
+			stgs.nonHtml.variations = 0;
 		},
 	],
 	[
 		['--first-variation-only', '-fvo'],
 		() => {
-			firstVariationOnly = true;
+			stgs.nonHtml.variations = 1;
 		},
 	],
 	[
 		['--no-colors', '-nc'],
 		() => {
-			noColors = true;
+			stgs.nonHtml.nodeColors = false;
 		},
 	],
 ];
@@ -88,21 +89,4 @@ optionEater: while (true) {
 const text = process.argv.join(' ');
 if (!text) process.exit(0);
 
-const htmlTagsToNodeColors = (text) => {
-	text = text.replace(
-		/<tarL data-l='(.*?)'>(.*?)<\/tarL>/g,
-		firstVariationOnly
-			? ($0, $1) => `\x1b[35m${$1.split(',')[0]}\x1b[0m`
-			: noVariations
-			? '\x1b[35m$2\x1b[0m'
-			: ($0, $1, $2) => `\x1b[35m(${$2}|${$1.replace(/,/, '|')})\x1b[0m`
-	);
-	return noColors
-		? text.replace(/<\/?tar[FH]>|\x1b\[\d+?m/g, '')
-		: text
-				.replace(/<tarF>/g, '\x1b[32m')
-				.replace(/<tarH>/g, '\x1b[35m')
-				.replace(/<\/tar[FH]>/g, '\x1b[0m');
-};
-
-console.log(htmlTagsToNodeColors(taraskSync(text, stgs)));
+console.log(taraskSync(text, stgs));

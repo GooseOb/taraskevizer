@@ -8,17 +8,24 @@ type DeepPartial<T> = T extends object
 	: T;
 
 type Alphabet = 0 | 1 | 2;
+// cyrillic | latin | arabic
 type J = 0 | 1 | 2;
+// never | random | always
+type Variation = 0 | 1 | 2;
+// no | first | all
+export type NonHtmlOptions = {
+	nodeColors: boolean;
+	h: boolean;
+	variations: Variation;
+};
 export type HtmlOptions = { g: boolean };
-export type TaraskOptions = {
+export type TaraskOptions = DeepPartial<{
 	abc: Alphabet;
 	j: J;
 	html: false | HtmlOptions;
-};
-export type Tarask = (
-	text: string,
-	options?: DeepPartial<TaraskOptions>
-) => string;
+	nonHtml: false | NonHtmlOptions;
+}>;
+export type Tarask = (text: string, options?: TaraskOptions) => string;
 export type TaraskAsync = Promisify<Tarask>;
 export type Dict<T = RegExp> = [string, T][];
 export type AlphabetDependentDict = { [key in Alphabet]?: Dict };
