@@ -11,7 +11,10 @@ const getPkg = () =>
 
 process.argv.splice(0, 2);
 
-if (['-v', '--version'].includes(process.argv[0])) {
+const checkForOptions = (options) =>
+	options.includes(process.argv[0].toLowerCase());
+
+if (checkForOptions(['-v', '--version'])) {
 	const { version } = await getPkg();
 	print(version);
 	process.exit(0);
@@ -69,7 +72,7 @@ const optionDict = [
 		},
 	],
 	[
-		['--no-colors', '-nc'],
+		['--no-color', '-nc'],
 		() => {
 			stgs.nonHtml.nodeColors = false;
 		},
@@ -78,7 +81,7 @@ const optionDict = [
 
 optionEater: while (true) {
 	for (const [options, callback] of optionDict)
-		if (options.includes(process.argv[0])) {
+		if (checkForOptions(options)) {
 			process.argv.shift();
 			callback();
 			continue optionEater;

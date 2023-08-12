@@ -1,6 +1,6 @@
 ## Install
 
-```
+```bash
 $ npm i taraskevizer
 ```
 
@@ -82,6 +82,48 @@ false: <tarH>г</tarH> <tarH>Г</tarH>
 true: <tarH>ґ</tarH> <tarH>Ґ</tarH>
 ```
 
+### nonHtml
+
+Type: `false|object`
+
+Default value: `false`
+
+If `html` is defined, will be ignored
+
+#### nodeColors
+
+Type: `boolean`
+
+Default value: `false`
+
+#### h
+
+Type: `boolean`
+
+Default value: `false`
+
+Do replace ґ(g) by г(h) in cyrillic alphabet?
+
+```
+false: Ґ ґ
+
+true: Г г
+```
+
+#### variations
+
+Type: `number`
+
+Default value: `0`
+
+Which variation should be if a part of word is variable?
+
+```
+0 = main:   Гродна
+1 = first:  Горадня
+2 = all:    (Гродна|Горадня)
+```
+
 ## HTML tags
 
 ### tarF
@@ -114,4 +156,36 @@ Can be replaced by `ґ`(`g`) letter. appears only if alphabet is cyrillic
 <tarH>г</tarH>
 
 <tarH>Г</tarH>валт
+```
+
+# CLI
+
+## Install
+
+```bash
+$ npm i -g taraskevizer
+```
+
+## Usage
+
+```bash
+$ taraskevize "планета"
+```
+
+## Options
+
+```bash
+# Alpabet
+--latin (-l)
+--arabic (-a)
+# When to replace і by й after vowels
+--jrandom (-jr)
+--jalways (-ja)
+# Do replace ґ(g) by г(h) in cyrillic alphabet?
+--h (-h)
+# Variations
+--no-variations (-nv)
+--first-variation-only (-fvo)
+# Other
+--no-color (-nc)
 ```
