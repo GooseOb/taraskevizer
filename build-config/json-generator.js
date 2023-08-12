@@ -4,20 +4,25 @@ import { promisify } from 'util';
 import { writeFile, mkdir } from 'fs/promises';
 const exists = promisify(_exists);
 const outputPath = path.resolve('json');
+import {
+	wordlist,
+	softers,
+	latinLetters,
+	latinLettersUpperCase,
+	gobj,
+} from '../src/dict.js';
 
-const regexToStr = (obj) => {
-	for (const key in obj) obj[key] = obj[key].source;
-	return obj;
+const regexToStr = (dict) => {
+	for (const item of dict) item[1] = item[1].source;
+	return dict;
 };
 
 let beenExecuted = false;
-export default (source, execOnlyOnce) => {
+export default (execOnlyOnce) => {
 	if (execOnlyOnce) {
 		if (beenExecuted) return;
 		beenExecuted = true;
 	}
-	let wordlist, softers, gobj, latinLetters, latinLettersUpperCase;
-	eval(source.replace(/const(!= \{)|let|var|exports\.|"use strict";/g, ''));
 	exists(outputPath)
 		.then((exists) => exists || mkdir(outputPath))
 		.then(() =>

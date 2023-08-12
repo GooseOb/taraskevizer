@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { taraskSync } from '../dist/index.js';
 
 const print = (...msgs) => {
 	console.log('\x1b[34m[taraskevizer]\x1b[0m', ...msgs);
@@ -69,8 +70,6 @@ opnionsEater: while (true) {
 
 const text = process.argv.join(' ');
 if (!text) process.exit(0);
-
-const { taraskSync } = require('../dist');
 
 const htmlTagsToNodeColors = (text) =>
 	text
