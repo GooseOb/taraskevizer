@@ -28,6 +28,7 @@
 		"type": "git",
 		"url": "git+https://github.com/GooseOb/taraskevizer.git"
 	},
+	"description": "Канвэртацыя акадэмічнага правапісу ў клясычны",
 	"keywords": [
 		"taraskevizatar",
 		"taraskevica",
