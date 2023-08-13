@@ -169,7 +169,7 @@ $ npm i -g taraskevizer
 ## Usage
 
 ```bash
-$ taraskevize "планета"
+$ tarask "планета"
 ```
 
 ## Options
@@ -178,14 +178,15 @@ $ taraskevize "планета"
 # Alpabet
 --latin (-l)
 --arabic (-a)
-# When to replace і by й after vowels
+# When to replace і(i) by й(j) after vowels
 --jrandom (-jr)
 --jalways (-ja)
-# Do replace ґ(g) by г(h) in cyrillic alphabet?
+# Replace ґ(g) by г(h) in cyrillic alphabet
 --h (-h)
 # Variations
 --no-variations (-nv)
 --first-variation-only (-fvo)
 # Other
 --no-color (-nc)
+--html (-html) # options except alphabet and j will be ignored
 ```
