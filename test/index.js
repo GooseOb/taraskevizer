@@ -20,8 +20,8 @@ test('HtmlOptions', ([text, html]) => taraskSync(text, { html }), [
 		['жыццясцвярджальны план', {}],
 		'жыц<tarF>ьцясьць</tarF>вярджальны пл<tarF>я</tarF>н',
 	],
-	[['газета', { g: false }], '<tarF><tarH>г</tarH></tarF>аз<tarF>э</tarF>та'],
-	[['газета', { g: true }], '<tarF><tarH>ґ</tarH></tarF>аз<tarF>э</tarF>та'],
+	[['газета', { g: false }], '<tarH>г</tarH>аз<tarF>э</tarF>та'],
+	[['газета', { g: true }], '<tarH>ґ</tarH>аз<tarF>э</tarF>та'],
 ]);
 
 print('test', 'all tests passed successfully', '35');

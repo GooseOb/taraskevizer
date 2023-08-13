@@ -178,12 +178,11 @@ function toTags(
 		if (oWord === wordH) continue;
 		if (!/\(/.test(word)) {
 			if (word.length === oWord.length) {
-				const LettersText = word.split('');
-				for (let x = 0; x < LettersText.length; x++) {
-					if (LettersText[x] !== oWord[x])
-						LettersText[x] = applyF(LettersText[x]);
+				const wordLetters = word.split('');
+				for (let j = 0; j < wordLetters.length; j++) {
+					if (wordH[j] !== oWord[j]) wordLetters[j] = applyF(wordLetters[j]);
 				}
-				text[i] = LettersText.join('');
+				text[i] = wordLetters.join('');
 				continue;
 			}
 			if (abc === CYRILLIC) {
