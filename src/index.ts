@@ -1,3 +1,3 @@
 export * from './types';
-export { tarask, taraskSync } from './tarask';
+export * from './tarask';
 export { gobj } from './dict';

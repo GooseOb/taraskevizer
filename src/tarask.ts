@@ -22,31 +22,28 @@ const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
 const OPTIONAL_WORDS_REGEX = /\(.*?\)/g;
 const G_REGEX = /[Ґґ]/g;
 
-const CYRILLIC = 0,
-	LATIN = 1,
-	ARABIC = 2;
-const J_NEVER = 0,
-	J_RANDOM = 1,
-	J_ALWAYS = 2;
+export const ALPHABET = { CYRILLIC: 0, LATIN: 1, ARABIC: 2 };
+export const J = { NEVER: 0, RANDOM: 1, ALWAYS: 2 };
+export const VARIATION = { NO: 0, FIRST: 1, ALL: 2 };
 
-const letters = {
-	[LATIN]: latinLetters,
-	[ARABIC]: arabLetters,
-} satisfies AlphabetDependentDict;
-const lettersUpperCase = {
-	[LATIN]: latinLettersUpperCase,
-} satisfies AlphabetDependentDict;
-const additionalReplacements = {
-	[CYRILLIC]: [
+const letters: AlphabetDependentDict = {
+	[ALPHABET.LATIN]: latinLetters,
+	[ALPHABET.ARABIC]: arabLetters,
+};
+const lettersUpperCase: AlphabetDependentDict = {
+	[ALPHABET.LATIN]: latinLettersUpperCase,
+};
+const additionalReplacements: AlphabetDependentDict = {
+	[ALPHABET.CYRILLIC]: [
 		['$1У', /([АЕЁІОУЫЭЮЯ])<tarF>Ў<\/tarF>/g],
 		[' У', / <tarF>Ў<\/tarF>(?=\p{Lu})/gu],
 	],
-	[LATIN]: [
+	[ALPHABET.LATIN]: [
 		['$1U', /([AEIOUY])<tarF>Ŭ<\/tarF>/g],
 		[' U', / <tarF>Ŭ<\/tarF>(?=\p{Lu})/gu],
 	],
-	[ARABIC]: [],
-} satisfies AlphabetDependentDict;
+	[ALPHABET.ARABIC]: [],
+};
 
 type SpecificApplyObj = Record<'F' | 'H' | 'L', (content: string) => string>;
 
@@ -94,11 +91,11 @@ export const taraskSync: Tarask = (text, options) => {
 	).split(' ');
 
 	text = toTarask(text.toLowerCase());
-	if (j) text = replaceIbyJ(text, j === J_ALWAYS);
+	if (j) text = replaceIbyJ(text, j === J.ALWAYS);
 	text = replaceWithDict(text, letters[abc]);
 
 	splitted = text.split(' ');
-	if (abc !== ARABIC) splitted = restoreCase(splitted, splittedOrig);
+	if (abc !== ALPHABET.ARABIC) splitted = restoreCase(splitted, splittedOrig);
 	const nodeColors = nonHtml && nonHtml.nodeColors;
 	if (html || nodeColors)
 		splitted = toTags(splitted, splittedOrig, abc, apply.F);
@@ -111,10 +108,10 @@ export const taraskSync: Tarask = (text, options) => {
 	let gReplacer: undefined | string | ((...substrings: string[]) => string);
 	if (html) {
 		text = replaceWithDict(text, additionalReplacements[abc]);
-		if (abc === CYRILLIC) {
+		if (abc === ALPHABET.CYRILLIC) {
 			gReplacer = html.g ? apply.H('$&') : ($0) => apply.H(gobj[$0]);
 		}
-	} else if (nonHtml && abc === CYRILLIC) {
+	} else if (nonHtml && abc === ALPHABET.CYRILLIC) {
 		if (nonHtml.nodeColors) {
 			gReplacer = nonHtml.h ? ($0) => apply.H(gobj[$0]) : apply.H('$&');
 		} else if (nonHtml.h) {
@@ -128,9 +125,7 @@ export const taraskSync: Tarask = (text, options) => {
 	if (noFix.length) text = text.replace(NOFIX_REGEX, () => noFix.shift());
 
 	return (
-		html
-			? finalizer.html(text)
-			: finalizer.nonHtml(text, nonHtml, apply as SpecificApplyObj)
+		html ? finalizer.html(text) : finalizer.nonHtml(text, nonHtml)
 	).trim();
 };
 
@@ -185,7 +180,7 @@ function toTags(
 				text[i] = wordLetters.join('');
 				continue;
 			}
-			if (abc === CYRILLIC) {
+			if (abc === ALPHABET.CYRILLIC) {
 				const word1 = word.replace(/ь/g, '');
 				switch (oWord) {
 					case word1:
@@ -257,12 +252,12 @@ function replaceWithDict(text: string, dict: Dict = []): string {
 	return text;
 }
 
-type Vow = 'а' | 'е' | 'ё' | 'і' | 'о' | 'у' | 'ы' | 'э' | 'ю' | 'я';
+type Vowel = 'а' | 'е' | 'ё' | 'і' | 'о' | 'у' | 'ы' | 'э' | 'ю' | 'я';
 
-type ToJ = <TVow extends `${Vow} `, TU extends '' | 'ў'>(
-	vow: TVow,
+type ToJ = <TVowel extends `${Vowel} `, TU extends '' | 'ў'>(
+	vow: TVowel,
 	shortU: TU
-) => `${TVow}й ${TU extends 'ў' ? 'у' : ''}`;
+) => `${TVowel}й ${TU extends 'ў' ? 'у' : ''}`;
 
 const toJ: ToJ = (vow, shortU) =>
 	(vow + 'й ' + (shortU ? 'у' : '')) as ReturnType<ToJ>;
@@ -285,17 +280,15 @@ const finalizer = {
 				return `<tarL data-l='${options}'>${main}</tarL>`;
 			})
 			.replace(/ \n /g, '<br>'),
-	nonHtml(
-		text: string,
-		options: TaraskOptions['nonHtml'],
-		apply: SpecificApplyObj
-	) {
-		if (options && options.variations !== 2) {
+	nonHtml(text: string, options: TaraskOptions['nonHtml']) {
+		if (options && options.variations !== VARIATION.ALL) {
 			const WORD_INDEX = options.variations;
 			const replacer = ($0: string) => $0.slice(1, -1).split('|')[WORD_INDEX];
 			text = text.replace(
 				OPTIONAL_WORDS_REGEX,
-				options.nodeColors ? ($0) => apply.L(replacer($0)) : replacer
+				options.nodeColors
+					? ($0) => tagApplications.nonHtml.L(replacer($0))
+					: replacer
 			);
 		}
 		return text.replace(/&#40/g, '(');
