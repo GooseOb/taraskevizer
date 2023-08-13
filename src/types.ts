@@ -19,21 +19,20 @@ export type NonHtmlOptions = {
 	variations: Variation;
 };
 export type HtmlOptions = { g: boolean };
-export type TaraskOptions = DeepPartial<
-	{
-		abc: Alphabet;
-		j: J;
-	} & (
-		| {
-				html: HtmlOptions;
-				nonHtml: false;
-		  }
-		| {
-				html: false;
-				nonHtml: NonHtmlOptions;
-		  }
-	)
->;
+export type TaraskOptionsStrict = {
+	abc: Alphabet;
+	j: J;
+} & (
+	| {
+			html: HtmlOptions;
+			nonHtml: false;
+	  }
+	| {
+			html: false;
+			nonHtml: NonHtmlOptions;
+	  }
+);
+export type TaraskOptions = DeepPartial<TaraskOptionsStrict>;
 export type Tarask = (text: string, options?: TaraskOptions) => string;
 export type TaraskAsync = Promisify<Tarask>;
 export type Dict<T = RegExp> = [string, T][];
