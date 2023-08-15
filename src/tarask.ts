@@ -151,7 +151,7 @@ function restoreCase(text: string[], orig: string[]): string[] {
 		if (!oWord[0] || !isUpperCase(oWord[0])) continue;
 		if (word === 'зь') {
 			text[i] = isUpperCase(orig[i + 1]) ? 'ЗЬ' : 'Зь';
-		} else if (isUpperCase(oWord[oWord.length - 1])) {
+		} else if (isUpperCase(getLastLetter(oWord))) {
 			text[i] = word.toUpperCase();
 		} else {
 			text[i] =
@@ -165,6 +165,10 @@ function restoreCase(text: string[], orig: string[]): string[] {
 
 	return text;
 }
+const getLastLetter = (word: string) => {
+	for (let i = word.length - 1; i > 1; i--)
+		if (/\p{L}/u.test(word[i])) return word[i];
+};
 
 function toTags(
 	text: string[],
