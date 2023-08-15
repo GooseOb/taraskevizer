@@ -5,7 +5,10 @@ import {
 	latinLetters,
 	latinLettersUpperCase,
 	gobj,
-} from './dict';
+	greekLetters,
+	greekLettersUpperCase,
+	thWords,
+} from './dict/index';
 import {
 	Tarask,
 	TaraskAsync,
@@ -22,16 +25,18 @@ const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
 const OPTIONAL_WORDS_REGEX = /\(.*?\)/g;
 const G_REGEX = /[Ґґ]/g;
 
-export const ALPHABET = { CYRILLIC: 0, LATIN: 1, ARABIC: 2 };
+export const ALPHABET = { CYRILLIC: 0, LATIN: 1, ARABIC: 2, GREEK: 3 };
 export const J = { NEVER: 0, RANDOM: 1, ALWAYS: 2 };
 export const VARIATION = { NO: 0, FIRST: 1, ALL: 2 };
 
 const letters: AlphabetDependentDict = {
 	[ALPHABET.LATIN]: latinLetters,
 	[ALPHABET.ARABIC]: arabLetters,
+	[ALPHABET.GREEK]: greekLetters,
 };
 const lettersUpperCase: AlphabetDependentDict = {
 	[ALPHABET.LATIN]: latinLettersUpperCase,
+	[ALPHABET.GREEK]: greekLettersUpperCase,
 };
 const additionalReplacements: AlphabetDependentDict = {
 	[ALPHABET.CYRILLIC]: [
@@ -43,6 +48,7 @@ const additionalReplacements: AlphabetDependentDict = {
 		[' U', / <tarF>Ŭ<\/tarF>(?=\p{Lu})/gu],
 	],
 	[ALPHABET.ARABIC]: [],
+	[ALPHABET.GREEK]: [],
 };
 
 type SpecificApplyObj = Record<'F' | 'H' | 'L', (content: string) => string>;
@@ -92,6 +98,7 @@ export const taraskSync: Tarask = (text, options) => {
 
 	text = toTarask(text.toLowerCase());
 	if (j) text = replaceIbyJ(text, j === J.ALWAYS);
+	if (abc === ALPHABET.GREEK) text = replaceWithDict(text, thWords);
 	text = replaceWithDict(text, letters[abc]);
 
 	splitted = text.split(' ');

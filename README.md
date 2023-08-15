@@ -44,6 +44,7 @@ Alphabet of output text:
 0 = cyrillic
 1 = latin
 2 = arabic
+3 = greek
 ```
 
 ### j
@@ -178,6 +179,7 @@ $ tarask "планета"
 # Alpabet
 --latin (-l)
 --arabic (-a)
+--greek (-gr)
 # When to replace і(i) by й(j) after vowels
 --jrandom (-jr)
 --jalways (-ja)

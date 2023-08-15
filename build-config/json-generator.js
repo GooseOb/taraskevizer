@@ -10,7 +10,10 @@ import {
 	latinLetters,
 	latinLettersUpperCase,
 	gobj,
-} from '../src/dict.js';
+	greekLetters,
+	greekLettersUpperCase,
+	thWords,
+} from '../src/dict/index.js';
 
 const regexToStr = (dict) => {
 	for (const item of dict) item[1] = item[1].source;
@@ -32,6 +35,9 @@ export default (execOnlyOnce) => {
 					['softers', regexToStr(softers)],
 					['latinLetters', regexToStr(latinLetters)],
 					['latinLettersUpperCase', regexToStr(latinLettersUpperCase)],
+					['greekLetters', regexToStr(greekLetters)],
+					['greekLettersUpperCase', regexToStr(greekLettersUpperCase)],
+					['thWords', regexToStr(thWords)],
 					['g', gobj],
 				].map(([fileName, obj]) =>
 					writeFile(

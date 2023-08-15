@@ -7,8 +7,8 @@ type DeepPartial<T> = T extends object
 	  }
 	: T;
 
-type Alphabet = 0 | 1 | 2;
-// cyrillic | latin | arabic
+type Alphabet = 0 | 1 | 2 | 3;
+// cyrillic | latin | arabic | greek
 type J = 0 | 1 | 2;
 // never | random | always
 type Variation = 0 | 1 | 2;

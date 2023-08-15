@@ -41,6 +41,12 @@ const optionDict = [
 		},
 	],
 	[
+		['--greek', '-gr'],
+		() => {
+			stgs.abc = 3;
+		},
+	],
+	[
 		['--jrandom', '-jr'],
 		() => {
 			stgs.j = 1;
