@@ -20,6 +20,11 @@ import * as debug from './tools.debug';
 
 const isUpperCase = (str: string): boolean => str === str.toUpperCase();
 
+const getLastLetter = (word: string) => {
+	for (let i = word.length - 1; i > 0; i--)
+		if (/\p{L}/u.test(word[i])) return word[i];
+};
+
 const NOFIX_CHAR = ' \uffff ';
 const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
 const OPTIONAL_WORDS_REGEX = /\(.*?\)/g;
@@ -78,6 +83,7 @@ export const taraskSync: Tarask = (text, options) => {
 	const LEFT_ANGLE_BRACKET = html ? '&lt;' : '<';
 
 	text = ` ${text.trim()}  `
+		.replace(/\ufffd/g, '')
 		.replace(/<([,.]?)((?:.|\s)*?)>/g, ($0, $1, $2) => {
 			if ($1 === ',') return LEFT_ANGLE_BRACKET + $2 + '>';
 			noFix[noFix.length] = $1 === '.' ? $2 : $0;
@@ -165,10 +171,6 @@ function restoreCase(text: string[], orig: string[]): string[] {
 
 	return text;
 }
-const getLastLetter = (word: string) => {
-	for (let i = word.length - 1; i > 1; i--)
-		if (/\p{L}/u.test(word[i])) return word[i];
-};
 
 function toTags(
 	text: string[],
