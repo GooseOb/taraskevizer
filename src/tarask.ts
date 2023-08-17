@@ -18,6 +18,9 @@ import {
 } from './types';
 import * as debug from './tools.debug';
 
+const isObject = <T extends object>(arg: any): arg is T =>
+	typeof arg === 'object';
+
 const isUpperCase = (str: string): boolean => str === str.toUpperCase();
 
 const getLastLetter = (word: string) => {
@@ -72,9 +75,11 @@ const tagApplications = {
 
 export const taraskSync: Tarask = (text, options) => {
 	const { abc = 0, j = 0, html = false, nonHtml = false } = options || {};
-	// if (typeof html === 'object') {
-	// }
-	if (typeof nonHtml === 'object') {
+	const isHtmlObject = isObject(html);
+	const isNonHtmlObject = isObject(nonHtml);
+	// if (isHtmlObject) {
+	// } else
+	if (isNonHtmlObject) {
 		nonHtml.variations ||= 0;
 	}
 	const apply = html ? tagApplications.html : tagApplications.nonHtml;
@@ -109,7 +114,7 @@ export const taraskSync: Tarask = (text, options) => {
 
 	splitted = text.split(' ');
 	if (abc !== ALPHABET.ARABIC) splitted = restoreCase(splitted, splittedOrig);
-	const nodeColors = nonHtml && nonHtml.nodeColors;
+	const nodeColors = isNonHtmlObject && nonHtml.nodeColors;
 	if (html || nodeColors)
 		splitted = toTags(splitted, splittedOrig, abc, apply.F);
 
@@ -121,10 +126,10 @@ export const taraskSync: Tarask = (text, options) => {
 	let gReplacer: undefined | string | ((...substrings: string[]) => string);
 	if (html) {
 		text = replaceWithDict(text, additionalReplacements[abc]);
-		if (abc === ALPHABET.CYRILLIC) {
+		if (isHtmlObject && abc === ALPHABET.CYRILLIC) {
 			gReplacer = html.g ? apply.H('$&') : ($0) => apply.H(gobj[$0]);
 		}
-	} else if (nonHtml && abc === ALPHABET.CYRILLIC) {
+	} else if (isNonHtmlObject && abc === ALPHABET.CYRILLIC) {
 		if (nonHtml.nodeColors) {
 			gReplacer = nonHtml.h ? ($0) => apply.H(gobj[$0]) : apply.H('$&');
 		} else if (nonHtml.h) {
@@ -294,7 +299,7 @@ const finalizer = {
 			})
 			.replace(/ \n /g, '<br>'),
 	nonHtml(text: string, options: TaraskOptions['nonHtml']) {
-		if (options && options.variations !== VARIATION.ALL) {
+		if (isObject(options) && options.variations !== VARIATION.ALL) {
 			const WORD_INDEX = options.variations;
 			const replacer = ($0: string) => $0.slice(1, -1).split('|')[WORD_INDEX];
 			text = text.replace(

@@ -24,12 +24,12 @@ export type TaraskOptionsStrict = {
 	j: J;
 } & (
 	| {
-			html: HtmlOptions;
+			html: true | HtmlOptions;
 			nonHtml: false;
 	  }
 	| {
 			html: false;
-			nonHtml: NonHtmlOptions;
+			nonHtml: true | NonHtmlOptions;
 	  }
 );
 export type TaraskOptions = DeepPartial<TaraskOptionsStrict>;

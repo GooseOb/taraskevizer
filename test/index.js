@@ -48,6 +48,6 @@ print('test', 'all tests passed successfully', '35');
 if (doBenchmarks) {
 	const text = await readFile('test/large-text.txt', 'utf8');
 	benchmark('Taraskevization', () => {
-		taraskSync(text);
+		taraskSync(text, { nonHtml: true });
 	});
 }
