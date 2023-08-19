@@ -63,13 +63,13 @@ When to replace `і`(`i`) by `й`(`j`) after vowels:
 
 ### html
 
-Type: `false|object`
+Type: `boolean|object`
 
 Default value: `false`
 
-If `object`, some parts of a text are wrapped in HTML tags.
+If `true|object`, some parts of a text are wrapped in HTML tags.
 
-#### g
+#### html.g
 
 Type: `boolean`
 
@@ -85,19 +85,19 @@ true: <tarH>ґ</tarH> <tarH>Ґ</tarH>
 
 ### nonHtml
 
-Type: `false|object`
+Type: `boolean|object`
 
 Default value: `false`
 
 If `html` is defined, will be ignored
 
-#### nodeColors
+#### nonHtml.nodeColors
 
 Type: `boolean`
 
 Default value: `false`
 
-#### h
+#### nonHtml.h
 
 Type: `boolean`
 
@@ -111,7 +111,7 @@ false: Ґ ґ
 true: Г г
 ```
 
-#### variations
+#### nonHtml.variations
 
 Type: `number`
 

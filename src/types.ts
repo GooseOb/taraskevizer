@@ -22,16 +22,9 @@ export type HtmlOptions = { g: boolean };
 export type TaraskOptionsStrict = {
 	abc: Alphabet;
 	j: J;
-} & (
-	| {
-			html: true | HtmlOptions;
-			nonHtml: false;
-	  }
-	| {
-			html: false;
-			nonHtml: true | NonHtmlOptions;
-	  }
-);
+	html: boolean | HtmlOptions;
+	nonHtml: boolean | NonHtmlOptions;
+};
 export type TaraskOptions = DeepPartial<TaraskOptionsStrict>;
 export type Tarask = (text: string, options?: TaraskOptions) => string;
 export type TaraskAsync = Promisify<Tarask>;

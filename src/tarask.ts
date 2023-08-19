@@ -8,7 +8,7 @@ import {
 	greekLetters,
 	greekLettersUpperCase,
 	thWords,
-} from './dict/index';
+} from './dict';
 import {
 	Tarask,
 	TaraskAsync,
@@ -116,7 +116,12 @@ export const taraskSync: Tarask = (text, options) => {
 	if (abc !== ALPHABET.ARABIC) splitted = restoreCase(splitted, splittedOrig);
 	const nodeColors = isNonHtmlObject && nonHtml.nodeColors;
 	if (html || nodeColors)
-		splitted = toTags(splitted, splittedOrig, abc, apply.F);
+		splitted = toTags(
+			splitted,
+			splittedOrig,
+			abc === ALPHABET.CYRILLIC,
+			apply.F
+		);
 
 	text = splitted
 		.join(' ')
@@ -180,14 +185,14 @@ function restoreCase(text: string[], orig: string[]): string[] {
 function toTags(
 	text: string[],
 	orig: string[],
-	abc: TaraskOptions['abc'],
+	isCyrillic: boolean,
 	applyF: (content: string) => string
 ): string[] {
 	for (let i = 0; i < text.length; i++) {
 		const word = text[i];
 		const oWord = orig[i];
 		if (oWord === word) continue;
-		const wordH = word.replace(G_REGEX, ($0) => gobj[$0]);
+		const wordH = isCyrillic ? word.replace(G_REGEX, ($0) => gobj[$0]) : word;
 		if (oWord === wordH) continue;
 		if (!/\(/.test(word)) {
 			if (word.length === oWord.length) {
@@ -198,7 +203,7 @@ function toTags(
 				text[i] = wordLetters.join('');
 				continue;
 			}
-			if (abc === ALPHABET.CYRILLIC) {
+			if (isCyrillic) {
 				const word1 = word.replace(/ь/g, '');
 				switch (oWord) {
 					case word1:
