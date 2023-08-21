@@ -1,5 +1,6 @@
 {
 	"singleQuote": true,
 	"semi": true,
-	"useTabs": true
+	"useTabs": true,
+	"trailingComma": "es5"
 }

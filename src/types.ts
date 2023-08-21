@@ -9,7 +9,7 @@ type DeepPartial<T> = T extends object
 
 type Alphabet = 0 | 1 | 2 | 3;
 // cyrillic | latin | arabic | greek
-type J = 0 | 1 | 2;
+type OptionJ = 0 | 1 | 2;
 // never | random | always
 type Variation = 0 | 1 | 2;
 // no | first | all
@@ -21,7 +21,7 @@ export type NonHtmlOptions = {
 export type HtmlOptions = { g: boolean };
 export type TaraskOptionsStrict = {
 	abc: Alphabet;
-	j: J;
+	j: OptionJ;
 	html: boolean | HtmlOptions;
 	nonHtml: boolean | NonHtmlOptions;
 };

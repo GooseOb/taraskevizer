@@ -24,7 +24,7 @@ const isObject = <T extends object>(arg: any): arg is T =>
 const isUpperCase = (str: string): boolean => str === str.toUpperCase();
 
 const getLastLetter = (word: string) => {
-	for (let i = word.length - 1; i > 0; i--)
+	for (let i = word.length - 1; i >= 0; i--)
 		if (/\p{L}/u.test(word[i])) return word[i];
 };
 
@@ -56,7 +56,10 @@ const additionalReplacements: AlphabetDependentDict = {
 		[' U', / <tarF>Ŭ<\/tarF>(?=\p{Lu})/gu],
 	],
 	[ALPHABET.ARABIC]: [],
-	[ALPHABET.GREEK]: [],
+	[ALPHABET.GREEK]: [
+		['$1Ϋ', /([ΑΗΙΊΟΫΕ])<tarF>Ϋ́<\/tarF>/g],
+		[' Ϋ', / <tarF>Ϋ́<\/tarF>(?=\p{Lu})/gu],
+	],
 };
 
 type SpecificApplyObj = Record<'F' | 'H' | 'L', (content: string) => string>;
@@ -114,8 +117,7 @@ export const taraskSync: Tarask = (text, options) => {
 
 	splitted = text.split(' ');
 	if (abc !== ALPHABET.ARABIC) splitted = restoreCase(splitted, splittedOrig);
-	const nodeColors = isNonHtmlObject && nonHtml.nodeColors;
-	if (html || nodeColors)
+	if (html || (isNonHtmlObject && nonHtml.nodeColors))
 		splitted = toTags(
 			splitted,
 			splittedOrig,

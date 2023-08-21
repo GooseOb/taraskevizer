@@ -18,5 +18,5 @@ export function replaceWithDict(
 }
 
 export const log = (...msgs: any[]) => {
-	console.log(...msgs);
+	console.log('[debug]', ...msgs);
 };
