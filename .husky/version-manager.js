@@ -30,7 +30,7 @@ const updateVersion = (callback) => {
 		JSON.stringify(pkg, null, '\t'),
 		'utf8'
 	).then(() => {
-		print("Version's been updated to " + pkg.version);
+		print('Version’s been updated to ' + pkg.version);
 	});
 };
 
@@ -81,7 +81,7 @@ if (version === pkg.version) {
 	if (chosenOption) {
 		await chosenOption.callback();
 	} else {
-		print("Commit's been canceled");
+		print('Commit’s been canceled');
 		process.exit(1);
 	}
 }
