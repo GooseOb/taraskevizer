@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-COMMIT_MSG=`cat $1`
+exec < /dev/tty
 
-node .husky/version-checker "$COMMIT_MSG"
+node .husky/version-manager $1
