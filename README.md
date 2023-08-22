@@ -125,6 +125,22 @@ Which variation should be if a part of word is variable?
 2 = all:    (Гродна|Горадня)
 ```
 
+### OVERRIDE_toTarask
+
+Type:
+
+```
+(
+    text: string,
+    replaceWithDict: (text: string, dict?: ExtendedDict) => string,
+    wordlist: [RegExp, string][],
+    softers: [RegExp, string][],
+    afterTarask: [RegExp, string | ((...substrings: string[]) => string)][]
+) => string
+```
+
+Default value: internal function `toTarask`
+
 ## HTML tags
 
 ### tarF

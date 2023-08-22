@@ -12,9 +12,11 @@ import {
 import {
 	Tarask,
 	TaraskAsync,
-	Dict,
 	AlphabetDependentDict,
 	TaraskOptions,
+	ExtendedDict,
+	ToTarask,
+	ReplaceWithDict,
 } from './types';
 import * as debug from './tools.debug';
 
@@ -46,21 +48,6 @@ const lettersUpperCase: AlphabetDependentDict = {
 	[ALPHABET.LATIN]: latinLettersUpperCase,
 	[ALPHABET.GREEK]: greekLettersUpperCase,
 };
-const additionalReplacements: AlphabetDependentDict = {
-	[ALPHABET.CYRILLIC]: [
-		['$1У', /([АЕЁІОУЫЭЮЯ])<tarF>Ў<\/tarF>/g],
-		[' У', / <tarF>Ў<\/tarF>(?=\p{Lu})/gu],
-	],
-	[ALPHABET.LATIN]: [
-		['$1U', /([AEIOUY])<tarF>Ŭ<\/tarF>/g],
-		[' U', / <tarF>Ŭ<\/tarF>(?=\p{Lu})/gu],
-	],
-	[ALPHABET.ARABIC]: [],
-	[ALPHABET.GREEK]: [
-		['$1Ϋ', /([ΑΗΙΊΟΫΕ])<tarF>Ϋ́<\/tarF>/g],
-		[' Ϋ', / <tarF>Ϋ́<\/tarF>(?=\p{Lu})/gu],
-	],
-};
 
 type SpecificApplyObj = Record<'F' | 'H' | 'L', (content: string) => string>;
 
@@ -76,8 +63,25 @@ const tagApplications = {
 	},
 } satisfies Record<'html' | 'nonHtml', Partial<SpecificApplyObj>>;
 
-export const taraskSync: Tarask = (text, options) => {
-	const { abc = 0, j = 0, html = false, nonHtml = false } = options || {};
+const iaReplacer = <TStart extends ' б' | ' н', T extends string>(
+	$0: `${TStart}е${T}`,
+	$1: TStart,
+	$2: T
+) => ($2.match(/[аеёіоуыэюя]/g)?.length === 1 ? $1 + 'я' + $2 : $0);
+
+const afterTarask: ExtendedDict = [
+	[/ [уў]асьнігл /g, ' уаснігл '],
+	[/ сь(?=нід |мі )/g, ' с'],
+	[/( б)е(зь? \S+)/g, iaReplacer],
+	[/( н)е( \S+)/g, iaReplacer],
+	[
+		/( (?:б[ея]|пра|цера)?з) і(\S*)/g,
+		($0, $1, $2) => (/([ая]ў|ну)$/.test($2) ? $1 + 'ь і' + $2 : $0),
+	],
+];
+
+export const taraskSync: Tarask = (text, options = {}) => {
+	const { abc = 0, j = 0, html = false, nonHtml = false } = options;
 	const isHtmlObject = isObject(html);
 	const isNonHtmlObject = isObject(nonHtml);
 	// if (isHtmlObject) {
@@ -110,7 +114,13 @@ export const taraskSync: Tarask = (text, options) => {
 		lettersUpperCase[abc]
 	).split(' ');
 
-	text = toTarask(text.toLowerCase());
+	text = (options.OVERRIDE_toTarask || toTarask)(
+		text.toLowerCase(),
+		replaceWithDict,
+		wordlist,
+		softers,
+		afterTarask
+	);
 	if (j) text = replaceIbyJ(text, j === J.ALWAYS);
 	if (abc === ALPHABET.GREEK) text = replaceWithDict(text, thWords);
 	text = replaceWithDict(text, letters[abc]);
@@ -131,16 +141,15 @@ export const taraskSync: Tarask = (text, options) => {
 		.replace(/ (\p{P}|\p{S}|\d|&#40) /gu, '$1');
 
 	let gReplacer: undefined | string | ((...substrings: string[]) => string);
-	if (html) {
-		text = replaceWithDict(text, additionalReplacements[abc]);
-		if (isHtmlObject && abc === ALPHABET.CYRILLIC) {
+	if (abc === ALPHABET.CYRILLIC) {
+		if (isHtmlObject) {
 			gReplacer = html.g ? apply.H('$&') : ($0) => apply.H(gobj[$0]);
-		}
-	} else if (isNonHtmlObject && abc === ALPHABET.CYRILLIC) {
-		if (nonHtml.nodeColors) {
-			gReplacer = nonHtml.h ? ($0) => apply.H(gobj[$0]) : apply.H('$&');
-		} else if (nonHtml.h) {
-			gReplacer = ($0) => gobj[$0];
+		} else if (isNonHtmlObject) {
+			if (nonHtml.nodeColors) {
+				gReplacer = nonHtml.h ? ($0) => apply.H(gobj[$0]) : apply.H('$&');
+			} else if (nonHtml.h) {
+				gReplacer = ($0) => gobj[$0];
+			}
 		}
 	}
 
@@ -157,7 +166,7 @@ export const taraskSync: Tarask = (text, options) => {
 export const tarask: TaraskAsync = (...args) =>
 	new Promise((res) => res(taraskSync(...args)));
 
-function restoreCase(text: string[], orig: string[]): string[] {
+const restoreCase = (text: string[], orig: string[]): string[] => {
 	for (let i = 0; i < text.length; i++) {
 		const word = text[i];
 		const oWord = orig[i];
@@ -182,14 +191,14 @@ function restoreCase(text: string[], orig: string[]): string[] {
 	}
 
 	return text;
-}
+};
 
-function toTags(
+const toTags = (
 	text: string[],
 	orig: string[],
 	isCyrillic: boolean,
 	applyF: (content: string) => string
-): string[] {
+): string[] => {
 	for (let i = 0; i < text.length; i++) {
 		const word = text[i];
 		const oWord = orig[i];
@@ -244,38 +253,36 @@ function toTags(
 	}
 
 	return text;
-}
+};
 
-function toTarask(text: string): string {
+const toTarask: ToTarask = (
+	text,
+	replaceWithDict,
+	wordlist,
+	softers,
+	afterTarask
+) => {
 	text = replaceWithDict(text, wordlist);
-	loop: do {
+	softening: do {
 		text = replaceWithDict(text, softers);
-		for (const [result, pattern] of softers)
-			if (result !== '$1дзьдз' && pattern.test(text)) continue loop;
+		for (const [pattern, result] of softers)
+			if (result !== '$1дзьдз' && pattern.test(text)) continue softening;
 		break;
 	} while (true);
 
-	const iaReplacer = <TStart extends ' б' | ' н', T extends string>(
-		$0: `${TStart}е${T}`,
-		$1: TStart,
-		$2: T
-	) => ($2.match(/[аеёіоуыэюя]/g)?.length === 1 ? $1 + 'я' + $2 : $0);
+	return replaceWithDict(text, afterTarask);
+};
 
-	return text
-		.replace(/ [уў]асьнігл /g, ' уаснігл ')
-		.replace(/ сь(?=нід |мі )/g, ' с')
-		.replace(/( б)е(зь? \S+)/g, iaReplacer)
-		.replace(/( н)е( \S+)/g, iaReplacer)
-		.replace(/( (?:б[ея]|пра|цера)?з) і(\S*)/g, ($0, $1, $2) =>
-			/([ая]ў|ну)$/.test($2) ? $1 + 'ь і' + $2 : $0
+const replaceWithDict: ReplaceWithDict = (text, dict = []) => {
+	for (const [pattern, result] of dict)
+		text = text.replace(
+			pattern,
+			//@ts-ignore
+			result
 		);
-}
-
-function replaceWithDict(text: string, dict: Dict = []): string {
-	for (const [result, pattern] of dict) text = text.replace(pattern, result);
 
 	return text;
-}
+};
 
 type Vowel = 'а' | 'е' | 'ё' | 'і' | 'о' | 'у' | 'ы' | 'э' | 'ю' | 'я';
 
@@ -287,14 +294,13 @@ type ToJ = <TVowel extends `${Vowel} `, TU extends '' | 'ў'>(
 const toJ: ToJ = (vow, shortU) =>
 	(vow + 'й ' + (shortU ? 'у' : '')) as ReturnType<ToJ>;
 
-function replaceIbyJ(text: string, always = false): string {
-	return text.replace(
+const replaceIbyJ = (text: string, always = false) =>
+	text.replace(
 		/([аеёіоуыэюя] )і (ў?)/g,
 		always
 			? ($0, $1, $2) => toJ($1, $2)
 			: ($0, $1, $2) => (Math.random() >= 0.5 ? toJ($1, $2) : $0)
 	);
-}
 
 const finalizer = {
 	html: (text: string) =>

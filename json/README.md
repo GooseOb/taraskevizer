@@ -1,8 +1,8 @@
 # JSON'ы
 
-Слоўнік - масіў з масівамі па 2 радка. Першы - вынік замены, другі - regex-атэрн
+Слоўнік - масіў з масівамі па 2 радка. Першы - regex-патэрн, другі - вынік замены
 
-`[result: string, pattern: string][]`
+`[pattern: string, result: string][]`
 
 ## wordlist
 

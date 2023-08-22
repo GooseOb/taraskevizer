@@ -6,10 +6,10 @@ export function replaceWithDict(
 	regex: RegExp
 ): string {
 	for (const item of dict) {
-		const [result, pattern] = item;
+		const [pattern, result] = item;
 		text = text.replace(pattern, result);
 		if (regex.test(text)) {
-			console.error('[replaceWithDict]', item);
+			log('replaceWithDict:', item);
 			process.exit(1);
 		}
 	}
