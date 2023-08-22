@@ -36,21 +36,21 @@ const updateVersion = (callback) => {
 
 const options = {
 	'+': {
-		label: 'patch',
+		label: 'patch release',
 		callback: () =>
 			updateVersion((arr) => {
 				++arr[2];
 			}),
 	},
 	'++': {
-		label: 'minor update',
+		label: 'minor release',
 		callback: () =>
 			updateVersion((arr) => {
 				++arr[1];
 			}),
 	},
 	'+++': {
-		label: 'major update',
+		label: 'major release',
 		callback: () =>
 			updateVersion((arr) => {
 				++arr[0];
