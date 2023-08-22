@@ -65,9 +65,22 @@ const options = {
 	},
 };
 
+const optionsAsArray = Object.entries(options);
+
+const maxOptionLength = optionsAsArray.reduce(
+	(acc, [item]) => Math.max(item.length, acc),
+	0
+);
+
 const optionsAsText =
-	Object.entries(options).reduce(
-		(acc, [key, { label }]) => acc + key + ') ' + label + '\n',
+	optionsAsArray.reduce(
+		(acc, [key, { label }]) =>
+			acc +
+			key +
+			') ' +
+			' '.repeat(maxOptionLength - key.length) +
+			label +
+			'\n',
 		`\n${prefix} Version hasn’t been changed and there is no [skip ci] in commit message, what to do?\n`
 	) + 'To cancel commit, enter any other value\n\n> ';
 
