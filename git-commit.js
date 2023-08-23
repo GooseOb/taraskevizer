@@ -125,7 +125,10 @@ const commit = async () => {
 		undefined,
 		commitOptions,
 		(data) => {
-			if (data) print(data);
+			if (data) {
+				print(data);
+				process.exit(1);
+			}
 		}
 	);
 	print(
