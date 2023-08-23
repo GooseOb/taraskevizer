@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, unlink } from 'node:fs/promises';
 import simpleGit from 'simple-git';
 
 const prefix = '\x1b[35m[git-commit]\x1b[0m';
@@ -36,6 +36,45 @@ if (!msg) {
 	process.exit(1);
 }
 
+const is = {
+	committing: false,
+	inputProcessing: true,
+};
+const printCommitSummary = (branch, msg, { changes, insertions, deletions }) =>
+	print(
+		`${branch}: ${msg}
+changed files: \x1b[33m${changes}\x1b[0m insertions: \x1b[32m${insertions}\x1b[0m deletions: \x1b[31m${deletions}\x1b[0m
+package version: ${pkg.version}`
+	);
+
+const commit = async () => {
+	is.committing = true;
+	const { branch, summary } = await git.commit(
+		msg,
+		undefined,
+		commitOptions,
+		(data) => {
+			if (data) {
+				print(data);
+				process.exit(1);
+			}
+		}
+	);
+	is.committing = false;
+	printCommitSummary(branch, msg, summary);
+	process.exit(0);
+};
+
+const onTerminate = async () => {
+	if (is.committing) {
+		await unlink('.git/index.lock');
+		print('.git/index.lock has been deleted');
+	}
+	process.exit(0);
+};
+
+process.on('SIGINT', onTerminate);
+
 if (/\[(skip ci|ci skip)]/i.test(msg)) process.exit(0);
 
 const git = simpleGit({ baseDir: process.cwd() });
@@ -43,7 +82,7 @@ const git = simpleGit({ baseDir: process.cwd() });
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));
 
 if (JSON.parse(await git.show(['main:package.json'])).version !== pkg.version)
-	process.exit(0);
+	await commit();
 
 const updateVersion = (version) => {
 	pkg.version = version;
@@ -52,7 +91,7 @@ const updateVersion = (version) => {
 		JSON.stringify(pkg, null, '\t'),
 		'utf8'
 	).then(() => {
-		printUnderMenu('Version’s been updated to ' + pkg.version);
+		print('Version’s been updated to ' + pkg.version);
 	});
 };
 
@@ -71,14 +110,14 @@ const options = [
 		'skip ci',
 		() => {
 			msg = '[skip ci] ' + msg;
-			printUnderMenu('Added [skip ci] to the commit message');
+			print('Added [skip ci] to the commit message');
 		},
 	],
 	[
 		'cancel',
 		() => {
-			printUnderMenu('Canceled');
-			exit();
+			print('Canceled');
+			process.exit(0);
 		},
 	],
 ];
@@ -93,10 +132,10 @@ const moveMenuCursor = (step) => {
 	currOptionIndex += step;
 	if (currOptionIndex === -1) {
 		currOptionIndex = optionNumber - 1;
-		process.stdout.moveCursor(0, optionNumber);
+		step += optionNumber;
 	} else if (currOptionIndex === optionNumber) {
 		currOptionIndex = 0;
-		process.stdout.moveCursor(0, -optionNumber);
+		step += -optionNumber;
 	}
 	process.stdout.moveCursor(0, step);
 	const option = options[currOptionIndex];
@@ -108,34 +147,6 @@ const moveMenuCursor = (step) => {
 	);
 	process.stdout.cursorTo(0);
 };
-const printUnderMenu = (...msgs) => {
-	process.stdout.moveCursor(0, optionNumber - currOptionIndex);
-	print(...msgs);
-	process.stdout.moveCursor(0, -currOptionIndex + 2);
-};
-const exit = () => {
-	process.stdout.moveCursor(0, optionNumber - currOptionIndex);
-	process.exit(0);
-};
-
-const commit = async () => {
-	process.stdout.moveCursor(0, optionNumber - currOptionIndex);
-	const { branch, summary } = await git.commit(
-		msg,
-		undefined,
-		commitOptions,
-		(data) => {
-			if (data) {
-				print(data);
-				process.exit(1);
-			}
-		}
-	);
-	print(
-		`${branch}: ${msg}\nchanged files: \x1b[33m${summary.changes}\x1b[0m insertions: \x1b[32m${summary.insertions}\x1b[0m deletions: \x1b[31m${summary.deletions}\x1b[0m`
-	);
-	process.exit(0);
-};
 
 print(
 	'Version hasn’t been changed and there is no [skip ci] in commit message, what to do?\n' +
@@ -143,18 +154,24 @@ print(
 );
 process.stdout.moveCursor(0, -optionNumber);
 moveMenuCursor(0);
+
 process.stdin.setRawMode(true);
 process.stdin.resume();
 process.stdin.setEncoding('utf8');
-process.stdin.on('data', (key) => {
+process.stdin.on('data', async (key) => {
 	if (key === '\u0003') {
-		printUnderMenu('Terminated by Ctrl+C');
-		exit();
+		if (is.inputProcessing)
+			process.stdout.moveCursor(0, optionNumber - currOptionIndex);
+		print('Terminated by Ctrl+C');
+		await onTerminate();
+		process.exit(0);
 	}
+	if (!is.inputProcessing) return;
 	if (key === '\u000D' || key === ' ') {
-		const result = options[currOptionIndex][1]();
-		if (typeof result === 'object' && result.then) result.then(commit);
-		else commit();
+		is.inputProcessing = false;
+		process.stdout.moveCursor(0, optionNumber - currOptionIndex);
+		await options[currOptionIndex][1]();
+		await commit();
 	}
 	if (/^\u001B\u005B/.test(key)) {
 		const char = key[2];
