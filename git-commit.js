@@ -1,5 +1,6 @@
 import { readFile, writeFile, unlink } from 'node:fs/promises';
 import simpleGit from 'simple-git';
+import path from 'path';
 
 const prefix = '\x1b[35m[git-commit]\x1b[0m';
 const print = (...msgs) => {
@@ -47,19 +48,23 @@ changed files: \x1b[33m${changes}\x1b[0m insertions: \x1b[32m${insertions}\x1b[0
 package version: ${pkg.version}`
 	);
 
+const TEMP_FILE_PATH = path.resolve('.git', 'commit-safe');
 const commit = async () => {
 	is.committing = true;
+	await writeFile(TEMP_FILE_PATH, '');
 	const { branch, summary } = await git.commit(
 		msg,
 		undefined,
 		commitOptions,
-		(data) => {
+		async (data) => {
 			if (data) {
 				print(data);
+				await unlink(TEMP_FILE_PATH);
 				process.exit(1);
 			}
 		}
 	);
+	await unlink(TEMP_FILE_PATH);
 	is.committing = false;
 	printCommitSummary(branch, msg, summary);
 	process.exit(0);
@@ -68,7 +73,8 @@ const commit = async () => {
 const onTerminate = async () => {
 	if (is.committing) {
 		await unlink('.git/index.lock');
-		print('.git/index.lock has been deleted');
+		await unlink(TEMP_FILE_PATH);
+		print('temporary files have been deleted');
 	}
 	process.exit(0);
 };
