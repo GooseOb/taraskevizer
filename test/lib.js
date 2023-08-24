@@ -44,18 +44,31 @@ const hookStdout = (callback) => {
 	};
 };
 
-export const benchmark = (name, fn, showLogs = true) => {
+export const benchmark = (name, fn, { showLogs = true, repeat = 5 } = {}) => {
 	const printBenchmark = getBenchmarkPrinter(name);
 	printBenchmark('running');
 	const logs = [];
 	const unhookStdout = hookStdout((data) => {
 		logs.push(data);
 	});
-	const startTimeStamp = performance.now();
-	fn();
-	const benchmarkResult = performance.now() - startTimeStamp;
+	const results = Array(repeat);
+	for (let i = 0; i < repeat; i++) {
+		const startTimeStamp = performance.now();
+		fn();
+		results[i] = performance.now() - startTimeStamp;
+	}
 	unhookStdout();
 	process.stdout.moveCursor(0, -1);
-	printBenchmark(`result: ${benchmarkResult} ms`);
+	let min = results[0];
+	let max = min;
+	let sum = 0;
+	for (const result of results) {
+		if (result > max) max = result;
+		else if (result < min) min = result;
+		sum += result;
+	}
+	printBenchmark(
+		`average result: ${sum / repeat} ms (min: ${min} ms, max: ${max} ms)`
+	);
 	if (showLogs && logs.length) console.log(logs.join(''));
 };
