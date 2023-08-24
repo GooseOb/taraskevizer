@@ -37,6 +37,7 @@
 		"belarusian"
 	],
 	"devDependencies": {
+		"@types/node": "^20.5.4",
 		"husky": "^8.0.3",
 		"prettier": "^3.0.0",
 		"simple-git": "^3.19.1",

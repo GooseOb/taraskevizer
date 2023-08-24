@@ -164,27 +164,31 @@ moveMenuCursor(0);
 process.stdin.setRawMode(true);
 process.stdin.resume();
 process.stdin.setEncoding('utf8');
-process.stdin.on('data', async (key) => {
-	if (key === '\u0003') {
-		if (is.inputProcessing)
+process.stdin.on(
+	'data',
+	/** @param key {string} */
+	async (key) => {
+		if (key === '\u0003') {
+			if (is.inputProcessing)
+				process.stdout.moveCursor(0, optionNumber - currOptionIndex);
+			print('Terminated by Ctrl+C');
+			await onTerminate();
+			process.exit(0);
+		}
+		if (!is.inputProcessing) return;
+		if (key === '\u000D' || key === ' ') {
+			is.inputProcessing = false;
 			process.stdout.moveCursor(0, optionNumber - currOptionIndex);
-		print('Terminated by Ctrl+C');
-		await onTerminate();
-		process.exit(0);
-	}
-	if (!is.inputProcessing) return;
-	if (key === '\u000D' || key === ' ') {
-		is.inputProcessing = false;
-		process.stdout.moveCursor(0, optionNumber - currOptionIndex);
-		await options[currOptionIndex][1]();
-		await commit();
-	}
-	if (/^\u001B\u005B/.test(key)) {
-		const char = key[2];
-		if (char === '\u0041' || char === '\u0044') {
-			moveMenuCursor(-1);
-		} else if (char === '\u0042' || char === '\u0043') {
-			moveMenuCursor(1);
+			await options[currOptionIndex][1]();
+			await commit();
+		}
+		if (/^\u001B\u005B/.test(key)) {
+			const char = key[2];
+			if (char === '\u0041' || char === '\u0044') {
+				moveMenuCursor(-1);
+			} else if (char === '\u0042' || char === '\u0043') {
+				moveMenuCursor(1);
+			}
 		}
 	}
-});
+);
