@@ -56,11 +56,12 @@ const commit = async () => {
 		msg,
 		undefined,
 		commitOptions,
-		async (data) => {
+		(data) => {
 			if (data) {
 				print(data);
-				await unlink(TEMP_FILE_PATH);
-				process.exit(1);
+				return unlink(TEMP_FILE_PATH).then(() => {
+					process.exit(1);
+				});
 			}
 		}
 	);
