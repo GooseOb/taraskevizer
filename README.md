@@ -132,10 +132,13 @@ Type:
 ```
 (
     text: string,
-    replaceWithDict: (text: string, dict?: ExtendedDict) => string,
+    replaceWithDict: (
+        text: string,
+        dict?: [RegExp, string | ((...substrings: string[]) => string)][]
+    ) => string,
     wordlist: [RegExp, string][],
     softers: [RegExp, string][],
-    afterTarask: [RegExp, string | ((...substrings: string[]) => string)][]
+    afterTarask: (text: string) => string
 ) => string
 ```
 
