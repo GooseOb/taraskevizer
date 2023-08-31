@@ -42,32 +42,33 @@ const is = {
 	inputProcessing: true,
 };
 const printCommitSummary = (branch, msg, { changes, insertions, deletions }) =>
-	print(
-		`${branch}: ${msg}
+	print(`${branch}: ${msg}
 changed files: \x1b[33m${changes}\x1b[0m insertions: \x1b[32m${insertions}\x1b[0m deletions: \x1b[31m${deletions}\x1b[0m
-package version: ${pkg.version}`
-	);
+package version: ${pkg.version}`);
 
 const TEMP_FILE_PATH = path.resolve('.git', 'commit-safe');
+const onCommitError = (data) => {
+	print(data);
+	printOptions('An error occurred, what to do?', [
+		['try again', commit],
+		['exit', () => unlink(TEMP_FILE_PATH).then(() => process.exit(1))],
+	]);
+};
 const commit = async () => {
 	is.committing = true;
 	await writeFile(TEMP_FILE_PATH, '');
-	const { branch, summary } = await git.commit(
-		msg,
-		undefined,
-		commitOptions,
-		(data) => {
-			if (data) {
-				print(data);
-				return unlink(TEMP_FILE_PATH).then(() => {
-					process.exit(1);
-				});
-			}
-		}
-	);
+	let commitResult;
+	try {
+		commitResult = await git.commit(msg, undefined, commitOptions, (data) => {
+			if (data) onCommitError(data);
+		});
+	} catch (e) {
+		onCommitError(e);
+		return;
+	}
 	await unlink(TEMP_FILE_PATH);
 	is.committing = false;
-	printCommitSummary(branch, msg, summary);
+	printCommitSummary(commitResult.branch, msg, commitResult.summary);
 	process.exit(0);
 };
 
@@ -109,7 +110,7 @@ const v = {
 	major: `${+versionArr[0] + 1}.0.0`,
 };
 
-const options = [
+const mainOptions = [
 	['patch release', () => updateVersion(v.patch), v.patch],
 	['minor release', () => updateVersion(v.minor), v.minor],
 	['major release', () => updateVersion(v.major), v.major],
@@ -129,23 +130,19 @@ const options = [
 	],
 ];
 
-const optionNames = options.map((item) => item[0]);
-const optionNumber = optionNames.length;
-
-let currOptionIndex = 0;
 const moveMenuCursor = (step) => {
 	process.stdout.clearLine();
-	process.stdout.write('  ' + optionNames[currOptionIndex]);
-	currOptionIndex += step;
-	if (currOptionIndex === -1) {
-		currOptionIndex = optionNumber - 1;
-		step += optionNumber;
-	} else if (currOptionIndex === optionNumber) {
-		currOptionIndex = 0;
-		step += -optionNumber;
+	process.stdout.write('  ' + options.names[options.currIndex]);
+	options.currIndex += step;
+	if (options.currIndex === -1) {
+		options.currIndex = options.length - 1;
+		step += options.length;
+	} else if (options.currIndex === options.length) {
+		options.currIndex = 0;
+		step += -options.length;
 	}
 	process.stdout.moveCursor(0, step);
-	const option = options[currOptionIndex];
+	const option = options[options.currIndex];
 	process.stdout.cursorTo(0);
 	process.stdout.write(
 		`> \x1b[34;4m${
@@ -154,13 +151,21 @@ const moveMenuCursor = (step) => {
 	);
 	process.stdout.cursorTo(0);
 };
+let options;
+const printOptions = (msg, arr) => {
+	options = arr;
+	options.names = arr.map((item) => item[0]);
+	options.currIndex = 0;
+	print(msg + '\n' + options.names.join('\n  '));
+	process.stdout.moveCursor(0, -arr.length);
+	moveMenuCursor(0);
+	is.inputProcessing = true;
+};
 
-print(
-	'Version hasn’t been changed and there is no [skip ci] in commit message, what to do?\n' +
-		optionNames.join('\n  ')
+printOptions(
+	'Version hasn’t been changed and there is no [skip ci] in commit message, what to do?',
+	mainOptions
 );
-process.stdout.moveCursor(0, -optionNumber);
-moveMenuCursor(0);
 
 process.stdin.setRawMode(true);
 process.stdin.resume();
@@ -171,7 +176,7 @@ process.stdin.on(
 	async (key) => {
 		if (key === '\u0003') {
 			if (is.inputProcessing)
-				process.stdout.moveCursor(0, optionNumber - currOptionIndex);
+				process.stdout.moveCursor(0, options.length - options.currIndex);
 			print('Terminated by Ctrl+C');
 			await onTerminate();
 			process.exit(0);
@@ -179,8 +184,8 @@ process.stdin.on(
 		if (!is.inputProcessing) return;
 		if (key === '\u000D' || key === ' ') {
 			is.inputProcessing = false;
-			process.stdout.moveCursor(0, optionNumber - currOptionIndex);
-			await options[currOptionIndex][1]();
+			process.stdout.moveCursor(0, options.length - options.currIndex);
+			await options[options.currIndex][1]();
 			await commit();
 		}
 		if (/^\u001B\u005B/.test(key)) {
