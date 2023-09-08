@@ -20,7 +20,7 @@
 	"scripts": {
 		"build": "tsup --config build-config/index.js",
 		"dev": "esrun --watch=src/*,test/* test/index",
-		"test": "esrun test/runner.js",
+		"test": "node test/runner.js",
 		"prepare": "husky install"
 	},
 	"repository": {
