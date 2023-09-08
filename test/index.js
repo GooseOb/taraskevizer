@@ -1,15 +1,15 @@
-import { readFile } from 'node:fs/promises';
-import { benchmark, print, test } from './lib.js';
+import { benchmark, print, getTestProcess } from './lib.js';
 import { tarask, taraskSync, ALPHABET, J } from '../dist/index.js';
 
-const doBenchmarks = process.argv.includes('--benchmark');
-
 print('test', 'start', '35');
+
+const { summary, test } = getTestProcess();
 
 test('Taraskevization', taraskSync, [
 	['жыццясцвярджальны план', 'жыцьцясьцьвярджальны плян'],
 	['варэнне', 'варэньне'],
 	['секцыя селекцыйных селектараў', 'сэкцыя сэлекцыйных сэлектараў'],
+	['эскалатар эскалацыі вайберу', 'эскалятар эскаляцыі вайбэру'],
 ]);
 
 test('Sync and async functions return the same result', taraskSync, [
@@ -56,11 +56,23 @@ test('greek th', (text) => taraskSync(text, { abc: ALPHABET.GREEK }), [
 	['Базіраваць', 'Μπαζαβατσ’'],
 ]);
 
-print('test', 'all tests passed successfully', '35');
+print(
+	'test',
+	`summary: ${summary.passed} passed, ${summary.failed} failed`,
+	'35'
+);
 
-if (doBenchmarks) {
+if (summary.failed) process.exit(1);
+
+if (process.argv.includes('--benchmark')) {
+	const { readFile } = await import('node:fs/promises');
+
 	const text = await readFile('test/large-text.txt', 'utf8');
-	benchmark('Taraskevization', () => {
-		taraskSync(text, { nonHtml: true });
-	});
+	benchmark(
+		'Taraskevization',
+		() => {
+			taraskSync(text, { nonHtml: true });
+		},
+		{ repeat: 1 }
+	);
 }

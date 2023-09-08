@@ -1,13 +1,8 @@
+import { format } from 'util';
+
 const colorize = (str, colorCode) => `\x1b[${colorCode}m${str}\x1b[0m`;
 export const print = (label, msg, colorCode = '0') => {
-	console.log(colorize(`[${label}] `, colorCode) + msg);
-};
-const failed = (testName, msg) => {
-	print('failed', testName + ': ' + msg, '31');
-	process.exit(1);
-};
-const passed = (testName) => {
-	print('passed', testName, '32');
+	process.stdout.write(colorize(`[${label}] `, colorCode) + msg + '\n');
 };
 
 const colorizeCharInStr = (str, charIndex, colorCode) =>
@@ -15,21 +10,40 @@ const colorizeCharInStr = (str, charIndex, colorCode) =>
 	colorize(str[charIndex], colorCode) +
 	str.slice(charIndex + 1);
 
-export const test = (name, fn, cases) => {
-	for (const [input, expectedValue] of cases) {
-		const output = fn(input);
-		if (output !== expectedValue) {
-			let charIndex = 0;
-			while (output[charIndex] === expectedValue[charIndex]) ++charIndex;
-			const coloredOutput = colorizeCharInStr(output, charIndex, '31');
-			const coloredExpected = colorizeCharInStr(expectedValue, charIndex, '32');
-			failed(
-				name,
-				`\ninput:    ${input}\noutput:   ${coloredOutput}\nexpected: ${coloredExpected}`
-			);
-		}
-	}
-	passed(name);
+export const getTestProcess = () => {
+	const summary = {
+		passed: 0,
+		failed: 0,
+	};
+	return {
+		summary,
+		test(name, fn, cases) {
+			for (const [input, expectedValue] of cases) {
+				const output = fn(input);
+				if (output !== expectedValue) {
+					let charIndex = 0;
+					while (output[charIndex] === expectedValue[charIndex]) ++charIndex;
+					const coloredOutput = colorizeCharInStr(output, charIndex, '31');
+					const coloredExpected = colorizeCharInStr(
+						expectedValue,
+						charIndex,
+						'32'
+					);
+					++summary.failed;
+					print(
+						'failed',
+						`${name}:\ninput:    ${format(input)}\noutput:   ${format(
+							coloredOutput
+						)}\nexpected: ${format(coloredExpected)}`,
+						'31'
+					);
+					return;
+				}
+			}
+			++summary.passed;
+			print('passed', name, '32');
+		},
+	};
 };
 
 const getBenchmarkPrinter = (name) => (msg) => {
@@ -70,5 +84,5 @@ export const benchmark = (name, fn, { showLogs = true, repeat = 5 } = {}) => {
 	printBenchmark(
 		`average result: ${sum / repeat} ms (min: ${min} ms, max: ${max} ms)`
 	);
-	if (showLogs && logs.length) console.log(logs.join(''));
+	if (showLogs && logs.length) process.stdout.write(logs.join(''));
 };

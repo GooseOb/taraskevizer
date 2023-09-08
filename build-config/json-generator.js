@@ -9,7 +9,10 @@ const regexToStr = (dict) => {
 
 export default () =>
 	mkdir(outputPath)
-		.catch(() => null)
+		.catch((err) => {
+			if (err.code !== 'EEXIST') throw err;
+		})
+		// idk how it works
 		.then(() => import('../src/dict/index.js'))
 		.then(
 			({
