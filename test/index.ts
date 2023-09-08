@@ -1,5 +1,5 @@
-import { benchmark, print, getTestProcess } from './lib.js';
-import { tarask, taraskSync, ALPHABET, J } from '../dist/index.js';
+import { benchmark, print, getTestProcess } from './lib';
+import { tarask, taraskSync, ALPHABET, J } from '../src';
 
 print('test', 'start', '35');
 
@@ -58,8 +58,6 @@ test('greek th', (text) => taraskSync(text, { abc: ALPHABET.GREEK }), [
 
 print('test', `${summary.passed} passed, ${summary.failed} failed`, '35');
 
-if (summary.failed) process.exit(1);
-
 if (process.argv.includes('--benchmark')) {
 	const { readFile } = await import('node:fs/promises');
 
@@ -72,3 +70,5 @@ if (process.argv.includes('--benchmark')) {
 		{ repeat: 1 }
 	);
 }
+
+process.exit(summary.failed ? 1 : 0);

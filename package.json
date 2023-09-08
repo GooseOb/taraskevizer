@@ -19,9 +19,8 @@
 	],
 	"scripts": {
 		"build": "tsup --config build-config/index.js",
-		"dev": "tsup --config build-config/dev.js --watch",
-		"dev:build": "tsup --config build-config/dev.js",
-		"test": "node test",
+		"dev": "esrun --watch=src/*,test/* test/index",
+		"test": "esrun test/index",
 		"prepare": "husky install"
 	},
 	"repository": {
@@ -37,6 +36,7 @@
 		"belarusian"
 	],
 	"devDependencies": {
+		"@digitak/esrun": "^3.2.24",
 		"@types/node": "^20.5.4",
 		"husky": "^8.0.3",
 		"prettier": "^3.0.0",
