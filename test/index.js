@@ -56,11 +56,7 @@ test('greek th', (text) => taraskSync(text, { abc: ALPHABET.GREEK }), [
 	['Базіраваць', 'Μπαζαβατσ’'],
 ]);
 
-print(
-	'test',
-	`summary: ${summary.passed} passed, ${summary.failed} failed`,
-	'35'
-);
+print('test', `${summary.passed} passed, ${summary.failed} failed`, '35');
 
 if (summary.failed) process.exit(1);
 
