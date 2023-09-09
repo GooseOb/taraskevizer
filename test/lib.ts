@@ -1,11 +1,20 @@
 import { format } from 'util';
 
-const colorize = (str, colorCode) => `\x1b[${colorCode}m${str}\x1b[0m`;
-export const print = (label, msg, colorCode = '0') => {
+const colorize = (str: string, colorCode: `${number}`) =>
+	`\x1b[${colorCode}m${str}\x1b[0m`;
+export const print = (
+	label: string,
+	msg: string,
+	colorCode: `${number}` = '0'
+) => {
 	process.stdout.write(colorize(`[${label}] `, colorCode) + msg + '\n');
 };
 
-const colorizeCharInStr = (str, charIndex, colorCode) =>
+const colorizeCharInStr = (
+	str: string,
+	charIndex: number,
+	colorCode: `${number}`
+) =>
 	str.slice(0, charIndex) +
 	colorize(str[charIndex], colorCode) +
 	str.slice(charIndex + 1);
@@ -17,7 +26,11 @@ export const getTestProcess = () => {
 	};
 	return {
 		summary,
-		test(name, fn, cases) {
+		test<TInput, TOutput extends string>(
+			name: string,
+			fn: (arg: TInput) => TOutput,
+			cases: [TInput, TOutput][]
+		) {
 			for (const [input, expectedValue] of cases) {
 				const output = fn(input);
 				if (output !== expectedValue) {
@@ -46,11 +59,11 @@ export const getTestProcess = () => {
 	};
 };
 
-const getBenchmarkPrinter = (name) => (msg) => {
+const getBenchmarkPrinter = (name: string) => (msg: string) => {
 	print('benchmark', name + ', ' + msg, '36');
 };
 
-const hookStdout = (callback) => {
+const hookStdout = (callback: typeof process.stdout.write) => {
 	const { write } = process.stdout;
 	process.stdout.write = callback;
 	return () => {
@@ -58,12 +71,17 @@ const hookStdout = (callback) => {
 	};
 };
 
-export const benchmark = (name, fn, { showLogs = true, repeat = 5 } = {}) => {
+export const benchmark = (
+	name: string,
+	fn: () => void,
+	{ showLogs = true, repeat = 5 } = {}
+) => {
 	const printBenchmark = getBenchmarkPrinter(name);
 	printBenchmark('running');
-	const logs = [];
+	const logs: string[] = [];
 	const unhookStdout = hookStdout((data) => {
 		logs.push(data);
+		return true;
 	});
 	const results = Array(repeat);
 	for (let i = 0; i < repeat; i++) {

@@ -35,9 +35,9 @@ const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
 const OPTIONAL_WORDS_REGEX = /\(.*?\)/g;
 const G_REGEX = /[Ґґ]/g;
 
-export const ALPHABET = { CYRILLIC: 0, LATIN: 1, ARABIC: 2, GREEK: 3 };
-export const J = { NEVER: 0, RANDOM: 1, ALWAYS: 2 };
-export const VARIATION = { NO: 0, FIRST: 1, ALL: 2 };
+export const ALPHABET = { CYRILLIC: 0, LATIN: 1, ARABIC: 2, GREEK: 3 } as const;
+export const J = { NEVER: 0, RANDOM: 1, ALWAYS: 2 } as const;
+export const VARIATION = { NO: 0, FIRST: 1, ALL: 2 } as const;
 
 const letters: AlphabetDependentDict = {
 	[ALPHABET.LATIN]: latinLetters,

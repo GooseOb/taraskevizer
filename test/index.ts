@@ -1,5 +1,5 @@
 import { benchmark, print, getTestProcess } from './lib';
-import { tarask, taraskSync, ALPHABET, J } from '../src';
+import { tarask, taraskSync, ALPHABET, J, TaraskOptions } from '../src/index';
 
 print('test', 'start', '35');
 
@@ -23,7 +23,7 @@ test('HtmlOptions', ([text, html]) => taraskSync(text, { html }), [
 	],
 	[['газета', { g: false }], '<tarH>г</tarH>аз<tarF>э</tarF>та'],
 	[['газета', { g: true }], '<tarH>ґ</tarH>аз<tarF>э</tarF>та'],
-]);
+] satisfies [[string, TaraskOptions['html']], string][]);
 
 test('i -> j', ([text, j, abc]) => taraskSync(text, { j, abc }), [
 	[['Яна і ён'], 'Яна і ён'],
@@ -32,7 +32,7 @@ test('i -> j', ([text, j, abc]) => taraskSync(text, { j, abc }), [
 	[['Яна і ён', undefined, ALPHABET.LATIN], 'Jana i jon'],
 	[['Яна і ён', J.NEVER, ALPHABET.LATIN], 'Jana i jon'],
 	[['Яна і ён', J.ALWAYS, ALPHABET.LATIN], 'Jana j jon'],
-]);
+] satisfies [[string, TaraskOptions['j']?, TaraskOptions['abc']?], string][]);
 
 test('greek th', (text) => taraskSync(text, { abc: ALPHABET.GREEK }), [
 	['матэматычная кафедра', 'μαθεματίτσ̌ναυα καθεδρα'],
@@ -62,13 +62,9 @@ if (process.argv.includes('--benchmark')) {
 	const { readFile } = await import('node:fs/promises');
 
 	const text = await readFile('test/large-text.txt', 'utf8');
-	benchmark(
-		'Taraskevization',
-		() => {
-			taraskSync(text, { nonHtml: true });
-		},
-		{ repeat: 1 }
-	);
+	benchmark('Taraskevization', () => {
+		taraskSync(text, { nonHtml: true });
+	});
 }
 
 process.exit(summary.failed ? 1 : 0);
