@@ -28,12 +28,14 @@ const isUpperCase = (str: string): boolean => str === str.toUpperCase();
 const getLastLetter = (word: string) => {
 	for (let i = word.length - 1; i >= 0; i--)
 		if (/\p{L}/u.test(word[i])) return word[i];
+	throw new Error(`the last letter of the word ${word} not found`);
 };
 
 const NOFIX_CHAR = ' \uffff ';
 const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
 const OPTIONAL_WORDS_REGEX = /\(.*?\)/g;
 const G_REGEX = /[Ґґ]/g;
+type G_REGEX_MATCH = 'Ґ' | 'ґ';
 
 export const ALPHABET = { CYRILLIC: 0, LATIN: 1, ARABIC: 2, GREEK: 3 } as const;
 export const J = { NEVER: 0, RANDOM: 1, ALWAYS: 2 } as const;
@@ -63,11 +65,8 @@ const tagApplications = {
 	},
 } satisfies Record<'html' | 'nonHtml', Partial<SpecificApplyObj>>;
 
-const iaReplacer = <TStart extends ' б' | ' н', T extends string>(
-	$0: `${TStart}е${T}`,
-	$1: TStart,
-	$2: T
-) => ($2.match(/[аеёіоуыэюя]/g)?.length === 1 ? $1 + 'я' + $2 : $0);
+const iaReplacer = ($0: string, $1: string, $2: string) =>
+	$2.match(/[аеёіоуыэюя]/g)?.length === 1 ? $1 + 'я' + $2 : $0;
 
 const afterTarask: ExtendedDict = [
 	[/ [уў]асьнігл /g, ' уаснігл '],
@@ -140,7 +139,7 @@ export const taraskSync: Tarask = (text, options = {}) => {
 		.replace(/&nbsp;/g, ' ')
 		.replace(/ (\p{P}|\p{S}|\d|&#40) /gu, '$1');
 
-	let gReplacer: undefined | string | ((...substrings: string[]) => string);
+	let gReplacer: undefined | string | ((substring: G_REGEX_MATCH) => string);
 	if (abc === ALPHABET.CYRILLIC) {
 		if (isHtmlObject) {
 			gReplacer = html.g ? apply.H('$&') : ($0) => apply.H(gobj[$0]);
@@ -153,10 +152,15 @@ export const taraskSync: Tarask = (text, options = {}) => {
 		}
 	}
 
-	// @ts-ignore
-	if (gReplacer) text = text.replace(G_REGEX, gReplacer);
+	if (gReplacer)
+		text = text.replace(
+			G_REGEX,
+			// @ts-ignore
+			gReplacer
+		);
 
-	if (noFix.length) text = text.replace(NOFIX_REGEX, () => noFix.shift());
+	if (noFix.length)
+		text = text.replace(NOFIX_REGEX, () => noFix.shift() as string);
 
 	return (
 		html ? finalizer.html(text) : finalizer.nonHtml(text, nonHtml)
@@ -203,7 +207,9 @@ const toTags = (
 		const word = text[i];
 		const oWord = orig[i];
 		if (oWord === word) continue;
-		const wordH = isCyrillic ? word.replace(G_REGEX, ($0) => gobj[$0]) : word;
+		const wordH = isCyrillic
+			? word.replace(G_REGEX, ($0) => gobj[$0 as G_REGEX_MATCH])
+			: word;
 		if (oWord === wordH) continue;
 		if (!/\(/.test(word)) {
 			if (word.length === oWord.length) {
@@ -312,7 +318,11 @@ const finalizer = {
 			})
 			.replace(/ \n /g, '<br>'),
 	nonHtml(text: string, options: TaraskOptions['nonHtml']) {
-		if (isObject(options) && options.variations !== VARIATION.ALL) {
+		if (
+			isObject(options) &&
+			options.variations &&
+			options.variations !== VARIATION.ALL
+		) {
 			const WORD_INDEX = options.variations;
 			const replacer = ($0: string) => $0.slice(1, -1).split('|')[WORD_INDEX];
 			text = text.replace(

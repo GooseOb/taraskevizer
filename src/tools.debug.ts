@@ -11,7 +11,7 @@ export const replaceWithDict: AddParameter<ReplaceWithDict, RegExp> = (
 	dict,
 	regex
 ) => {
-	for (const item of dict) {
+	for (const item of dict!) {
 		const [pattern, result] = item;
 		text = text.replace(
 			pattern,

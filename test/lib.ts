@@ -78,7 +78,7 @@ export const benchmark = (
 ) => {
 	const printBenchmark = getBenchmarkPrinter(name);
 	printBenchmark('running');
-	const logs: string[] = [];
+	const logs: (string | Uint8Array)[] = [];
 	const unhookStdout = hookStdout((data) => {
 		logs.push(data);
 		return true;
