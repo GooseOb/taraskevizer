@@ -15,19 +15,18 @@ if (process.argv.length < 3) {
 let msg;
 let commitOptions = process.argv.slice(2);
 
-const removeRange = (arr, from, to) =>
-	arr.slice(0, from).concat(commitOptions.slice(to));
-
 for (let i = 0; i < commitOptions.length; i++) {
 	const item = commitOptions[i];
 	if (item === '-m' || item === '-am') {
 		msg = commitOptions[i + 1];
-		if (item === '-m') {
-			commitOptions = removeRange(commitOptions, i, i + 2);
-		} else {
+		let from = i;
+		if (item === '-am') {
 			commitOptions[i] = '-a';
-			commitOptions = removeRange(commitOptions, i + 1, i + 2);
+			from = i + 1;
 		}
+		commitOptions = commitOptions
+			.slice(0, from)
+			.concat(commitOptions.slice(i + 2));
 		break;
 	}
 }
