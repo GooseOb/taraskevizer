@@ -1,5 +1,5 @@
 import { benchmark, print, getTestProcess } from './lib';
-import { tarask, taraskSync, ALPHABET, J, TaraskOptions } from '../src/index';
+import { tarask, taraskSync, ALPHABET, J, TaraskOptions } from '../src';
 
 print('test', 'start', '35');
 

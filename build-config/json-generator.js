@@ -1,5 +1,5 @@
 import path from 'path';
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir } from 'node:fs/promises';
 const outputPath = path.resolve('json');
 
 const regexToStr = (dict) => {

@@ -1,0 +1,9 @@
+{
+	"compilerOptions": {
+		"noEmit": false,
+		"esModuleInterop": true,
+		"declaration": true
+	},
+	"extends": "../tsconfig.json",
+	"files": ["index.ts"]
+}
