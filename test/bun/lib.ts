@@ -6,7 +6,7 @@ export const getLabel = (inputType: string) =>
 export const testOnCases = <TInput, TOutput extends string>(
 	name: string,
 	fn: (arg: TInput) => TOutput,
-	cases: [TInput, TOutput][],
+	cases: readonly (readonly [TInput, TOutput])[],
 	label = getLabel('s')
 ) => {
 	describe(name, () => {

@@ -1,6 +1,7 @@
 import { readFile, writeFile, unlink } from 'node:fs/promises';
+import path from 'node:path';
+import { execSync } from 'node:child_process';
 import simpleGit from 'simple-git';
-import path from 'path';
 
 const prefix = '\x1b[35m[git-commit]\x1b[0m';
 const print = (...msgs) => {
@@ -14,6 +15,20 @@ if (process.argv.length < 3) {
 
 let msg;
 let commitOptions = process.argv.slice(2);
+const removeFromCommitOptions = (from, to) => {
+	commitOptions = commitOptions.slice(0, from).concat(commitOptions.slice(to));
+};
+
+const indexOfGpgTty = commitOptions.indexOf('--gpgtty');
+const gpgTty = indexOfGpgTty !== -1;
+if (gpgTty) {
+	removeFromCommitOptions(indexOfGpgTty, indexOfGpgTty + 1);
+	process.env.GPG_TTY = execSync('tty', {
+		stdio: ['inherit', 'pipe', 'pipe'],
+	})
+		.toString()
+		.trim();
+}
 
 for (let i = 0; i < commitOptions.length; i++) {
 	const item = commitOptions[i];
@@ -24,9 +39,7 @@ for (let i = 0; i < commitOptions.length; i++) {
 			commitOptions[i] = '-a';
 			from = i + 1;
 		}
-		commitOptions = commitOptions
-			.slice(0, from)
-			.concat(commitOptions.slice(i + 2));
+		removeFromCommitOptions(from, i + 2);
 		break;
 	}
 }

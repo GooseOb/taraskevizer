@@ -29,7 +29,7 @@ export const getTestProcess = () => {
 		test<TInput, TOutput extends string>(
 			name: string,
 			fn: (arg: TInput) => TOutput,
-			cases: [TInput, TOutput][]
+			cases: readonly (readonly [TInput, TOutput])[]
 		) {
 			for (const [input, expectedValue] of cases) {
 				const output = fn(input);
