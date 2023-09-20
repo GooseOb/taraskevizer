@@ -11,16 +11,17 @@ jobs:
       - uses: actions/checkout@v3
         with:
           version: 7
+      - uses: oven-sh/setup-bun@v1
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
           registry-url: 'https://registry.npmjs.org'
 
-      - run: npm ci
-      - run: npm run build
+      - run: bun i --frozen-lockfile
+      - run: bun run build
         env:
           BUILD_MODE: deployment
-      - run: npm run test
+      - run: bun run test:bun
       - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -30,4 +31,3 @@ jobs:
     steps:
       - run: |
           curl -XPOST -u "${{secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/GooseOb/taraskevizatar/actions/workflows/build.yml/dispatches --data '{"ref": "main"}'
-      - uses: actions/checkout@v3
