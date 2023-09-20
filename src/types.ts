@@ -43,6 +43,6 @@ export type TaraskAsync = Promisify<Tarask>;
 export type Dict<T = RegExp> = [T, string][];
 export type ExtendedDict = [
 	RegExp,
-	string | ((...substrings: string[]) => string),
+	string | ((...substrings: string[]) => string)
 ][];
 export type AlphabetDependentDict = { [key in Alphabet]?: Dict };
