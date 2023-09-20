@@ -1,6 +1,5 @@
 import { readFile, writeFile, unlink } from 'node:fs/promises';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
 import simpleGit from 'simple-git';
 
 const prefix = '\x1b[35m[git-commit]\x1b[0m';
@@ -22,6 +21,7 @@ const removeFromCommitOptions = (from, to) => {
 const indexOfGpgTty = commitOptions.indexOf('--gpgtty');
 const gpgTty = indexOfGpgTty !== -1;
 if (gpgTty) {
+	const { execSync } = await import('node:child_process');
 	removeFromCommitOptions(indexOfGpgTty, indexOfGpgTty + 1);
 	process.env.GPG_TTY = execSync('tty', {
 		stdio: ['inherit', 'pipe', 'pipe'],
