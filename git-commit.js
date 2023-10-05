@@ -90,11 +90,17 @@ const openPushMenu = () => {
 		[
 			'yes',
 			() =>
-				git.push().then(({ repo, update: { head, hash } }) => {
-					print('Pushed to the repo ' + repo);
-					print(`${hash.from}..${hash.to} ${head.local} -> ${head.remote}`);
-					process.exit(0);
-				}),
+				git
+					.push()
+					.then(({ repo, update: { head, hash } }) => {
+						print('Pushed to the repo ' + repo);
+						print(`${hash.from}..${hash.to} ${head.local} -> ${head.remote}`);
+						process.exit(0);
+					})
+					.catch((err) => {
+						console.log(err);
+						process.exit(1);
+					}),
 		],
 	]);
 	is.inputProcessing = true;
