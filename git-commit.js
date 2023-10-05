@@ -81,7 +81,23 @@ const commit = async () => {
 	await unlink(TEMP_FILE_PATH);
 	is.committing = false;
 	printCommitSummary(commitResult.branch, msg, commitResult.summary);
-	process.exit(0);
+	openPushMenu();
+};
+
+const openPushMenu = () => {
+	printOptions('make a push?', [
+		['no', () => process.exit(0)],
+		[
+			'yes',
+			() =>
+				git.push().then(({ repo, update: { head, hash } }) => {
+					print('Pushed to the repo ' + repo);
+					print(`${hash.from}..${hash.to} ${head.local} -> ${head.remote}`);
+					process.exit(0);
+				}),
+		],
+	]);
+	is.inputProcessing = true;
 };
 
 const onTerminate = async () => {
