@@ -85,7 +85,7 @@ const commit = async () => {
 };
 
 const openPushMenu = () => {
-	printOptions('make a push?', [
+	printOptions('Make a push?', [
 		['no', () => process.exit(0)],
 		[
 			'yes',
