@@ -14,15 +14,14 @@ if (process.argv.length < 3) {
 
 let msg;
 let commitOptions = process.argv.slice(2);
-const removeFromCommitOptions = (from, to) => {
+const removeFromCommitOptions = (from, to = from + 1) => {
 	commitOptions = commitOptions.slice(0, from).concat(commitOptions.slice(to));
 };
 
 const indexOfGpgTty = commitOptions.indexOf('--gpgtty');
-const gpgTty = indexOfGpgTty !== -1;
-if (gpgTty) {
+if (indexOfGpgTty !== -1) {
+	removeFromCommitOptions(indexOfGpgTty);
 	const { execSync } = await import('node:child_process');
-	removeFromCommitOptions(indexOfGpgTty, indexOfGpgTty + 1);
 	process.env.GPG_TTY = execSync('tty', {
 		stdio: ['inherit', 'pipe', 'pipe'],
 	})
