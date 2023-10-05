@@ -1,51 +1,51 @@
 {
-  "name": "taraskevizer",
-  "author": "GooseOb",
-  "license": "MIT",
-  "version": "1.5.3",
-  "private": false,
-  "homepage": "https://gooseob.github.io/taraskevizatar/",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "type": "module",
-  "bin": {
-    "tarask": "./bin/index.js"
-  },
-  "files": [
-    "dist/**/*",
-    "bin/**/*",
-    "README.md"
-  ],
-  "scripts": {
-    "build": "tsup --config build-config/index.js",
-    "build:bun_EXPERIMENTAL": "bun ./build-config/bun.ts",
-    "dev": "esrun --watch=src/*,test/* --send-code-mode=temporaryFile test",
-    "dev:bun": "bun test --watch",
-    "test": "esrun --send-code-mode=temporaryFile test",
-    "test:bun": "bun test",
-    "prepare": "husky install"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/GooseOb/taraskevizer.git"
-  },
-  "description": "Канвэртацыя акадэмічнага правапісу ў клясычны",
-  "keywords": [
-    "taraskevizatar",
-    "taraskevica",
-    "тарашкевіца",
-    "тарашкевізатар",
-    "belarusian"
-  ],
-  "devDependencies": {
-    "@digitak/esrun": "^3.2.24",
-    "@types/node": "^20.5.4",
-    "bun-types": "^1.0.1",
-    "husky": "^8.0.3",
-    "prettier": "^3.0.0",
-    "simple-git": "^3.19.1",
-    "tsup": "^7.2.0",
-    "typescript": "^5.2.2"
-  }
+	"name": "taraskevizer",
+	"author": "GooseOb",
+	"license": "MIT",
+	"version": "1.5.3",
+	"private": false,
+	"homepage": "https://gooseob.github.io/taraskevizatar/",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"type": "module",
+	"bin": {
+		"tarask": "./bin/index.js"
+	},
+	"files": [
+		"dist/**/*",
+		"bin/**/*",
+		"README.md"
+	],
+	"scripts": {
+		"build": "tsup --config build-config/index.js",
+		"build:bun_EXPERIMENTAL": "bun ./build-config/bun.ts",
+		"dev": "esrun --watch=src/*,test/* --send-code-mode=temporaryFile test",
+		"dev:bun": "bun test --watch",
+		"test": "esrun --send-code-mode=temporaryFile test",
+		"test:bun": "bun test",
+		"prepare": "husky install"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/GooseOb/taraskevizer.git"
+	},
+	"description": "Канвэртацыя акадэмічнага правапісу ў клясычны",
+	"keywords": [
+		"taraskevizatar",
+		"taraskevica",
+		"тарашкевіца",
+		"тарашкевізатар",
+		"belarusian"
+	],
+	"devDependencies": {
+		"@digitak/esrun": "^3.2.24",
+		"@types/node": "^20.5.4",
+		"bun-types": "^1.0.1",
+		"husky": "^8.0.3",
+		"prettier": "^3.0.0",
+		"simple-git": "^3.19.1",
+		"tsup": "^7.2.0",
+		"typescript": "^5.2.2"
+	}
 }
