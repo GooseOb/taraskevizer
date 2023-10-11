@@ -26,7 +26,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   trigger-app-build:
-    needs: publish
+    needs: build-test-publish
     runs-on: ubuntu-latest
     steps:
       - run: |
