@@ -19,13 +19,17 @@ const colorizeCharInStr = (
 	colorize(str[charIndex], colorCode) +
 	str.slice(charIndex + 1);
 
-export const getTestProcess = () => {
+export const startTestProcess = () => {
+	print('test', 'start', '35');
 	const summary = {
 		passed: 0,
 		failed: 0,
 	};
 	return {
-		summary,
+		endTestProcess() {
+			print('test', `${summary.passed} passed, ${summary.failed} failed`, '35');
+			return summary.failed ? 1 : 0;
+		},
 		test<TInput, TOutput extends string>(
 			name: string,
 			fn: (arg: TInput) => TOutput,

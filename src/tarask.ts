@@ -11,7 +11,6 @@ import {
 } from './dict';
 import {
 	Tarask,
-	TaraskAsync,
 	AlphabetDependentDict,
 	TaraskOptions,
 	ExtendedDict,
@@ -79,7 +78,7 @@ const afterTarask: ExtendedDict = [
 	],
 ];
 
-export const taraskSync: Tarask = (text, options = {}) => {
+export const tarask: Tarask = (text, options = {}) => {
 	const { abc = 0, j = 0, html = false, nonHtml = false } = options;
 	const isHtmlObject = isObject(html);
 	const isNonHtmlObject = isObject(nonHtml);
@@ -166,9 +165,6 @@ export const taraskSync: Tarask = (text, options = {}) => {
 		html ? finalizer.html(text) : finalizer.nonHtml(text, nonHtml)
 	).trim();
 };
-
-export const tarask: TaraskAsync = (...args) =>
-	new Promise((res) => res(taraskSync(...args)));
 
 const restoreCase = (text: string[], orig: string[]): string[] => {
 	for (let i = 0; i < text.length; i++) {

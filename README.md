@@ -7,20 +7,23 @@ $ npm i taraskevizer
 ## Usage
 
 ```js
-import { taraskSync, tarask } from 'taraskevizer';
+import { tarask, ALPHABET } from 'taraskevizer';
 
-const result = taraskSync(text);
+const result = tarask(text);
 // or
-const result = await tarask(text);
+const result = tarask(text, {
+	html: {
+		abc: ALPHABET.ARABIC,
+		g: false,
+		// ...
+	},
+	nonHtml: false,
+});
 ```
 
 ## API
 
 ### tarask(text, options?)
-
-Returns a `Promise<string>`
-
-### taraskSync(text, options?)
 
 Returns a `string`
 

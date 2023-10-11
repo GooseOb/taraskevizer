@@ -1,6 +1,3 @@
-type Promisify<T> = T extends (...args: infer TArgs) => infer TReturn
-	? (...args: TArgs) => Promise<TReturn>
-	: never;
 type AnyFn = (...args: any[]) => any;
 type DeepPartial<T> = T extends object
 	? T extends AnyFn
@@ -39,7 +36,6 @@ export type TaraskOptionsStrict = {
 };
 export type TaraskOptions = DeepPartial<TaraskOptionsStrict>;
 export type Tarask = (text: string, options?: TaraskOptions) => string;
-export type TaraskAsync = Promisify<Tarask>;
 export type Dict<T = RegExp> = [T, string][];
 export type ExtendedDict = [
 	RegExp,

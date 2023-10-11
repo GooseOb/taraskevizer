@@ -10,8 +10,8 @@ export const testOnCases = <TInput, TOutput extends string>(
 	label = getLabel('s')
 ) => {
 	describe(name, () => {
-		test.each(cases)(label, (arg, expected) => {
-			expect(fn(arg)).toBe(expected);
+		test.each(cases)(label, (input, expected) => {
+			expect(fn(input)).toBe(expected);
 		});
 	});
 };
