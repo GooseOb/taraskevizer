@@ -23,7 +23,6 @@
 		"dev": "esrun --watch=src/*,test/* --send-code-mode=temporaryFile test",
 		"dev:bun": "bun test --watch",
 		"test": "esrun --send-code-mode=temporaryFile test",
-		"test:bun": "bun test",
 		"prepare": "husky install"
 	},
 	"repository": {
