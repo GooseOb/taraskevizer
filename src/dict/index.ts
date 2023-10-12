@@ -1786,10 +1786,8 @@ for (const [raw, obj] of arr)
 		obj.push([RegExp(pattern, 'g'), result]);
 
 for (const obj of [latinLetters, latinLettersUpperCase, greekLetters, greekLettersUpperCase, thWords])
-	for (let i = 0; i < obj.length; i++) {
-		const item = obj[i];
+	for (const item of obj)
 		item[0] =  RegExp(item[0], 'g' + item[0].flags);
-	}
 
 for (const word of gwords)
 	wordlist.push([RegExp(word.replace(/ґ/g, 'г'), 'g'), word]);

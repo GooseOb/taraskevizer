@@ -316,10 +316,10 @@ const finalizer = {
 	nonHtml(text: string, options: TaraskOptions['nonHtml']) {
 		if (
 			isObject(options) &&
-			options.variations &&
+			'variations' in options &&
 			options.variations !== VARIATION.ALL
 		) {
-			const WORD_INDEX = options.variations;
+			const WORD_INDEX = options.variations!;
 			const replacer = ($0: string) => $0.slice(1, -1).split('|')[WORD_INDEX];
 			text = text.replace(
 				OPTIONAL_WORDS_REGEX,
