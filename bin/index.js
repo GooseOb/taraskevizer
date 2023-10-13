@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { taraskSync } from '../dist/index.js';
+import { tarask } from '../dist/index.js';
 import { readFile } from 'fs/promises';
 
 const print = (...msgs) => {
@@ -102,4 +102,4 @@ optionEater: while (true) {
 
 const text = process.argv.join(' ');
 
-console.log(taraskSync(text, stgs));
+console.log(tarask(text, stgs));
