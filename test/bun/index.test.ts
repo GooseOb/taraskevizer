@@ -12,14 +12,21 @@ testOnCases(
 );
 
 testOnCases(
-	'\x1b[34mi -> j',
+	'\x1b[34mNonHtmlOptions',
+	([text, nonHtml]) => tarask(text, { nonHtml }),
+	cases.nonHtmlOptions,
+	getLabel('j')
+);
+
+testOnCases(
+	'\x1b[36mi -> j',
 	([text, j, abc]) => tarask(text, { j, abc }),
 	cases.itoj,
 	getLabel('j')
 );
 
 testOnCases(
-	'\x1b[36mgreek th',
+	'\x1b[37mgreek th',
 	(text) => tarask(text, { abc: ALPHABET.GREEK }),
 	cases.greek
 );
