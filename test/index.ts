@@ -24,8 +24,10 @@ test('greek th', (text) => tarask(text, { abc: ALPHABET.GREEK }), cases.greek);
 const code = endTestProcess();
 
 if (process.argv.includes('--benchmark')) {
-	const { readFile } = await import('node:fs/promises');
-	const { existsSync } = await import('node:fs');
+	const {
+		existsSync,
+		promises: { readFile },
+	} = await import('node:fs');
 	const path = 'test/large-text.txt';
 
 	if (!existsSync(path)) {
