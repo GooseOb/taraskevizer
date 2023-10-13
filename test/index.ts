@@ -12,7 +12,7 @@ test(
 	cases.htmlOptions
 );
 test(
-	'HtmlOptions',
+	'NonHtmlOptions',
 	([text, nonHtml]) => tarask(text, { nonHtml }),
 	cases.nonHtmlOptions
 );
