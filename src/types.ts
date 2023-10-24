@@ -1,11 +1,20 @@
-type AnyFn = (...args: any[]) => any;
-type DeepPartial<T> = T extends object
-	? T extends AnyFn
+type ModifyObjectType<T, TResultObj> = T extends object
+	? T extends (...args: any[]) => any
 		? T
-		: {
-				[P in keyof T]?: DeepPartial<T[P]>;
-		  }
+		: TResultObj
 	: T;
+type DeepPartial<T> = ModifyObjectType<
+	T,
+	{
+		[P in keyof T]?: DeepPartial<T[P]>;
+	}
+>;
+type DeepReadonly<T> = ModifyObjectType<
+	T,
+	{
+		readonly [P in keyof T]: DeepReadonly<T[P]>;
+	}
+>;
 
 type Alphabet = 0 | 1 | 2 | 3;
 // cyrillic | latin | arabic | greek
@@ -35,7 +44,10 @@ export type TaraskOptionsStrict = {
 	OVERRIDE_toTarask?: ToTarask;
 };
 export type TaraskOptions = DeepPartial<TaraskOptionsStrict>;
-export type Tarask = (text: string, options?: TaraskOptions) => string;
+export type Tarask = (
+	text: string,
+	options?: DeepReadonly<TaraskOptions>
+) => string;
 export type Dict<T = RegExp> = [T, string][];
 export type ExtendedDict = [
 	RegExp,

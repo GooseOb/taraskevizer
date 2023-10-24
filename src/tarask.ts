@@ -84,9 +84,6 @@ export const tarask: Tarask = (text, options = {}) => {
 	const isNonHtmlObject = isObject(nonHtml);
 	// if (isHtmlObject) {
 	// } else
-	if (isNonHtmlObject) {
-		nonHtml.variations ||= 0;
-	}
 	const apply = html ? tagApplications.html : tagApplications.nonHtml;
 	const noFix: string[] = [];
 
@@ -319,7 +316,7 @@ const finalizer = {
 			'variations' in options &&
 			options.variations !== VARIATION.ALL
 		) {
-			const WORD_INDEX = options.variations!;
+			const WORD_INDEX = options.variations ?? 0;
 			const replacer = ($0: string) => $0.slice(1, -1).split('|')[WORD_INDEX];
 			text = text.replace(
 				OPTIONAL_WORDS_REGEX,
