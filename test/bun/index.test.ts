@@ -2,27 +2,29 @@ import { getLabel, testOnCases } from './lib';
 import { ALPHABET, tarask } from '../../src';
 import * as cases from '../cases';
 
+const jLabel = getLabel('j');
+
 testOnCases('\x1b[31mTaraskevization', tarask, cases.taraskevization);
 
 testOnCases(
 	'\x1b[33mHtmlOptions',
 	([text, html]) => tarask(text, { html }),
 	cases.htmlOptions,
-	getLabel('j')
+	jLabel
 );
 
 testOnCases(
 	'\x1b[34mNonHtmlOptions',
 	([text, nonHtml]) => tarask(text, { nonHtml }),
 	cases.nonHtmlOptions,
-	getLabel('j')
+	jLabel
 );
 
 testOnCases(
 	'\x1b[36mi -> j',
 	([text, j, abc]) => tarask(text, { j, abc }),
 	cases.itoj,
-	getLabel('j')
+	jLabel
 );
 
 testOnCases(

@@ -2,7 +2,7 @@
 	"name": "taraskevizer",
 	"author": "GooseOb",
 	"license": "MIT",
-	"version": "1.7.0",
+	"version": "1.7.1",
 	"private": false,
 	"homepage": "https://gooseob.github.io/taraskevizatar/",
 	"main": "dist/index.js",
