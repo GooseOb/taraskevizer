@@ -28,7 +28,16 @@ testOnCases(
 );
 
 testOnCases(
-	'\x1b[37mgreek th',
+	'\x1b[37mGreek th',
 	(text) => tarask(text, { abc: ALPHABET.GREEK }),
 	cases.greek
 );
+
+testOnCases(
+	'\x1b[31mMultiline',
+	([text, options]) => tarask(text, options),
+	cases.multiline,
+	jLabel
+);
+
+// add a new case here

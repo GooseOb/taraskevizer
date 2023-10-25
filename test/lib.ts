@@ -40,11 +40,11 @@ export const startTestProcess = () => {
 				if (output !== expectedValue) {
 					let charIndex = 0;
 					while (output[charIndex] === expectedValue[charIndex]) ++charIndex;
-					const coloredOutput = colorizeCharInStr(output, charIndex, '31');
+					const coloredOutput = colorizeCharInStr(output, charIndex, '41');
 					const coloredExpected = colorizeCharInStr(
 						expectedValue,
 						charIndex,
-						'32'
+						'42'
 					);
 					++summary.failed;
 					print(

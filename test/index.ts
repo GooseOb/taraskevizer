@@ -37,7 +37,11 @@ test(
 
 test('i to j', ([text, j, abc]) => tarask(text, { j, abc }), cases.itoj);
 
-test('greek th', (text) => tarask(text, { abc: ALPHABET.GREEK }), cases.greek);
+test('Greek th', (text) => tarask(text, { abc: ALPHABET.GREEK }), cases.greek);
+
+test('Multiline', ([text, options]) => tarask(text, options), cases.multiline);
+
+// add a new case here
 
 const code = endTestProcess();
 

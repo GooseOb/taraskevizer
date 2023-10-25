@@ -91,7 +91,7 @@ export const tarask: Tarask = (text, options = {}) => {
 
 	text = ` ${text.trim()}  `
 		.replace(/\ufffd/g, '')
-		.replace(/<([,.]?)((?:.|\s)*?)>/g, ($0, $1, $2) => {
+		.replace(/<([,.]?)([.\s]*?)>/g, ($0, $1, $2) => {
 			if ($1 === ',') return LEFT_ANGLE_BRACKET + $2 + '>';
 			noFix[noFix.length] = $1 === '.' ? $2 : $0;
 			return NOFIX_CHAR;
@@ -158,9 +158,9 @@ export const tarask: Tarask = (text, options = {}) => {
 	if (noFix.length)
 		text = text.replace(NOFIX_REGEX, () => noFix.shift() as string);
 
-	return (
-		html ? finalizer.html(text) : finalizer.nonHtml(text, nonHtml)
-	).trim();
+	return (html ? finalizer.html(text) : finalizer.nonHtml(text, nonHtml))
+		.replace(/ \t /g, '\t')
+		.trim();
 };
 
 const restoreCase = (text: string[], orig: string[]): string[] => {
@@ -325,6 +325,6 @@ const finalizer = {
 					: replacer
 			);
 		}
-		return text.replace(/&#40/g, '(');
+		return text.replace(/&#40/g, '(').replace(/ \n /g, '\n');
 	},
 };
