@@ -89,7 +89,7 @@ export const tarask: Tarask = (text, options = {}) => {
 
 	const LEFT_ANGLE_BRACKET = html ? '&lt;' : '<';
 
-	text = ` ${text.trim()}  `
+	text = ` ${text.trim()} `
 		.replace(/\ufffd/g, '')
 		.replace(/<([,.]?)([.\s]*?)>/g, ($0, $1, $2) => {
 			if ($1 === ',') return LEFT_ANGLE_BRACKET + $2 + '>';

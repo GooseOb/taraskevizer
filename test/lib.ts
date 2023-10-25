@@ -21,14 +21,14 @@ const colorizeCharInStr = (
 
 export const startTestProcess = () => {
 	print('test', 'start', '35');
-	const summary = {
-		passed: 0,
-		failed: 0,
-	};
+	const passed: string[] = [];
+	const failed: string[] = [];
 	return {
 		endTestProcess() {
-			print('test', `${summary.passed} passed, ${summary.failed} failed`, '35');
-			return summary.failed ? 1 : 0;
+			for (const output of passed) print('passed', output, '32');
+			for (const output of failed) print('failed', output, '31');
+			print('test', `${passed.length} passed, ${failed.length} failed`, '35');
+			return failed.length ? 1 : 0;
 		},
 		test<TInput, TOutput extends string>(
 			name: string,
@@ -46,19 +46,15 @@ export const startTestProcess = () => {
 						charIndex,
 						'42'
 					);
-					++summary.failed;
-					print(
-						'failed',
+					failed.push(
 						`${name}:\ninput:    ${format(input)}\noutput:   ${format(
 							coloredOutput
-						)}\nexpected: ${format(coloredExpected)}`,
-						'31'
+						)}\nexpected: ${format(coloredExpected)}`
 					);
 					return;
 				}
 			}
-			++summary.passed;
-			print('passed', name, '32');
+			passed.push(name);
 		},
 	};
 };
