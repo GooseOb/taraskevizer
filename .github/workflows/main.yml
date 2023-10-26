@@ -12,17 +12,13 @@ jobs:
         with:
           version: 7
       - uses: oven-sh/setup-bun@v1
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-          registry-url: 'https://registry.npmjs.org'
 
       - run: bun i --frozen-lockfile
       - run: bun run build
         env:
           BUILD_MODE: deployment
       - run: bun test
-      - run: npm publish --access public
+      - run: bun x bunpublish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   trigger-app-build:

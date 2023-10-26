@@ -2,7 +2,7 @@
 	"name": "taraskevizer",
 	"author": "GooseOb",
 	"license": "MIT",
-	"version": "1.7.3",
+	"version": "1.7.4",
 	"private": false,
 	"homepage": "https://gooseob.github.io/taraskevizatar/",
 	"main": "dist/index.js",
@@ -21,7 +21,8 @@
 		"build": "tsup --config build-config/index.js",
 		"build:bun_EXPERIMENTAL": "bun ./build-config/bun.ts",
 		"dev": "esrun --watch=src/*,test/* --send-code-mode=temporaryFile test",
-		"dev:bun": "bun test --watch",
+		"dev:bun": "bun ./test/bun-watch.ts",
+		"dev-bun": "bun test --watch",
 		"test": "esrun --send-code-mode=temporaryFile test",
 		"prepare": "husky install"
 	},
@@ -39,6 +40,7 @@
 	],
 	"devDependencies": {
 		"@digitak/esrun": "^3.2.24",
+		"@morlay/bunpublish": "^0.1.6",
 		"@types/node": "^20.5.4",
 		"bun-types": "^1.0.1",
 		"husky": "^8.0.3",

@@ -9,17 +9,17 @@ test(
 	'Taraskevization',
 	(text) =>
 		tarask(text, {
-			OVERRIDE_toTarask(text, replaceWithDict, wordlist, softers, afterTarask) {
-				text = debug.replaceWithDict(text, wordlist, /рыму/);
-				softening: do {
-					text = replaceWithDict(text, softers);
-					for (const [pattern, result] of softers)
-						if (result !== '$1дзьдз' && pattern.test(text)) continue softening;
-					break;
-				} while (true);
-
-				return replaceWithDict(text, afterTarask);
-			},
+			// OVERRIDE_toTarask(text, replaceWithDict, wordlist, softers, afterTarask) {
+			// 	text = debug.replaceWithDict(text, wordlist, /салёні/);
+			// 	softening: do {
+			// 		text = replaceWithDict(text, softers);
+			// 		for (const [pattern, result] of softers)
+			// 			if (result !== '$1дзьдз' && pattern.test(text)) continue softening;
+			// 		break;
+			// 	} while (true);
+			//
+			// 	return replaceWithDict(text, afterTarask);
+			// },
 		}),
 	cases.taraskevization
 );
