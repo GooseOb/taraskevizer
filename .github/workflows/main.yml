@@ -18,10 +18,10 @@ jobs:
         env:
           BUILD_MODE: deployment
       - run: bun test
-      - name: Sleep for 1s
+      - name: Sleep for 5s
         uses: juliangruber/sleep-action@v2.0.0
         with:
-          time: 1s
+          time: 5s
       - run: bun x bunpublish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
