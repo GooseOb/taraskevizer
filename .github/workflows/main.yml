@@ -18,11 +18,7 @@ jobs:
         env:
           BUILD_MODE: deployment
       - run: bun test
-      - name: Sleep for 5s
-        uses: juliangruber/sleep-action@v2.0.0
-        with:
-          time: 5s
-      - run: bun x bunpublish
+      - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   trigger-app-build:
