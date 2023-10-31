@@ -7,7 +7,7 @@ $ npm i taraskevizer
 ## Usage
 
 ```js
-import { tarask, taraskToHtml, ALPHABET, J, VARIATION } from './src/index';
+import { tarask, taraskToHtml, ALPHABET, J, VARIATION } from 'taraskevizer';
 
 const taraskedText = tarask(text);
 // планета -> плянэта
