@@ -1,28 +1,10 @@
 import { benchmark, print, startTestProcess } from './lib';
 import { tarask, ALPHABET } from '../src';
 import * as cases from './cases';
-import * as debug from '../src/tools.debug';
 
 const { endTestProcess, test } = startTestProcess();
 
-test(
-	'Taraskevization',
-	(text) =>
-		tarask(text, {
-			// OVERRIDE_toTarask(text, replaceWithDict, wordlist, softers, afterTarask) {
-			// 	text = debug.replaceWithDict(text, wordlist, /салёні/);
-			// 	softening: do {
-			// 		text = replaceWithDict(text, softers);
-			// 		for (const [pattern, result] of softers)
-			// 			if (result !== '$1дзьдз' && pattern.test(text)) continue softening;
-			// 		break;
-			// 	} while (true);
-			//
-			// 	return replaceWithDict(text, afterTarask);
-			// },
-		}),
-	cases.taraskevization
-);
+test('Taraskevization', tarask, cases.taraskevization);
 
 test(
 	'HtmlOptions',

@@ -40,7 +40,6 @@
 	],
 	"devDependencies": {
 		"@digitak/esrun": "^3.2.24",
-		"@morlay/bunpublish": "^0.1.6",
 		"@types/node": "^20.5.4",
 		"bun-types": "^1.0.1",
 		"husky": "^8.0.3",
