@@ -1,6 +1,7 @@
-import { getLabel, testOnCases } from './lib';
-import { ALPHABET, tarask } from '../../src';
+import { getLabel, testOnCases, testOnCasesAsync } from './lib';
+import { ALPHABET, tarask, taraskToHtml } from '../../src';
 import * as cases from '../cases';
+import * as path from 'path';
 
 const jLabel = getLabel('j');
 
@@ -8,14 +9,14 @@ testOnCases('\x1b[31mTaraskevization', tarask, cases.taraskevization);
 
 testOnCases(
 	'\x1b[33mHtmlOptions',
-	([text, html]) => tarask(text, { html }),
+	([text, html]) => taraskToHtml(text, {}, html),
 	cases.htmlOptions,
 	jLabel
 );
 
 testOnCases(
 	'\x1b[34mNonHtmlOptions',
-	([text, nonHtml]) => tarask(text, { nonHtml }),
+	([text, nonHtml]) => tarask(text, {}, nonHtml),
 	cases.nonHtmlOptions,
 	jLabel
 );
@@ -33,10 +34,32 @@ testOnCases(
 	cases.greek
 );
 
+testOnCases('\x1b[31mMultiline', tarask, cases.multiline.nonHtml, jLabel);
+
 testOnCases(
-	'\x1b[31mMultiline',
-	([text, options]) => tarask(text, options),
-	cases.multiline,
+	'\x1b[31mMultiline:html',
+	taraskToHtml,
+	cases.multiline.html,
+	jLabel
+);
+
+const bunBinArr = [
+	'bun',
+	path.resolve(import.meta.dir, '..', '..', 'bin', 'index.js'),
+];
+
+testOnCasesAsync(
+	'\x1b[32mCLI',
+	(options) => {
+		const { stdout, stderr } = Bun.spawn(bunBinArr.concat(options));
+
+		if (stderr) {
+			process.stderr.write(stderr);
+		}
+
+		return Bun.readableStreamToText(stdout).then((text) => text.trim());
+	},
+	cases.cli,
 	jLabel
 );
 

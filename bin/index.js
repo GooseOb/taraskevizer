@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { tarask } from '../dist/index.js';
+import { tarask, taraskToHtml } from '../dist/index.js';
 import { readFile } from 'fs/promises';
 
 const print = (...msgs) => {
@@ -20,72 +20,75 @@ if (checkForOptions(['-v', '--version'])) {
 	process.exit(0);
 }
 
-const stgs = {
-	nonHtml: {
-		variations: 2,
-		nodeColors: true,
-	},
-};
+/** @type {Partial<import('../dist/types.js').TaraskOptions>} */
+const taraskOptions = {};
+/** @type {Partial<import('../dist/types.js').NonHtmlOptions>} */
+const nonHtmlOptions = { variations: 2, nodeColors: true };
+/** @type {Partial<import('../dist/types.js').HtmlOptions>} */
+const htmlOptions = { g: true };
+
+let isHtml = false;
 
 const optionDict = [
 	[
 		['--latin', '-l'],
 		() => {
-			stgs.abc = 1;
+			taraskOptions.abc = 1;
 		},
 	],
 	[
 		['--arabic', '-a'],
 		() => {
-			stgs.abc = 2;
+			taraskOptions.abc = 2;
 		},
 	],
 	[
 		['--greek', '-gr'],
 		() => {
-			stgs.abc = 3;
+			taraskOptions.abc = 3;
 		},
 	],
 	[
 		['--jrandom', '-jr'],
 		() => {
-			stgs.j = 1;
+			taraskOptions.j = 1;
 		},
 	],
 	[
 		['--jalways', '-ja'],
 		() => {
-			stgs.j = 2;
+			taraskOptions.j = 2;
 		},
 	],
 	[
 		['--h', '-h'],
 		() => {
-			stgs.nonHtml.h = true;
+			nonHtmlOptions.h = true;
+			htmlOptions.g = false;
 		},
 	],
 	[
 		['--no-variations', '-nv'],
 		() => {
-			stgs.nonHtml.variations = 0;
+			nonHtmlOptions.variations = 0;
 		},
 	],
 	[
 		['--first-variation-only', '-fvo'],
 		() => {
-			stgs.nonHtml.variations = 1;
+			nonHtmlOptions.variations = 1;
 		},
 	],
 	[
 		['--no-color', '-nc'],
 		() => {
-			stgs.nonHtml.nodeColors = false;
+			nonHtmlOptions.nodeColors = false;
 		},
 	],
 	[
 		['--html', '-html'],
 		() => {
-			stgs.html = {};
+			isHtml = true;
 		},
 	],
 ];
@@ -102,4 +105,8 @@ optionEater: while (true) {
 
 const text = process.argv.join(' ');
 
-console.log(tarask(text, stgs));
+console.log(
+	isHtml
+		? taraskToHtml(text, taraskOptions, htmlOptions)
+		: tarask(text, taraskOptions, nonHtmlOptions)
+);

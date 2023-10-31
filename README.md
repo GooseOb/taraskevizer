@@ -7,31 +7,40 @@ $ npm i taraskevizer
 ## Usage
 
 ```js
-import { tarask, ALPHABET } from 'taraskevizer';
+import { tarask, taraskToHtml, ALPHABET, J, VARIATION } from './src/index';
 
-const result = tarask(text);
-// or
-const result = tarask(text, {
-	html: {
-		abc: ALPHABET.ARABIC,
-		g: false,
-		// ...
+const taraskedText = tarask(text);
+// планета -> плянэта
+
+const taraskedText = tarask(
+	text,
+	{
+		abc: ALPHABET.CYRILLIC,
+		j: J.ALWAYS,
 	},
-	nonHtml: false,
-});
+	{
+		nodeColors: true,
+		variations: VARIATION.FIRST,
+		h: false,
+	}
+);
+// планета і Гродна -> пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m
+
+const taraskedText = taraskToHtml(
+	text,
+	{
+		abc: ALPHABET.LATIN,
+	},
+	{
+		g: false, // ignored, because alphabet is set to latin
+	}
+);
+// энергія планеты -> en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety
 ```
 
-## API
+### Function signatures are in [this file](./dist/index.d.ts)
 
-### tarask(text, options?)
-
-Returns a `string`
-
-#### text
-
-Type: `string`
-
-## Options
+## TaraskOptions
 
 Type: `object`
 
@@ -64,70 +73,6 @@ When to replace `і`(`i`) by `й`(`j`) after vowels:
 2 = always
 ```
 
-### html
-
-Type: `boolean|object`
-
-Default value: `false`
-
-If `true|object`, some parts of a text are wrapped in HTML tags.
-
-#### html.g
-
-Type: `boolean`
-
-Default value: `false`
-
-Do replace `г`(`h`) by `ґ`(`g`) in cyrillic alphabet?
-
-```html
-false: <tarH>г</tarH> <tarH>Г</tarH>
-
-true: <tarH>ґ</tarH> <tarH>Ґ</tarH>
-```
-
-### nonHtml
-
-Type: `boolean|object`
-
-Default value: `false`
-
-If `html` is defined, will be ignored
-
-#### nonHtml.nodeColors
-
-Type: `boolean`
-
-Default value: `false`
-
-#### nonHtml.h
-
-Type: `boolean`
-
-Default value: `false`
-
-Do replace ґ(g) by г(h) in cyrillic alphabet?
-
-```
-false: Ґ ґ
-
-true: Г г
-```
-
-#### nonHtml.variations
-
-Type: `number`
-
-Default value: `0`
-
-Which variation should be if a part of word is variable?
-
-```
-0 = main:   Гродна
-1 = first:  Горадня
-2 = all:    (Гродна|Горадня)
-```
-
 ### OVERRIDE_toTarask
 
 Type:
@@ -146,6 +91,58 @@ Type:
 ```
 
 Default value: internal function `toTarask`
+
+## HtmlOptions
+
+### g
+
+Type: `boolean`
+
+Default value: `false`
+
+Do replace `г`(`h`) by `ґ`(`g`) in cyrillic alphabet?
+
+```html
+false: <tarH>г</tarH> <tarH>Г</tarH>
+
+true: <tarH>ґ</tarH> <tarH>Ґ</tarH>
+```
+
+## NonHtmlOptions
+
+### nodeColors
+
+Type: `boolean`
+
+Default value: `false`
+
+### h
+
+Type: `boolean`
+
+Default value: `false`
+
+Do replace ґ(g) by г(h) in cyrillic alphabet?
+
+```
+false: Ґ ґ
+
+true: Г г
+```
+
+### variations
+
+Type: `number`
+
+Default value: `0`
+
+Which variation should be if a part of word is variable?
+
+```
+0 = main:   Гродна
+1 = first:  Горадня
+2 = all:    (Гродна|Горадня)
+```
 
 ## HTML tags
 

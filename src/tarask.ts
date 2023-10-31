@@ -12,22 +12,22 @@ import {
 import {
 	Tarask,
 	AlphabetDependentDict,
-	TaraskOptions,
 	ExtendedDict,
 	ToTarask,
 	ReplaceWithDict,
+	NonHtmlOptions,
+	HtmlOptions,
+	TaraskOptions,
+	DeepPartialReadonly,
 } from './types';
 import * as debug from './tools.debug';
 
-const isObject = <T extends object>(arg: any): arg is T =>
-	typeof arg === 'object';
-
 const isUpperCase = (str: string): boolean => str === str.toUpperCase();
 
-const getLastLetter = (word: string) => {
+const getLastLetter = (word: string, i: number) => {
 	for (let i = word.length - 1; i >= 0; i--)
 		if (/\p{L}/u.test(word[i])) return word[i];
-	throw new Error(`the last letter of the word ${word} not found`);
+	throw new Error(`the last letter of the word ${word} not found. index: ${i}`);
 };
 
 const NOFIX_CHAR = ' \uffff ';
@@ -78,16 +78,14 @@ const afterTarask: ExtendedDict = [
 	],
 ];
 
-export const tarask: Tarask = (text, options = {}) => {
-	const { abc = 0, j = 0, html = false, nonHtml = false } = options;
-	const isHtmlObject = isObject(html);
-	const isNonHtmlObject = isObject(nonHtml);
-	// if (isHtmlObject) {
-	// } else
-	const apply = html ? tagApplications.html : tagApplications.nonHtml;
+let noFix: string[] = [];
+const process = (
+	text: string,
+	LEFT_ANGLE_BRACKET: string,
+	options: Readonly<TaraskOptions>
+): { splittedOrig: string[]; splitted: string[] } => {
+	const { abc, j, OVERRIDE_toTarask: _toTarask = toTarask } = options;
 	const noFix: string[] = [];
-
-	const LEFT_ANGLE_BRACKET = html ? '&lt;' : '<';
 
 	text = ` ${text.trim()} `
 		.replace(/\ufffd/g, '')
@@ -109,7 +107,7 @@ export const tarask: Tarask = (text, options = {}) => {
 		lettersUpperCase[abc]
 	).split(' ');
 
-	text = (options.OVERRIDE_toTarask || toTarask)(
+	text = _toTarask(
 		text.toLowerCase(),
 		replaceWithDict,
 		wordlist,
@@ -122,45 +120,105 @@ export const tarask: Tarask = (text, options = {}) => {
 
 	splitted = text.split(' ');
 	if (abc !== ALPHABET.ARABIC) splitted = restoreCase(splitted, splittedOrig);
-	if (html || (isNonHtmlObject && nonHtml.nodeColors))
-		splitted = toTags(
-			splitted,
-			splittedOrig,
-			abc === ALPHABET.CYRILLIC,
-			apply.F
-		);
+	return { splittedOrig, splitted };
+};
+const applyNoFix = (text: string) => {
+	if (noFix.length)
+		text = text.replace(NOFIX_REGEX, () => noFix.shift() as string);
+	noFix = [];
+	return text;
+};
 
-	text = splitted
+const join = (textArr: string[]): string =>
+	textArr
 		.join(' ')
 		.replace(/&nbsp;/g, ' ')
 		.replace(/ (\p{P}|\p{S}|\d|&#40) /gu, '$1');
+const finilize = (text: string, newLine: string) =>
+	text.replace(/ \t /g, '\t').replace(/ \n /g, newLine).trim();
 
-	let gReplacer: undefined | string | ((substring: G_REGEX_MATCH) => string);
-	if (abc === ALPHABET.CYRILLIC) {
-		if (isHtmlObject) {
-			gReplacer = html.g ? apply.H('$&') : ($0) => apply.H(gobj[$0]);
-		} else if (isNonHtmlObject) {
-			if (nonHtml.nodeColors) {
-				gReplacer = nonHtml.h ? ($0) => apply.H(gobj[$0]) : apply.H('$&');
-			} else if (nonHtml.h) {
-				gReplacer = ($0) => gobj[$0];
-			}
-		}
-	}
+const replaceG = (
+	text: string,
+	replacer: string | ((g: keyof typeof gobj) => string)
+) =>
+	text.replace(
+		G_REGEX,
+		// @ts-ignore
+		replacer
+	);
 
-	if (gReplacer)
-		text = text.replace(
-			G_REGEX,
-			// @ts-ignore
-			gReplacer
+const getCompletedOptions = (
+	options?: DeepPartialReadonly<TaraskOptions>
+): TaraskOptions => ({
+	abc: 0,
+	j: 0,
+	...options,
+});
+
+export const taraskToHtml: Tarask<HtmlOptions> = (
+	text,
+	taraskOptions,
+	htmlOptions = {}
+) => {
+	const options = getCompletedOptions(taraskOptions);
+	const apply = tagApplications.html;
+	const isCyrillic = options.abc === ALPHABET.CYRILLIC;
+	const { splitted, splittedOrig } = process(text, '&lt;', options);
+	addTags(splitted, splittedOrig, isCyrillic, apply.F);
+	text = join(splitted);
+	if (isCyrillic)
+		text = replaceG(
+			text,
+			htmlOptions.g ? apply.H('$&') : ($0) => apply.H(gobj[$0])
 		);
 
-	if (noFix.length)
-		text = text.replace(NOFIX_REGEX, () => noFix.shift() as string);
+	return finilize(
+		applyNoFix(text).replace(OPTIONAL_WORDS_REGEX, ($0) => {
+			const options = $0.slice(1, -1).split('|');
+			const main = options.shift();
+			return `<tarL data-l='${options}'>${main}</tarL>`;
+		}),
+		'<br>'
+	);
+};
 
-	return (html ? finalizer.html(text) : finalizer.nonHtml(text, nonHtml))
-		.replace(/ \t /g, '\t')
-		.trim();
+export const tarask: Tarask<NonHtmlOptions> = (
+	text,
+	taraskOptions,
+	nonHtmlOptions = {}
+) => {
+	const options = getCompletedOptions(taraskOptions);
+	const apply = tagApplications.nonHtml;
+	const isCyrillic = options.abc === ALPHABET.CYRILLIC;
+	const { splitted, splittedOrig } = process(text, '&lt;', options);
+	if (nonHtmlOptions.nodeColors)
+		addTags(splitted, splittedOrig, isCyrillic, apply.F);
+	text = join(splitted);
+	if (isCyrillic && (nonHtmlOptions.h || nonHtmlOptions.nodeColors))
+		text = replaceG(
+			text,
+			nonHtmlOptions.nodeColors
+				? nonHtmlOptions.h
+					? ($0) => apply.H(gobj[$0])
+					: apply.H('$&')
+				: ($0) => gobj[$0]
+		);
+
+	if (
+		'variations' in nonHtmlOptions &&
+		nonHtmlOptions.variations !== VARIATION.ALL
+	) {
+		const wordIndex = nonHtmlOptions.variations ?? 0;
+		const replacer = ($0: string) => $0.slice(1, -1).split('|')[wordIndex];
+		text = text.replace(
+			OPTIONAL_WORDS_REGEX,
+			nonHtmlOptions.nodeColors
+				? ($0) => tagApplications.nonHtml.L(replacer($0))
+				: replacer
+		);
+	}
+
+	return finilize(applyNoFix(text).replace(/&#40/g, '('), '\n');
 };
 
 const restoreCase = (text: string[], orig: string[]): string[] => {
@@ -175,7 +233,7 @@ const restoreCase = (text: string[], orig: string[]): string[] => {
 		if (!oWord[0] || !isUpperCase(oWord[0])) continue;
 		if (word === 'зь') {
 			text[i] = isUpperCase(orig[i + 1]) ? 'ЗЬ' : 'Зь';
-		} else if (isUpperCase(getLastLetter(oWord))) {
+		} else if (isUpperCase(getLastLetter(oWord, i))) {
 			text[i] = word.toUpperCase();
 		} else {
 			text[i] =
@@ -190,19 +248,17 @@ const restoreCase = (text: string[], orig: string[]): string[] => {
 	return text;
 };
 
-const toTags = (
+const addTags = (
 	text: string[],
-	orig: string[],
+	orig: readonly string[],
 	isCyrillic: boolean,
 	applyF: (content: string) => string
-): string[] => {
+): void => {
 	for (let i = 0; i < text.length; i++) {
 		const word = text[i];
 		const oWord = orig[i];
 		if (oWord === word) continue;
-		const wordH = isCyrillic
-			? word.replace(G_REGEX, ($0) => gobj[$0 as G_REGEX_MATCH])
-			: word;
+		const wordH = isCyrillic ? replaceG(word, ($0) => gobj[$0]) : word;
 		if (oWord === wordH) continue;
 		if (!/\(/.test(word)) {
 			if (word.length === oWord.length) {
@@ -251,7 +307,7 @@ const toTags = (
 			word.slice(fromWordEnd + 1);
 	}
 
-	return text;
+	// return text;
 };
 
 const toTarask: ToTarask = (
@@ -300,31 +356,3 @@ const replaceIbyJ = (text: string, always = false) =>
 			? ($0, $1, $2) => toJ($1, $2)
 			: ($0, $1, $2) => (Math.random() >= 0.5 ? toJ($1, $2) : $0)
 	);
-
-const finalizer = {
-	html: (text: string) =>
-		text
-			.replace(OPTIONAL_WORDS_REGEX, ($0) => {
-				const options = $0.slice(1, -1).split('|');
-				const main = options.shift();
-				return `<tarL data-l='${options}'>${main}</tarL>`;
-			})
-			.replace(/ \n /g, '<br>'),
-	nonHtml(text: string, options: TaraskOptions['nonHtml']) {
-		if (
-			isObject(options) &&
-			'variations' in options &&
-			options.variations !== VARIATION.ALL
-		) {
-			const WORD_INDEX = options.variations ?? 0;
-			const replacer = ($0: string) => $0.slice(1, -1).split('|')[WORD_INDEX];
-			text = text.replace(
-				OPTIONAL_WORDS_REGEX,
-				options.nodeColors
-					? ($0) => tagApplications.nonHtml.L(replacer($0))
-					: replacer
-			);
-		}
-		return text.replace(/&#40/g, '(').replace(/ \n /g, '\n');
-	},
-};

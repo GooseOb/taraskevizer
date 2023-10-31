@@ -19,7 +19,7 @@ const colorizeCharInStr = (
 	colorize(str[charIndex], colorCode) +
 	str.slice(charIndex + 1);
 
-export const startTestProcess = () => {
+export const startTestProcess = ({ long = false } = {}) => {
 	print('test', 'start', '35');
 	const passed: string[] = [];
 	const failed: string[] = [];
@@ -35,6 +35,7 @@ export const startTestProcess = () => {
 			fn: (arg: TInput) => TOutput,
 			cases: readonly (readonly [TInput, TOutput])[]
 		) {
+			const longArr = [];
 			for (const [input, expectedValue] of cases) {
 				const output = fn(input);
 				if (output !== expectedValue) {
@@ -52,9 +53,11 @@ export const startTestProcess = () => {
 						)}\nexpected: ${format(coloredExpected)}`
 					);
 					return;
+				} else if (long) {
+					longArr.push(`${input} \x1b[36m->\x1b[0m ${output}`);
 				}
 			}
-			passed.push(name);
+			passed.push(name + (long ? '\n' + longArr.join('\n') : ''));
 		},
 	};
 };

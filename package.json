@@ -2,7 +2,7 @@
 	"name": "taraskevizer",
 	"author": "GooseOb",
 	"license": "MIT",
-	"version": "1.7.5",
+	"version": "2.0.0",
 	"private": false,
 	"homepage": "https://gooseob.github.io/taraskevizatar/",
 	"main": "dist/index.js",
@@ -20,7 +20,7 @@
 	"scripts": {
 		"build": "tsup --config build-config/index.js",
 		"build:bun_EXPERIMENTAL": "bun ./build-config/bun.ts",
-		"dev": "esrun --watch=src/*,test/* --send-code-mode=temporaryFile test",
+		"dev": "esrun --watch=src/*,test/*,bin/* --send-code-mode=temporaryFile test",
 		"dev:bun": "bun ./test/bun-watch.ts",
 		"dev-bun": "bun test --watch",
 		"test": "esrun --send-code-mode=temporaryFile test",

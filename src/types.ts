@@ -3,16 +3,22 @@ type ModifyObjectType<T, TResultObj> = T extends object
 		? T
 		: TResultObj
 	: T;
-type DeepPartial<T> = ModifyObjectType<
+// type DeepPartial<T> = ModifyObjectType<
+// 	T,
+// 	{
+// 		[P in keyof T]?: DeepPartial<T[P]>;
+// 	}
+// >;
+// type DeepReadonly<T> = ModifyObjectType<
+// 	T,
+// 	{
+// 		readonly [P in keyof T]: DeepReadonly<T[P]>;
+// 	}
+// >;
+export type DeepPartialReadonly<T> = ModifyObjectType<
 	T,
 	{
-		[P in keyof T]?: DeepPartial<T[P]>;
-	}
->;
-type DeepReadonly<T> = ModifyObjectType<
-	T,
-	{
-		readonly [P in keyof T]: DeepReadonly<T[P]>;
+		readonly [P in keyof T]?: DeepPartialReadonly<T[P]>;
 	}
 >;
 
@@ -22,6 +28,11 @@ type OptionJ = 0 | 1 | 2;
 // never | random | always
 type Variation = 0 | 1 | 2;
 // no | first | all
+export type TaraskOptions = {
+	abc: Alphabet;
+	j: OptionJ;
+	OVERRIDE_toTarask?: ToTarask;
+};
 export type NonHtmlOptions = {
 	nodeColors: boolean;
 	h: boolean;
@@ -36,17 +47,10 @@ export type ToTarask = (
 	softers: Dict,
 	afterTarask: ExtendedDict
 ) => string;
-export type TaraskOptionsStrict = {
-	abc: Alphabet;
-	j: OptionJ;
-	html: boolean | HtmlOptions;
-	nonHtml: boolean | NonHtmlOptions;
-	OVERRIDE_toTarask?: ToTarask;
-};
-export type TaraskOptions = DeepPartial<TaraskOptionsStrict>;
-export type Tarask = (
+export type Tarask<TOptions extends object> = (
 	text: string,
-	options?: DeepReadonly<TaraskOptions>
+	taraskOptions?: DeepPartialReadonly<TaraskOptions>,
+	options?: DeepPartialReadonly<TOptions>
 ) => string;
 export type Dict<T = RegExp> = [T, string][];
 export type ExtendedDict = [

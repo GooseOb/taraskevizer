@@ -2,11 +2,7 @@ import { readableStreamToText } from 'bun';
 import { watch } from 'fs/promises';
 import * as path from 'path';
 
-const watcher = watch(path.resolve(import.meta.dir, '..'), {
-	recursive: true,
-});
-
-const pattern = /^(?:src\/|test\/(?:index\.ts|lib\.ts|cases|large-text))/;
+const pattern = /^(?:bin\/|src\/|test\/(?:index\.ts|lib\.ts|cases|large-text))/;
 
 const cooldown = {
 	value: true,
@@ -30,6 +26,10 @@ const update = async () => {
 };
 
 await update();
+
+const watcher = watch(path.resolve(import.meta.dir, '..'), {
+	recursive: true,
+});
 
 for await (const event of watcher)
 	if (

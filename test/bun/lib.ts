@@ -15,3 +15,16 @@ export const testOnCases = <TInput, TOutput extends string>(
 		});
 	});
 };
+
+export const testOnCasesAsync = <TInput, TOutput extends string>(
+	name: string,
+	fn: (arg: TInput) => Promise<TOutput>,
+	cases: readonly (readonly [TInput, TOutput])[],
+	label = getLabel('s')
+) => {
+	describe(name, () => {
+		test.each(cases)(label, async (input, expected) => {
+			expect(await fn(input)).toBe(expected);
+		});
+	});
+};

@@ -3,6 +3,14 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 
 const fileNameWithoutExt = process.argv[2];
+
+if (!fileNameWithoutExt) {
+	process.stderr.write(
+		'Use \x1b[35maddCase.js \x1b[33m<fileName> <varName?>\x1b[0m\n'
+	);
+	process.exit(1);
+}
+
 const varName =
 	process.argv[3] ||
 	fileNameWithoutExt.replace(/-(.)/g, ($0, $1) => $1.toUpperCase());
