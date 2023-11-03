@@ -2,14 +2,14 @@ import { appendFile, readFile, writeFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
-const fileNameWithoutExt = process.argv[2];
-
-if (!fileNameWithoutExt) {
+if (process.argv.length < 3) {
 	process.stderr.write(
-		'Use \x1b[35maddCase.js \x1b[33m<fileName> <varName?>\x1b[0m\n'
+		'Use \x1b[35maddCase.js \x1b[33m<fileName> [<varName>]\x1b[0m\n'
 	);
 	process.exit(1);
 }
+
+const fileNameWithoutExt = process.argv[2];
 
 const varName =
 	process.argv[3] ||

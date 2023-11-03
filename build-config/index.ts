@@ -1,6 +1,6 @@
-import path from 'path';
+import * as path from 'path';
 import { readFile, writeFile } from 'fs/promises';
-import { defineConfig } from 'tsup';
+import { defineConfig, Options } from 'tsup';
 import postprocess from './postprocess';
 import generateJSON from './json-generator';
 import noDebugFiles from './esbuild-plugins/no-debug-files';
@@ -16,13 +16,17 @@ export default defineConfig({
 	format: ['cjs', 'esm'],
 	dts: true,
 	esbuildPlugins: [noDebugFiles],
-	onSuccess() {
+	outDir: 'dist',
+	onSuccess(this: Required<Options>) {
 		if (!isDeploy) generateJSON();
 		for (const ext of ['js', 'cjs']) {
 			const filePath = path.resolve(this.outDir, 'index.' + ext);
 			readFile(filePath, 'utf8').then((text) =>
-				writeFile(filePath, postprocess(text, ext))
+				writeFile(filePath, postprocess(text))
 			);
 		}
+		return new Promise((res) => {
+			res();
+		});
 	},
 });
