@@ -2,12 +2,11 @@
 import { tarask, taraskToHtml } from '../dist/index.js';
 import { readFile } from 'fs/promises';
 
-const print = (...msgs) => {
-	console.log('\x1b[34m[taraskevizer]\x1b[0m', ...msgs);
+const printWithPrefix = (msg) => {
+	process.stdout.write(
+		'\x1b[34m[taraskevizer]\x1b[0m ' + msg.toString() + '\n'
+	);
 };
-
-const getPkg = () =>
-	readFile(new URL('../package.json', import.meta.url)).then(JSON.parse);
 
 process.argv.splice(0, 2);
 
@@ -15,8 +14,10 @@ const checkForOptions = (options) =>
 	options.includes(process.argv[0].toLowerCase());
 
 if (checkForOptions(['-v', '--version'])) {
-	const { version } = await getPkg();
-	print(version);
+	const { version } = JSON.parse(
+		await readFile(new URL('../package.json', import.meta.url), 'utf8')
+	);
+	printWithPrefix(version);
 	process.exit(0);
 }
 
@@ -29,7 +30,14 @@ const htmlOptions = { g: true };
 
 let isHtml = false;
 
-const optionDict = [
+const toHashTable = (dict) => {
+	const result = {};
+	for (const [options, callback] of dict)
+		for (const option of options) result[option] = callback;
+	return result;
+};
+
+const optionDict = toHashTable([
 	[
 		['--latin', '-l'],
 		() => {
@@ -91,21 +99,22 @@ const optionDict = [
 			isHtml = true;
 		},
 	],
-];
+]);
 
-optionEater: while (true) {
-	for (const [options, callback] of optionDict)
-		if (checkForOptions(options)) {
-			process.argv.shift();
-			callback();
-			continue optionEater;
-		}
-	break;
+let currOption;
+
+while ((currOption = process.argv.shift())) {
+	if (currOption in optionDict) {
+		optionDict[currOption]();
+	} else {
+		process.argv.unshift(currOption);
+		break;
+	}
 }
 
 const text = process.argv.join(' ');
 
-console.log(
+process.stdout.write(
 	isHtml
 		? taraskToHtml(text, taraskOptions, htmlOptions)
 		: tarask(text, taraskOptions, nonHtmlOptions)

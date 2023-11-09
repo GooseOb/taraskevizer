@@ -212,9 +212,7 @@ export const tarask: Tarask<NonHtmlOptions> = (
 		const replacer = ($0: string) => $0.slice(1, -1).split('|')[wordIndex];
 		text = text.replace(
 			OPTIONAL_WORDS_REGEX,
-			nonHtmlOptions.nodeColors
-				? ($0) => tagApplications.nonHtml.L(replacer($0))
-				: replacer
+			nonHtmlOptions.nodeColors ? ($0) => apply.L(replacer($0)) : replacer
 		);
 	}
 

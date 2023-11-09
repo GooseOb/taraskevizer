@@ -538,6 +538,7 @@ const rawWordlist: RawDict = [
 [/календ/, 'кале\ufffdнд'],
 [/ленд/, 'лэнд'],
 [/люксем/, 'люксэм'],
+[/ луіш/, ' лу\ufffdіш'],
 [/ луі/, ' люі'],
 [/лунаці/, 'люнаты'],
 [/люнебур/, 'люнэбур'],
@@ -730,6 +731,7 @@ const rawWordlist: RawDict = [
 [/персі(?=[ійя])/, 'пэрсі'],
 	[/персід/, 'пэрсыд'],
 [/ перу/, ' пэру'],
+[/перыгел/, 'пэрыг\ufffdел'],
 [/перыяд/, 'пэрыяд'],
 [/ песа /, ' пэса '],
 [/песімі(?=[зс])/, 'пэсымі'],
@@ -1566,7 +1568,7 @@ const rawWordlist: RawDict = [
 [/нкск/, 'нск'],
 [/[ктцч]ск/, 'цк'],
 [/падскарб/, 'пад\ufffdскарб'],
-[/ райхск/, ' райх\ufffdск'],
+[/ (звыш|райх)ск/, ' $1\ufffdск'],
 [/ г[еэ]рцагс/, ' гэрцаг\ufffdс'],
 [/ (дву|тро|чатыро)хс/, ' $1х\ufffdс'],
 [/[гґзжхш]с(?=(?:к|тв)\S)/, 'с'],
@@ -1801,7 +1803,7 @@ for (const [raw, obj] of arr)
 
 for (const obj of [latinLetters, latinLettersUpperCase, greekLetters, greekLettersUpperCase, thWords])
 	for (const item of obj)
-		item[0] =  RegExp(item[0], 'g' + item[0].flags);
+		item[0] = RegExp(item[0], 'g' + item[0].flags);
 
 for (const word of gwords)
 	wordlist.push([RegExp(word.replace(/ґ/g, 'г'), 'g'), word]);
