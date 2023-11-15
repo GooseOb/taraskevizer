@@ -1,7 +1,7 @@
-import { Dict } from '../types';
+import type { RawDict } from './types';
+import type { Dict } from '../types';
 import { latinLetters, latinLettersUpperCase } from './latin';
 import { greekLetters, greekLettersUpperCase, thWords } from './greek';
-import { RawDict } from './types';
 import { rawArabLetters } from './arabic';
 
 const chemicalElements1: string[] = [

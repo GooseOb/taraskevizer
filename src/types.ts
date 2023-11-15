@@ -3,18 +3,6 @@ type ModifyObjectType<T, TResultObj> = T extends object
 		? T
 		: TResultObj
 	: T;
-// type DeepPartial<T> = ModifyObjectType<
-// 	T,
-// 	{
-// 		[P in keyof T]?: DeepPartial<T[P]>;
-// 	}
-// >;
-// type DeepReadonly<T> = ModifyObjectType<
-// 	T,
-// 	{
-// 		readonly [P in keyof T]: DeepReadonly<T[P]>;
-// 	}
-// >;
 export type DeepPartialReadonly<T> = ModifyObjectType<
 	T,
 	{

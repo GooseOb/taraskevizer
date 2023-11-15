@@ -1,4 +1,4 @@
-import { ReplaceWithDict } from './types';
+import type { ReplaceWithDict } from './types';
 
 type AddParameter<TFn, TNewArg> = TFn extends (
 	...args: infer TArgs

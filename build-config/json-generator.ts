@@ -10,7 +10,7 @@ import {
 	greekLettersUpperCase,
 	thWords,
 } from '../src/dict';
-import { Dict } from '../src/types';
+import type { Dict } from '../src/types';
 const outputPath = path.resolve('json');
 
 const dictToStr = (dict: Dict) => {

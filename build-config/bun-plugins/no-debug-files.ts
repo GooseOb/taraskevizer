@@ -1,4 +1,4 @@
-import { BunPlugin } from 'bun';
+import type { BunPlugin } from 'bun';
 
 export default {
 	name: 'no-debug-files',

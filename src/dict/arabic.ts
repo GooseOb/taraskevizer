@@ -1,4 +1,4 @@
-import { RawDict } from './types';
+import type { RawDict } from './types';
 
 const soft = '\u0652(?=[еёіюяь])';
 const presoft = '([تزكثࢮбвгджзйклмнпрстфхцчшў])\u0652?(\u0651?)';

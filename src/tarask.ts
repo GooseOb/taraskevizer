@@ -9,7 +9,7 @@ import {
 	greekLettersUpperCase,
 	thWords,
 } from './dict';
-import {
+import type {
 	Tarask,
 	AlphabetDependentDict,
 	ExtendedDict,
