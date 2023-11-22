@@ -23,8 +23,10 @@ export const testOnCasesAsync = <TInput, TOutput extends string>(
 	label = getLabel('s')
 ) => {
 	describe(name, () => {
-		test.each(cases)(label, async (input, expected) => {
-			expect(await fn(input)).toBe(expected);
+		test.each(cases)(label, (input, expected) => {
+			fn(input).then((output) => {
+				expect(output).toBe(expected);
+			});
 		});
 	});
 };

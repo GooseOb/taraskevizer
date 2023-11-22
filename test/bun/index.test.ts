@@ -43,24 +43,26 @@ testOnCases(
 	jLabel
 );
 
-const bunBinArr = [
-	'bun',
-	path.resolve(import.meta.dir, '..', '..', 'bin', 'index.js'),
-];
+if (process.env.NO_CLI !== 'true') {
+	const bunBinArr = [
+		'bun',
+		path.resolve(import.meta.dir, '..', '..', 'bin', 'index.js'),
+	];
 
-testOnCasesAsync(
-	'\x1b[32mCLI',
-	(options) => {
-		const { stdout, stderr } = Bun.spawn(bunBinArr.concat(options));
+	testOnCasesAsync(
+		'\x1b[32mCLI',
+		(options) => {
+			const { stdout, stderr } = Bun.spawn(bunBinArr.concat(options));
 
-		if (stderr) {
-			process.stderr.write(stderr);
-		}
+			if (stderr) {
+				process.stderr.write(stderr);
+			}
 
-		return Bun.readableStreamToText(stdout).then((text) => text.trim());
-	},
-	cases.cli,
-	jLabel
-);
+			return Bun.readableStreamToText(stdout).then((text) => text.trim());
+		},
+		cases.cli,
+		jLabel
+	);
+}
 
 // add a new case here

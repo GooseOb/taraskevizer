@@ -27,26 +27,31 @@ test('Greek th', (text) => tarask(text, { abc: ALPHABET.GREEK }), cases.greek);
 test('Multiline', tarask, cases.multiline.nonHtml);
 test('Multiline:html', taraskToHtml, cases.multiline.html);
 
-const pathToBin = path.resolve(
-	fileURLToPath(import.meta.url).replace(/taraskevizer[\\/].+/, 'taraskevizer'),
-	'bin',
-	'index.js'
-);
-test(
-	'CLI',
-	(options) => {
-		const { stdout, stderr } = spawnSync('node', [pathToBin, ...options], {
-			encoding: 'utf-8',
-		});
+if (process.env.NO_CLI !== 'true') {
+	const pathToBin = path.resolve(
+		fileURLToPath(import.meta.url).replace(
+			/taraskevizer[\\/].+/,
+			'taraskevizer'
+		),
+		'bin',
+		'index.js'
+	);
+	test(
+		'CLI',
+		(options) => {
+			const { stdout, stderr } = spawnSync('node', [pathToBin, ...options], {
+				encoding: 'utf-8',
+			});
 
-		if (stderr) {
-			process.stderr.write(stderr);
-		}
+			if (stderr) {
+				process.stderr.write(stderr);
+			}
 
-		return stdout.trim();
-	},
-	cases.cli
-);
+			return stdout.trim();
+		},
+		cases.cli
+	);
+}
 
 // add a new case here
 

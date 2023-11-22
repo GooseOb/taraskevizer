@@ -30,7 +30,7 @@ const getLastLetter = (word: string, i: number) => {
 	throw new Error(`the last letter of the word ${word} not found. index: ${i}`);
 };
 
-const NOFIX_CHAR = ' \uffff ';
+const NOFIX_CHAR = ' \ue0fe ';
 const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
 const OPTIONAL_WORDS_REGEX = /\(.*?\)/g;
 const G_REGEX = /[Ґґ]/g;
@@ -88,7 +88,7 @@ const process = (
 	const noFix: string[] = [];
 
 	text = ` ${text.trim()} `
-		.replace(/\ufffd/g, '')
+		.replace(/\ue0ff/g, '')
 		.replace(/<([,.]?)([.\s]*?)>/g, ($0, $1, $2) => {
 			if ($1 === ',') return LEFT_ANGLE_BRACKET + $2 + '>';
 			noFix[noFix.length] = $1 === '.' ? $2 : $0;
@@ -139,7 +139,7 @@ const finilize = (text: string, newLine: string) =>
 
 const replaceG = (
 	text: string,
-	replacer: string | ((g: keyof typeof gobj) => string)
+	replacer: string | ((g: G_REGEX_MATCH) => string)
 ) =>
 	text.replace(
 		G_REGEX,
