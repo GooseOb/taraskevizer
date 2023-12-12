@@ -44,9 +44,13 @@ testOnCases(
 );
 
 if (process.env.NO_CLI !== 'true') {
+	const root = path.resolve(import.meta.dir, '..', '..');
 	const bunBinArr = [
 		'bun',
-		path.resolve(import.meta.dir, '..', '..', 'bin', 'index.js'),
+		path.resolve(
+			root,
+			(await Bun.file(path.resolve(root, 'package.json')).json()).bin.tarask
+		),
 	];
 
 	testOnCasesAsync(

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import { tarask, taraskToHtml } from '../dist/index.js';
+import { tarask, taraskToHtml } from './index.js';
 import { readFile } from 'fs/promises';
+import type { NonHtmlOptions, TaraskOptions, HtmlOptions } from './types';
 
-const printWithPrefix = (msg) => {
+const printWithPrefix = (msg: string) => {
 	process.stdout.write(
 		'\x1b[34m[taraskevizer]\x1b[0m ' + msg.toString() + '\n'
 	);
@@ -10,7 +11,7 @@ const printWithPrefix = (msg) => {
 
 process.argv.splice(0, 2);
 
-const checkForOptions = (options) =>
+const checkForOptions = (options: string[]) =>
 	options.includes(process.argv[0].toLowerCase());
 
 if (checkForOptions(['-v', '--version'])) {
@@ -21,17 +22,17 @@ if (checkForOptions(['-v', '--version'])) {
 	process.exit(0);
 }
 
-/** @type {Partial<import('../dist/types.js').TaraskOptions>} */
-const taraskOptions = {};
-/** @type {Partial<import('../dist/types.js').NonHtmlOptions>} */
-const nonHtmlOptions = { variations: 2, nodeColors: true };
-/** @type {Partial<import('../dist/types.js').HtmlOptions>} */
-const htmlOptions = { g: true };
+const taraskOptions: Partial<TaraskOptions> = {};
+const nonHtmlOptions: Partial<NonHtmlOptions> = {
+	variations: 2,
+	nodeColors: true,
+};
+const htmlOptions: Partial<HtmlOptions> = { g: true };
 
 let isHtml = false;
 
-const toHashTable = (dict) => {
-	const result = {};
+const toHashTable = (dict: [string[], () => void][]) => {
+	const result: Record<string, () => void> = {};
 	for (const [options, callback] of dict)
 		for (const option of options) result[option] = callback;
 	return result;
@@ -101,7 +102,7 @@ const optionDict = toHashTable([
 	],
 ]);
 
-let currOption;
+let currOption: string | undefined;
 
 while ((currOption = process.argv.shift())) {
 	if (currOption in optionDict) {

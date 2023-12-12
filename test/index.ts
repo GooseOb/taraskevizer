@@ -4,6 +4,7 @@ import * as cases from './cases';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
+import { readFile } from 'node:fs/promises';
 
 const { endTestProcess, test } = startTestProcess({ long: false });
 
@@ -28,13 +29,10 @@ test('Multiline', tarask, cases.multiline.nonHtml);
 test('Multiline:html', taraskToHtml, cases.multiline.html);
 
 if (process.env.NO_CLI !== 'true') {
+	const root = path.resolve(fileURLToPath(import.meta.url), '..', '..', '..');
 	const pathToBin = path.resolve(
-		fileURLToPath(import.meta.url).replace(
-			/taraskevizer[\\/].+/,
-			'taraskevizer'
-		),
-		'bin',
-		'index.js'
+		root,
+		JSON.parse(await readFile(path.resolve(root, 'package.json'))).bin.tarask
 	);
 	test(
 		'CLI',
@@ -43,9 +41,7 @@ if (process.env.NO_CLI !== 'true') {
 				encoding: 'utf-8',
 			});
 
-			if (stderr) {
-				process.stderr.write(stderr);
-			}
+			if (stderr) process.stderr.write(stderr);
 
 			return stdout.trim();
 		},
@@ -60,10 +56,7 @@ test('Latin', (text) => tarask(text, { abc: ALPHABET.LATIN }), cases.latin);
 const code = endTestProcess();
 
 if (process.argv.includes('--benchmark')) {
-	const {
-		existsSync,
-		promises: { readFile },
-	} = await import('node:fs');
+	const { existsSync } = await import('node:fs');
 	const path = 'test/large-text.txt';
 
 	if (!existsSync(path)) {
