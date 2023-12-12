@@ -66,7 +66,7 @@ if (process.env.NO_CLI !== 'true') {
 }
 
 testOnCases(
-	'\x1b[31mLatin',
+	'\x1b[33mLatin',
 	(text) => tarask(text, { abc: ALPHABET.LATIN }),
 	cases.latin
 );
