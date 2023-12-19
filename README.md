@@ -9,11 +9,11 @@ $ npm i taraskevizer
 ```js
 import { tarask, taraskToHtml, ALPHABET, J, VARIATION } from 'taraskevizer';
 
-const taraskedText = tarask(text);
-// планета -> плянэта
+const taraskedText = tarask('планета');
+// плянэта
 
 const taraskedText = tarask(
-	text,
+	'планета і Гродна',
 	{
 		abc: ALPHABET.CYRILLIC,
 		j: J.ALWAYS,
@@ -24,10 +24,10 @@ const taraskedText = tarask(
 		h: false,
 	}
 );
-// планета і Гродна -> пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m
+// 'пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m'
 
-const taraskedText = taraskToHtml(
-	text,
+const taraskedTextHtml = taraskToHtml(
+	'энергія планеты',
 	{
 		abc: ALPHABET.LATIN,
 	},
@@ -35,10 +35,10 @@ const taraskedText = taraskToHtml(
 		g: false, // ignored, because alphabet is set to latin
 	}
 );
-// энергія планеты -> en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety
+// en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety
 ```
 
-### Function signatures are in [this file](./dist/index.d.ts)
+### Function signatures are in [this file](./dist/index.d.ts) (not available if project is not built)
 
 ## TaraskOptions
 
