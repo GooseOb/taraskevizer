@@ -8,6 +8,7 @@
 }
 
 npm run build
+bun run typecheck
 npm run test
 prettier --write .
 git add -A .

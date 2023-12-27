@@ -2,7 +2,7 @@
 	"name": "taraskevizer",
 	"author": "GooseOb",
 	"license": "MIT",
-	"version": "2.1.2",
+	"version": "3.0.0-alpha.1",
 	"private": false,
 	"homepage": "https://gooseob.github.io/taraskevizatar/",
 	"main": "dist/index.js",
@@ -13,7 +13,10 @@
 		"tarask": "dist/bin.js"
 	},
 	"files": [
-		"dist/**/*",
+		"dist/index.js",
+		"dist/index.cjs",
+		"dist/index.d.ts",
+		"dist/bin.js",
 		"README.md"
 	],
 	"scripts": {
@@ -23,7 +26,8 @@
 		"dev:bun": "bun ./test/bun-watch.ts",
 		"dev-bun": "bun test --watch",
 		"test": "esrun --send-code-mode=temporaryFile test",
-		"prepare": "husky install"
+		"prepare": "husky install",
+		"typecheck": "tsc --project src/tsconfig.json"
 	},
 	"repository": {
 		"type": "git",

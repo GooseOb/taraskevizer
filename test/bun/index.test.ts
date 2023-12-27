@@ -58,11 +58,9 @@ if (process.env.NO_CLI !== 'true') {
 		(options) => {
 			const { stdout, stderr } = Bun.spawn(bunBinArr.concat(options));
 
-			if (stderr) {
-				process.stderr.write(stderr);
-			}
-
-			return Bun.readableStreamToText(stdout).then((text) => text.trim());
+			return Bun.readableStreamToText(stderr || stdout).then((text) =>
+				text.trim()
+			);
 		},
 		cases.cli,
 		objectLabel

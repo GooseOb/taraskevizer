@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { readFile, unlink, writeFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import { defineConfig, build, Options } from 'tsup';
 import postprocess from './postprocess';
 import generateJSON from './json-generator';
@@ -44,6 +44,5 @@ export default defineConfig({
 			},
 		});
 		for (const ext of ['js', 'cjs']) await fixCharsIn('index.' + ext);
-		setTimeout(() => unlink(path.resolve(outDir, 'index.d.cts')), 1500);
 	},
 });

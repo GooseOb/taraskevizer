@@ -32,7 +32,8 @@ if (process.env.NO_CLI !== 'true') {
 	const root = path.resolve(fileURLToPath(import.meta.url), '..', '..', '..');
 	const pathToBin = path.resolve(
 		root,
-		JSON.parse(await readFile(path.resolve(root, 'package.json'))).bin.tarask
+		JSON.parse(await readFile(path.resolve(root, 'package.json'), 'utf-8')).bin
+			.tarask
 	);
 	test(
 		'CLI',

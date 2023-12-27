@@ -19,7 +19,7 @@ const taraskedText = tarask(
 		j: J.ALWAYS,
 	},
 	{
-		nodeColors: true,
+		ansiColors: true,
 		variations: VARIATION.FIRST,
 		h: false,
 	}
@@ -110,7 +110,7 @@ true: <tarH>ґ</tarH> <tarH>Ґ</tarH>
 
 ## NonHtmlOptions
 
-### nodeColors
+### ansiColors
 
 Type: `boolean`
 

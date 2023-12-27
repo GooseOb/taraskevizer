@@ -1,9 +1,10 @@
 {
 	"compilerOptions": {
+		"target": "ESNext",
 		"noEmit": false,
 		"esModuleInterop": true,
 		"declaration": true
 	},
 	"extends": "../tsconfig.json",
-	"files": ["index.ts"]
+	"files": ["bin.ts"]
 }

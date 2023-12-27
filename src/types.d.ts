@@ -9,13 +9,9 @@ export type DeepPartialReadonly<T> = ModifyObjectType<
 		readonly [P in keyof T]?: DeepPartialReadonly<T[P]>;
 	}
 >;
-
 type Alphabet = 0 | 1 | 2 | 3;
-// cyrillic | latin | arabic | greek
 type OptionJ = 0 | 1 | 2;
-// never | random | always
 type Variation = 0 | 1 | 2;
-// no | first | all
 export type TaraskOptions = {
 	abc: Alphabet;
 	j: OptionJ;
@@ -26,7 +22,9 @@ export type NonHtmlOptions = {
 	h: boolean;
 	variations: Variation;
 };
-export type HtmlOptions = { g: boolean };
+export type HtmlOptions = {
+	g: boolean;
+};
 export type ReplaceWithDict = (text: string, dict?: ExtendedDict) => string;
 export type ToTarask = (
 	text: string,
@@ -45,4 +43,7 @@ export type ExtendedDict = [
 	RegExp,
 	string | ((...substrings: string[]) => string)
 ][];
-export type AlphabetDependentDict = { [key in Alphabet]?: Dict };
+export type AlphabetDependentDict = {
+	[key in Alphabet]?: Dict;
+};
+export {};

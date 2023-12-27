@@ -1,19 +1,14 @@
 #!/usr/bin/env node
 import { tarask, taraskToHtml } from './index.js';
 import { readFile } from 'fs/promises';
-import type { NonHtmlOptions, TaraskOptions, HtmlOptions } from './types';
-
-const printWithPrefix = (msg: string) => {
+const printWithPrefix = (msg) => {
 	process.stdout.write(
 		'\x1b[34m[taraskevizer]\x1b[0m ' + msg.toString() + '\n'
 	);
 };
-
 process.argv.splice(0, 2);
-
-const checkForOptions = (options: string[]) =>
+const checkForOptions = (options) =>
 	options.includes(process.argv[0].toLowerCase());
-
 if (checkForOptions(['-v', '--version'])) {
 	const { version } = JSON.parse(
 		await readFile(new URL('../package.json', import.meta.url), 'utf8')
@@ -21,23 +16,19 @@ if (checkForOptions(['-v', '--version'])) {
 	printWithPrefix(version);
 	process.exit(0);
 }
-
-const taraskOptions: Partial<TaraskOptions> = {};
-const nonHtmlOptions: Partial<NonHtmlOptions> = {
+const taraskOptions = {};
+const nonHtmlOptions = {
 	variations: 2,
 	ansiColors: true,
 };
-const htmlOptions: Partial<HtmlOptions> = { g: true };
-
+const htmlOptions = { g: true };
 let isHtml = false;
-
-const toHashTable = (dict: [string[], () => void][]) => {
-	const result: Record<string, () => void> = {};
+const toHashTable = (dict) => {
+	const result = {};
 	for (const [options, callback] of dict)
 		for (const option of options) result[option] = callback;
 	return result;
 };
-
 const optionDict = toHashTable([
 	[
 		['--latin', '-l'],
@@ -101,9 +92,7 @@ const optionDict = toHashTable([
 		},
 	],
 ]);
-
-let currOption: string | undefined;
-
+let currOption;
 while ((currOption = process.argv.shift())) {
 	if (currOption in optionDict) {
 		optionDict[currOption]();
@@ -112,9 +101,7 @@ while ((currOption = process.argv.shift())) {
 		break;
 	}
 }
-
 const text = process.argv.join(' ');
-
 process.stdout.write(
 	isHtml
 		? taraskToHtml(text, taraskOptions, htmlOptions)
