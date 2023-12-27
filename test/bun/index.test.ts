@@ -3,7 +3,7 @@ import { ALPHABET, tarask, taraskToHtml } from '../../src';
 import * as cases from '../cases';
 import * as path from 'path';
 
-const jLabel = getLabel('j');
+const objectLabel = getLabel('j');
 
 testOnCases('\x1b[31mTaraskevization', tarask, cases.taraskevization);
 
@@ -11,21 +11,21 @@ testOnCases(
 	'\x1b[33mHtmlOptions',
 	([text, html]) => taraskToHtml(text, {}, html),
 	cases.htmlOptions,
-	jLabel
+	objectLabel
 );
 
 testOnCases(
 	'\x1b[34mNonHtmlOptions',
 	([text, nonHtml]) => tarask(text, {}, nonHtml),
 	cases.nonHtmlOptions,
-	jLabel
+	objectLabel
 );
 
 testOnCases(
 	'\x1b[36mi -> j',
 	([text, j, abc]) => tarask(text, { j, abc }),
 	cases.itoj,
-	jLabel
+	objectLabel
 );
 
 testOnCases(
@@ -34,13 +34,13 @@ testOnCases(
 	cases.greek
 );
 
-testOnCases('\x1b[31mMultiline', tarask, cases.multiline.nonHtml, jLabel);
+testOnCases('\x1b[31mMultiline', tarask, cases.multiline.nonHtml, objectLabel);
 
 testOnCases(
 	'\x1b[31mMultiline:html',
 	taraskToHtml,
 	cases.multiline.html,
-	jLabel
+	objectLabel
 );
 
 if (process.env.NO_CLI !== 'true') {
@@ -65,7 +65,7 @@ if (process.env.NO_CLI !== 'true') {
 			return Bun.readableStreamToText(stdout).then((text) => text.trim());
 		},
 		cases.cli,
-		jLabel
+		objectLabel
 	);
 }
 
