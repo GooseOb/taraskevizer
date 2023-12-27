@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 import { tarask, taraskToHtml } from './index.js';
+import readline from 'readline/promises';
 import { readFile } from 'fs/promises';
 import type { NonHtmlOptions, TaraskOptions, HtmlOptions } from './types';
 
+const prefix = '\x1b[34m[taraskevizer]\x1b[0m ';
 const printWithPrefix = (msg: string) => {
-	process.stdout.write(
-		'\x1b[34m[taraskevizer]\x1b[0m ' + msg.toString() + '\n'
-	);
+	process.stdout.write(prefix + msg.toString() + '\n');
 };
 
 process.argv.splice(0, 2);
 
 const checkForOptions = (options: string[]) =>
-	options.includes(process.argv[0].toLowerCase());
+	process.argv[0] && options.includes(process.argv[0].toLowerCase());
 
 if (checkForOptions(['-v', '--version'])) {
 	const { version } = JSON.parse(
@@ -113,10 +113,18 @@ while ((currOption = process.argv.shift())) {
 	}
 }
 
-const text = process.argv.join(' ');
+let text = process.argv.length
+	? process.argv.join(' ')
+	: await readline
+			.createInterface({
+				input: process.stdin,
+				output: process.stdout,
+			})
+			.question(prefix + 'Enter the text:\n');
 
 process.stdout.write(
 	isHtml
 		? taraskToHtml(text, taraskOptions, htmlOptions)
 		: tarask(text, taraskOptions, nonHtmlOptions)
 );
+process.exit(0);
