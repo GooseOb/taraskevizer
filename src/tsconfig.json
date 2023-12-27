@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"target": "ESNext",
-		"noEmit": false,
+		"noEmit": true,
 		"esModuleInterop": true,
 		"declaration": true
 	},
