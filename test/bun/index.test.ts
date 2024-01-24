@@ -73,4 +73,6 @@ testOnCases(
 	cases.latin
 );
 
+testOnCases('\x1b[31mSpecialConstructions', tarask, cases.specialConstructions);
+
 // add a new case here

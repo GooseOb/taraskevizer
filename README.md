@@ -9,10 +9,9 @@ $ npm i taraskevizer
 ```js
 import { tarask, taraskToHtml, ALPHABET, J, VARIATION } from 'taraskevizer';
 
-const taraskedText = tarask('планета');
-// плянэта
+tarask('планета'); // "плянэта"
 
-const taraskedText = tarask(
+tarask(
 	'планета і Гродна',
 	{
 		abc: ALPHABET.CYRILLIC,
@@ -23,10 +22,9 @@ const taraskedText = tarask(
 		variations: VARIATION.FIRST,
 		h: false,
 	}
-);
-// 'пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m'
+); // "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
 
-const taraskedTextHtml = taraskToHtml(
+taraskToHtml(
 	'энергія планеты',
 	{
 		abc: ALPHABET.LATIN,
@@ -34,8 +32,7 @@ const taraskedTextHtml = taraskToHtml(
 	{
 		g: false, // ignored, because alphabet is set to latin
 	}
-);
-// en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety
+); // "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
 ```
 
 ### Function signatures are in [this file](./dist/index.d.ts) (not available if project is not built)
@@ -177,6 +174,13 @@ Can be replaced by `ґ`(`g`) letter. appears only if alphabet is cyrillic
 
 <tarH>Г</tarH>валт
 ```
+
+## Special Constructions
+
+|             | fix          | no fix       |
+| ----------- | ------------ | ------------ |
+| brackets    | `<,Планета>` | `<Планета>`  |
+| no brackets | `Планета`    | `<.Планета>` |
 
 # CLI
 

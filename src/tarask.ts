@@ -78,20 +78,20 @@ const afterTarask: ExtendedDict = [
 	],
 ];
 
-let noFix: string[] = [];
 const process = (
 	text: string,
 	LEFT_ANGLE_BRACKET: string,
 	options: Readonly<TaraskOptions>
-): { splittedOrig: string[]; splitted: string[] } => {
+): { splittedOrig: string[]; splitted: string[]; noFixArr: string[] } => {
 	const { abc, j, OVERRIDE_toTarask: _toTarask = toTarask } = options;
-	const noFix: string[] = [];
 
+	const noFixArr: string[] = [];
 	text = ` ${text.trim()} `
 		.replace(/\ue0ff/g, '')
-		.replace(/<([,.]?)([.\s]*?)>/g, ($0, $1, $2) => {
+		.replace(/<([,.]?)(.*?)>/gs, ($0, $1, $2) => {
+			console.log($0, ':', $1, ',', $2);
 			if ($1 === ',') return LEFT_ANGLE_BRACKET + $2 + '>';
-			noFix[noFix.length] = $1 === '.' ? $2 : $0;
+			noFixArr.push($1 === '.' ? $2 : $0);
 			return NOFIX_CHAR;
 		})
 		.replace(/г'(?![еёіюя])/g, 'ґ')
@@ -120,14 +120,11 @@ const process = (
 
 	splitted = text.split(' ');
 	if (abc !== ALPHABET.ARABIC) splitted = restoreCase(splitted, splittedOrig);
-	return { splittedOrig, splitted };
+	return { splittedOrig, splitted, noFixArr };
 };
-const applyNoFix = (text: string) => {
-	if (noFix.length)
-		text = text.replace(NOFIX_REGEX, () => noFix.shift() as string);
-	noFix = [];
-	return text;
-};
+
+const applyNoFix = (arr: string[], text: string) =>
+	arr.length ? text.replace(NOFIX_REGEX, () => arr.shift() as string) : text;
 
 const join = (textArr: string[]): string =>
 	textArr
@@ -163,7 +160,7 @@ export const taraskToHtml: Tarask<HtmlOptions> = (
 	const options = getCompletedOptions(taraskOptions);
 	const wrapInTag = wrappers.html;
 	const isCyrillic = options.abc === ALPHABET.CYRILLIC;
-	const { splitted, splittedOrig } = process(text, '&lt;', options);
+	const { splitted, splittedOrig, noFixArr } = process(text, '&lt;', options);
 	highlightChanges(splitted, splittedOrig, isCyrillic, wrapInTag.fix);
 	text = join(splitted);
 	if (isCyrillic)
@@ -175,7 +172,7 @@ export const taraskToHtml: Tarask<HtmlOptions> = (
 		);
 
 	return finilize(
-		applyNoFix(text).replace(OPTIONAL_WORDS_REGEX, ($0) => {
+		applyNoFix(noFixArr, text).replace(OPTIONAL_WORDS_REGEX, ($0) => {
 			const options = $0.slice(1, -1).split('|');
 			const main = options.shift();
 			return `<tarL data-l='${options}'>${main}</tarL>`;
@@ -192,7 +189,7 @@ export const tarask: Tarask<NonHtmlOptions> = (
 	const options = getCompletedOptions(taraskOptions);
 	const wrapInColorOf = wrappers.ansiColors;
 	const isCyrillic = options.abc === ALPHABET.CYRILLIC;
-	const { splitted, splittedOrig } = process(text, '&lt;', options);
+	const { splitted, splittedOrig, noFixArr } = process(text, '<', options);
 	if (nonHtmlOptions.ansiColors)
 		highlightChanges(splitted, splittedOrig, isCyrillic, wrapInColorOf.fix);
 	text = join(splitted);
@@ -220,7 +217,7 @@ export const tarask: Tarask<NonHtmlOptions> = (
 		);
 	}
 
-	return finilize(applyNoFix(text).replace(/&#40/g, '('), '\n');
+	return finilize(applyNoFix(noFixArr, text).replace(/&#40/g, '('), '\n');
 };
 
 const restoreCase = (text: string[], orig: string[]): string[] => {

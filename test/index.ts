@@ -52,6 +52,8 @@ if (process.env.NO_CLI !== 'true') {
 
 test('Latin', (text) => tarask(text, { abc: ALPHABET.LATIN }), cases.latin);
 
+test('SpecialConstructions', tarask, cases.specialConstructions);
+
 // add a new case here
 
 const code = endTestProcess();

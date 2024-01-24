@@ -6,3 +6,4 @@ export { default as taraskevization } from './taraskevization';
 export { default as multiline } from './multiline';
 export { default as cli } from './cli';
 export { default as latin } from './latin';
+export { default as specialConstructions } from './special-constructions';
