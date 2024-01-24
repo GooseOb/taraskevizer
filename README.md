@@ -175,7 +175,7 @@ Can be replaced by `ґ`(`g`) letter. appears only if alphabet is cyrillic
 <tarH>Г</tarH>валт
 ```
 
-## Special Constructions
+## Special Syntax
 
 |             | fix          | no fix       |
 | ----------- | ------------ | ------------ |
