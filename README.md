@@ -96,10 +96,10 @@ Default value: `false`
 
 Do replace `г`(`h`) by `ґ`(`g`) in cyrillic alphabet?
 
-| Value | Example                                         |
-| ----- | ----------------------------------------------- |
-| true  | `<tarH>г</tarH>валт <tarH>Г</tarH>валт`{:.html} |
-| false | `<tarH>ґ</tarH>валт <tarH>Ґ</tarH>валт`{:.html} |
+| Value | Example                                 |
+| ----- | --------------------------------------- |
+| true  | `<tarH>г</tarH>валт <tarH>Г</tarH>валт` |
+| false | `<tarH>ґ</tarH>валт <tarH>Ґ</tarH>валт` |
 
 ## NonHtmlOptions
 
