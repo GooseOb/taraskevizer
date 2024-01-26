@@ -47,14 +47,12 @@ Type: `number`
 
 Default value: `0`
 
-Alphabet of output text:
-
-```
-0 = cyrillic
-1 = latin
-2 = arabic
-3 = greek
-```
+| Value | Alphabet of output text |
+| ----- | ----------------------- |
+| 0     | cyrillic                |
+| 1     | latin                   |
+| 2     | arabic                  |
+| 3     | greek                   |
 
 ### j
 
@@ -62,13 +60,12 @@ Type: `number`
 
 Default value: `0`
 
-When to replace `і`(`i`) by `й`(`j`) after vowels:
-
-```
-0 = never
-1 = random
-2 = always
-```
+| Value | When to replace `і`(`i`) by `й`(`j`) after vowels | Example                  |
+| ----- | ------------------------------------------------- | ------------------------ |
+|       |                                                   | `яна і ён`               |
+| 0     | never                                             | `яна і ён`               |
+| 1     | random                                            | `яна і ён` or `яна й ён` |
+| 2     | always                                            | `яна й ён`               |
 
 ### OVERRIDE_toTarask
 
@@ -99,11 +96,10 @@ Default value: `false`
 
 Do replace `г`(`h`) by `ґ`(`g`) in cyrillic alphabet?
 
-```html
-false: <tarH>г</tarH> <tarH>Г</tarH>
-
-true: <tarH>ґ</tarH> <tarH>Ґ</tarH>
-```
+| Value | Example                                         |
+| ----- | ----------------------------------------------- |
+| true  | `<tarH>г</tarH>валт <tarH>Г</tarH>валт`{:.html} |
+| false | `<tarH>ґ</tarH>валт <tarH>Ґ</tarH>валт`{:.html} |
 
 ## NonHtmlOptions
 
@@ -121,11 +117,10 @@ Default value: `false`
 
 Do replace ґ(g) by г(h) in cyrillic alphabet?
 
-```
-false: Ґ ґ
-
-true: Г г
-```
+| Value | Example     |
+| ----- | ----------- |
+| true  | Ґвалт ґвалт |
+| false | Гвалт гвалт |
 
 ### variations
 
@@ -133,13 +128,12 @@ Type: `number`
 
 Default value: `0`
 
-Which variation should be if a part of word is variable?
-
-```
-0 = main:   Гродна
-1 = first:  Горадня
-2 = all:    (Гродна|Горадня)
-```
+| Value | Which variation is used if a part of word is variable | Example           |
+| ----- | ----------------------------------------------------- | ----------------- |
+|       |                                                       | Гродна            |
+| 0     | main                                                  | Гродна            |
+| 1     | first                                                 | Горадня           |
+| 2     | all                                                   | (Гродна\|Горадня) |
 
 ## HTML tags
 
