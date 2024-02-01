@@ -1,5 +1,5 @@
 import { benchmark, print, startTestProcess } from './lib';
-import { tarask, ALPHABET, taraskToHtml } from '../src';
+import { Taraskevizer, ALPHABET } from '../src';
 import * as cases from './cases';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
@@ -8,25 +8,46 @@ import { readFile } from 'node:fs/promises';
 
 const { endTestProcess, test } = startTestProcess({ long: false });
 
-test('Taraskevization', tarask, cases.taraskevization);
+const taraskevizer = new Taraskevizer();
+test(
+	'Taraskevization',
+	(text) => taraskevizer.convert(text),
+	cases.taraskevization
+);
 
 test(
 	'HtmlOptions',
-	([text, html]) => taraskToHtml(text, {}, html),
+	([text, html]) => new Taraskevizer({ html }).convertToHtml(text),
 	cases.htmlOptions
 );
+
 test(
 	'NonHtmlOptions',
-	([text, nonHtml]) => tarask(text, {}, nonHtml),
+	([text, nonHtml]) => new Taraskevizer({ nonHtml }).convert(text),
 	cases.nonHtmlOptions
 );
 
-test('i to j', ([text, j, abc]) => tarask(text, { j, abc }), cases.itoj);
+test(
+	'i to j',
+	([text, j, abc]) => new Taraskevizer({ general: { j, abc } }).convert(text),
+	cases.itoj
+);
 
-test('Greek th', (text) => tarask(text, { abc: ALPHABET.GREEK }), cases.greek);
+const taraskevizerGreek = new Taraskevizer({
+	general: { abc: ALPHABET.GREEK },
+});
+test('Greek th', (text) => taraskevizerGreek.convert(text), cases.greek);
 
-test('Multiline', tarask, cases.multiline.nonHtml);
-test('Multiline:html', taraskToHtml, cases.multiline.html);
+test(
+	'Multiline',
+	(text) => taraskevizer.convert(text),
+	cases.multiline.nonHtml
+);
+test(
+	'Multiline:html',
+	(text) => taraskevizer.convertToHtml(text),
+	cases.multiline.html
+);
 
 if (process.env.NO_CLI !== 'true') {
 	const root = path.resolve(fileURLToPath(import.meta.url), '..', '..', '..');
@@ -50,9 +71,16 @@ if (process.env.NO_CLI !== 'true') {
 	);
 }
 
-test('Latin', (text) => tarask(text, { abc: ALPHABET.LATIN }), cases.latin);
+const taraskevizerLatin = new Taraskevizer({
+	general: { abc: ALPHABET.LATIN },
+});
+test('Latin', (text) => taraskevizerLatin.convert(text), cases.latin);
 
-test('SpecialConstructions', tarask, cases.specialConstructions);
+test(
+	'SpecialConstructions',
+	(text) => taraskevizer.convert(text),
+	cases.specialConstructions
+);
 
 // add a new case here
 
@@ -68,7 +96,7 @@ if (process.argv.includes('--benchmark')) {
 	}
 	const text = await readFile(path, 'utf8');
 	benchmark('Taraskevization', () => {
-		tarask(text);
+		taraskevizer.convert(text);
 	});
 }
 

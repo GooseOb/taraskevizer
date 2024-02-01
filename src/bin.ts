@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { tarask, taraskToHtml } from './index.js';
+import { ALPHABET, REPLACE_J, Taraskevizer, VARIATION } from './index.js';
 import readline from 'readline/promises';
 import { readFile } from 'fs/promises';
 import type { NonHtmlOptions, TaraskOptions, HtmlOptions } from './types';
@@ -22,12 +22,12 @@ if (checkForOptions(['-v', '--version'])) {
 	process.exit(0);
 }
 
-const taraskOptions: Partial<TaraskOptions> = {};
-const nonHtmlOptions: Partial<NonHtmlOptions> = {
+const general: Partial<TaraskOptions> = {};
+const nonHtml: Partial<NonHtmlOptions> = {
 	variations: 2,
 	ansiColors: true,
 };
-const htmlOptions: Partial<HtmlOptions> = { g: true };
+const html: Partial<HtmlOptions> = { g: true };
 
 let isHtml = false;
 
@@ -42,56 +42,56 @@ const optionDict = toHashTable([
 	[
 		['--latin', '-l'],
 		() => {
-			taraskOptions.abc = 1;
+			general.abc = ALPHABET.LATIN;
 		},
 	],
 	[
 		['--arabic', '-a'],
 		() => {
-			taraskOptions.abc = 2;
+			general.abc = ALPHABET.ARABIC;
 		},
 	],
 	[
 		['--greek', '-gr'],
 		() => {
-			taraskOptions.abc = 3;
+			general.abc = ALPHABET.GREEK;
 		},
 	],
 	[
 		['--jrandom', '-jr'],
 		() => {
-			taraskOptions.j = 1;
+			general.j = REPLACE_J.RANDOM;
 		},
 	],
 	[
 		['--jalways', '-ja'],
 		() => {
-			taraskOptions.j = 2;
+			general.j = REPLACE_J.ALWAYS;
 		},
 	],
 	[
 		['--h', '-h'],
 		() => {
-			nonHtmlOptions.h = true;
-			htmlOptions.g = false;
+			nonHtml.h = true;
+			html.g = false;
 		},
 	],
 	[
 		['--no-variations', '-nv'],
 		() => {
-			nonHtmlOptions.variations = 0;
+			nonHtml.variations = VARIATION.NO;
 		},
 	],
 	[
 		['--first-variation-only', '-fvo'],
 		() => {
-			nonHtmlOptions.variations = 1;
+			nonHtml.variations = VARIATION.FIRST;
 		},
 	],
 	[
 		['--no-color', '-nc'],
 		() => {
-			nonHtmlOptions.ansiColors = false;
+			nonHtml.ansiColors = false;
 		},
 	],
 	[
@@ -122,9 +122,9 @@ let text = process.argv.length
 			})
 			.question(prefix + 'Enter the text:\n');
 
+const taraskevizer = new Taraskevizer({ general, html, nonHtml });
+
 process.stdout.write(
-	isHtml
-		? taraskToHtml(text, taraskOptions, htmlOptions)
-		: tarask(text, taraskOptions, nonHtmlOptions)
+	isHtml ? taraskevizer.convertToHtml(text) : taraskevizer.convert(text)
 );
 process.exit(0);

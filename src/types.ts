@@ -10,16 +10,16 @@ export type DeepPartialReadonly<T> = ModifyObjectType<
 	}
 >;
 
-type Alphabet = 0 | 1 | 2 | 3;
+export type Alphabet = 0 | 1 | 2 | 3;
 // cyrillic | latin | arabic | greek
-type OptionJ = 0 | 1 | 2;
+export type OptionJ = 0 | 1 | 2;
 // never | random | always
-type Variation = 0 | 1 | 2;
+export type Variation = 0 | 1 | 2;
 // no | first | all
+
 export type TaraskOptions = {
 	abc: Alphabet;
 	j: OptionJ;
-	OVERRIDE_toTarask?: ToTarask;
 };
 export type NonHtmlOptions = {
 	ansiColors: boolean;
@@ -27,22 +27,10 @@ export type NonHtmlOptions = {
 	variations: Variation;
 };
 export type HtmlOptions = { g: boolean };
-export type ReplaceWithDict = (text: string, dict?: ExtendedDict) => string;
-export type ToTarask = (
-	text: string,
-	replaceWithDict: ReplaceWithDict,
-	wordlist: Dict,
-	softers: Dict,
-	afterTarask: ExtendedDict
-) => string;
-export type Tarask<TOptions extends object> = (
-	text: string,
-	taraskOptions?: DeepPartialReadonly<TaraskOptions>,
-	options?: DeepPartialReadonly<TOptions>
-) => string;
-export type Dict<T = RegExp> = [T, string][];
-export type ExtendedDict = [
+
+export type Dict<T = RegExp> = readonly (readonly [T, string])[];
+export type ExtendedDict = readonly (readonly [
 	RegExp,
 	string | ((...substrings: string[]) => string)
-][];
+])[];
 export type AlphabetDependentDict = { [key in Alphabet]?: Dict };

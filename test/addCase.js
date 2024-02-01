@@ -40,10 +40,10 @@ await appendFile(
 
 await addToFile(
 	indexTestPath,
-	`test('${testName}', tarask, cases.${varName});`
+	`test('${testName}', (text) => taraskevizer.convert(text), cases.${varName});`
 );
 
 await addToFile(
 	bunIndexTestPath,
-	`testOnCases('\\x1b[31m${testName}', tarask, cases.${varName});`
+	`testOnCases('\\x1b[31m${testName}', (text) => taraskevizer.convert(text), cases.${varName});`
 );

@@ -1,5 +1,5 @@
 import type { RawDict } from './types';
-import type { Dict } from '../types';
+import type { Dict, ExtendedDict } from "../types";
 import { latinLetters, latinLettersUpperCase } from './latin';
 import { greekLetters, greekLettersUpperCase, thWords } from './greek';
 import { rawArabLetters } from './arabic';
@@ -1798,16 +1798,18 @@ const arr: [RawDict, Dict][] = [
 	[rawArabLetters, arabLetters],
 ];
 
+type Writeable<T> = { -readonly [P in keyof T]: T[P] };
+
 for (const [raw, obj] of arr)
 	for (const [pattern, result] of raw)
-		obj.push([RegExp(pattern, 'g'), result]);
+		(obj as Writeable<ExtendedDict>).push([RegExp(pattern, 'g'), result]);
 
 for (const obj of [latinLetters, latinLettersUpperCase, greekLetters, greekLettersUpperCase, thWords])
 	for (const item of obj)
-		item[0] = RegExp(item[0], 'g' + item[0].flags);
+		(item as Writeable<typeof item>)[0] = RegExp(item[0], 'g' + item[0].flags);
 
 for (const word of gwords)
-	wordlist.push([RegExp(word.replace(/ґ/g, 'г'), 'g'), word]);
+	(wordlist as Writeable<ExtendedDict>).push([RegExp(word.replace(/ґ/g, 'г'), 'g'), word]);
 
 export {
 	wordlist,

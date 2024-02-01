@@ -10,15 +10,15 @@ import {
 	thWords,
 } from './dict';
 import type {
-	Tarask,
 	AlphabetDependentDict,
 	ExtendedDict,
-	ToTarask,
-	ReplaceWithDict,
 	NonHtmlOptions,
 	HtmlOptions,
 	TaraskOptions,
 	DeepPartialReadonly,
+	Alphabet,
+	OptionJ,
+	Variation,
 } from './types';
 import * as debug from './tools.debug';
 
@@ -36,9 +36,22 @@ const OPTIONAL_WORDS_REGEX = /\(.*?\)/g;
 const G_REGEX = /[Ґґ]/g;
 type G_REGEX_MATCH = 'Ґ' | 'ґ';
 
-export const ALPHABET = { CYRILLIC: 0, LATIN: 1, ARABIC: 2, GREEK: 3 } as const;
-export const J = { NEVER: 0, RANDOM: 1, ALWAYS: 2 } as const;
-export const VARIATION = { NO: 0, FIRST: 1, ALL: 2 } as const;
+export const ALPHABET = {
+	CYRILLIC: 0,
+	LATIN: 1,
+	ARABIC: 2,
+	GREEK: 3,
+} as const satisfies Record<string, Alphabet>;
+export const REPLACE_J = {
+	NEVER: 0,
+	RANDOM: 1,
+	ALWAYS: 2,
+} as const satisfies Record<string, OptionJ>;
+export const VARIATION = {
+	NO: 0,
+	FIRST: 1,
+	ALL: 2,
+} as const satisfies Record<string, Variation>;
 
 const letters: AlphabetDependentDict = {
 	[ALPHABET.LATIN]: latinLetters,
@@ -78,51 +91,6 @@ const afterTarask: ExtendedDict = [
 	],
 ];
 
-const process = (
-	text: string,
-	LEFT_ANGLE_BRACKET: string,
-	options: Readonly<TaraskOptions>
-): { splittedOrig: string[]; splitted: string[]; noFixArr: string[] } => {
-	const { abc, j, OVERRIDE_toTarask: _toTarask = toTarask } = options;
-
-	const noFixArr: string[] = [];
-	text = ` ${text.trim()} `
-		.replace(/\ue0ff/g, '')
-		.replace(/<([,.]?)(.*?)>/gs, ($0, $1, $2) => {
-			console.log($0, ':', $1, ',', $2);
-			if ($1 === ',') return LEFT_ANGLE_BRACKET + $2 + '>';
-			noFixArr.push($1 === '.' ? $2 : $0);
-			return NOFIX_CHAR;
-		})
-		.replace(/г'(?![еёіюя])/g, 'ґ')
-		.replace(/([\n\t])/g, ' $1 ')
-		.replace(/ - /g, ' — ')
-		.replace(/(\p{P}|\p{S}|\d)/gu, ' $1 ')
-		.replace(/ ['`’] (?=\S)/g, 'ʼ')
-		.replace(/\(/g, '&#40');
-
-	let splittedOrig: string[], splitted: string[];
-	splittedOrig = replaceWithDict(
-		replaceWithDict(text, letters[abc]),
-		lettersUpperCase[abc]
-	).split(' ');
-
-	text = _toTarask(
-		text.toLowerCase(),
-		replaceWithDict,
-		wordlist,
-		softers,
-		afterTarask
-	);
-	if (j) text = replaceIbyJ(text, j === J.ALWAYS);
-	if (abc === ALPHABET.GREEK) text = replaceWithDict(text, thWords);
-	text = replaceWithDict(text, letters[abc]);
-
-	splitted = text.split(' ');
-	if (abc !== ALPHABET.ARABIC) splitted = restoreCase(splitted, splittedOrig);
-	return { splittedOrig, splitted, noFixArr };
-};
-
 const applyNoFix = (arr: string[], text: string) =>
 	arr.length ? text.replace(NOFIX_REGEX, () => arr.shift() as string) : text;
 
@@ -143,82 +111,6 @@ const replaceG = (
 		// @ts-ignore
 		replacer
 	);
-
-const getCompletedOptions = (
-	options?: DeepPartialReadonly<TaraskOptions>
-): TaraskOptions => ({
-	abc: 0,
-	j: 0,
-	...options,
-});
-
-export const taraskToHtml: Tarask<HtmlOptions> = (
-	text,
-	taraskOptions,
-	htmlOptions = {}
-) => {
-	const options = getCompletedOptions(taraskOptions);
-	const wrapInTag = wrappers.html;
-	const isCyrillic = options.abc === ALPHABET.CYRILLIC;
-	const { splitted, splittedOrig, noFixArr } = process(text, '&lt;', options);
-	highlightChanges(splitted, splittedOrig, isCyrillic, wrapInTag.fix);
-	text = join(splitted);
-	if (isCyrillic)
-		text = replaceG(
-			text,
-			htmlOptions.g
-				? wrapInTag.letterH('$&')
-				: ($0) => wrapInTag.letterH(gobj[$0])
-		);
-
-	return finilize(
-		applyNoFix(noFixArr, text).replace(OPTIONAL_WORDS_REGEX, ($0) => {
-			const options = $0.slice(1, -1).split('|');
-			const main = options.shift();
-			return `<tarL data-l='${options}'>${main}</tarL>`;
-		}),
-		'<br>'
-	);
-};
-
-export const tarask: Tarask<NonHtmlOptions> = (
-	text,
-	taraskOptions,
-	nonHtmlOptions = {}
-) => {
-	const options = getCompletedOptions(taraskOptions);
-	const wrapInColorOf = wrappers.ansiColors;
-	const isCyrillic = options.abc === ALPHABET.CYRILLIC;
-	const { splitted, splittedOrig, noFixArr } = process(text, '<', options);
-	if (nonHtmlOptions.ansiColors)
-		highlightChanges(splitted, splittedOrig, isCyrillic, wrapInColorOf.fix);
-	text = join(splitted);
-	if (isCyrillic && (nonHtmlOptions.h || nonHtmlOptions.ansiColors))
-		text = replaceG(
-			text,
-			nonHtmlOptions.ansiColors
-				? nonHtmlOptions.h
-					? ($0) => wrapInColorOf.variable(gobj[$0])
-					: wrapInColorOf.variable('$&')
-				: ($0) => gobj[$0]
-		);
-
-	if (
-		'variations' in nonHtmlOptions &&
-		nonHtmlOptions.variations !== VARIATION.ALL
-	) {
-		const wordIndex = nonHtmlOptions.variations ?? 0;
-		const replacer = ($0: string) => $0.slice(1, -1).split('|')[wordIndex];
-		text = text.replace(
-			OPTIONAL_WORDS_REGEX,
-			nonHtmlOptions.ansiColors
-				? ($0) => wrapInColorOf.variable(replacer($0))
-				: replacer
-		);
-	}
-
-	return finilize(applyNoFix(noFixArr, text).replace(/&#40/g, '('), '\n');
-};
 
 const restoreCase = (text: string[], orig: string[]): string[] => {
 	for (let i = 0; i < text.length; i++) {
@@ -305,29 +197,9 @@ const highlightChanges = (
 			highlight(word.slice(fromStart, fromWordEnd + 1)) +
 			word.slice(fromWordEnd + 1);
 	}
-
-	// return text;
 };
 
-const toTarask: ToTarask = (
-	text,
-	replaceWithDict,
-	wordlist,
-	softers,
-	afterTarask
-) => {
-	text = replaceWithDict(text, wordlist);
-	softening: do {
-		text = replaceWithDict(text, softers);
-		for (const [pattern, result] of softers)
-			if (result !== '$1дзьдз' && pattern.test(text)) continue softening;
-		break;
-	} while (true);
-
-	return replaceWithDict(text, afterTarask);
-};
-
-const replaceWithDict: ReplaceWithDict = (text, dict = []) => {
+const replaceWithDict = (text: string, dict: ExtendedDict = []) => {
 	for (const [pattern, result] of dict)
 		text = text.replace(
 			pattern,
@@ -355,3 +227,149 @@ const replaceIbyJ = (text: string, always = false) =>
 			? ($0, $1, $2) => toJ($1, $2)
 			: ($0, $1, $2) => (Math.random() >= 0.5 ? toJ($1, $2) : $0)
 	);
+
+export class Taraskevizer {
+	public abc: Alphabet = ALPHABET.CYRILLIC;
+	public j: OptionJ = REPLACE_J.NEVER;
+	public html = {
+		g: false,
+	};
+	public nonHtml = {
+		h: false,
+		ansiColors: false,
+		variations: VARIATION.ALL as Variation,
+	};
+
+	constructor(
+		options?: DeepPartialReadonly<{
+			general: TaraskOptions;
+			html: HtmlOptions;
+			nonHtml: NonHtmlOptions;
+			OVERRIDE_taraskevize(this: Taraskevizer, text: string): string;
+		}>
+	) {
+		if (!options) return;
+		const general = options.general;
+		if (general) {
+			if (general.abc) this.abc = general.abc;
+			if (general.j) this.j = general.j;
+		}
+		if (options.OVERRIDE_taraskevize)
+			this.taraskevize = options.OVERRIDE_taraskevize;
+		Object.assign(this.html, options.html);
+		Object.assign(this.nonHtml, options.nonHtml);
+	}
+
+	public convert(text: string) {
+		const wrapInColorOf = wrappers.ansiColors;
+		const isCyrillic = this.abc === ALPHABET.CYRILLIC;
+		const { splitted, splittedOrig, noFixArr } = this.process(text, '<');
+		if (this.nonHtml.ansiColors)
+			highlightChanges(splitted, splittedOrig, isCyrillic, wrapInColorOf.fix);
+		text = join(splitted);
+		if (isCyrillic && (this.nonHtml.h || this.nonHtml.ansiColors))
+			text = replaceG(
+				text,
+				this.nonHtml.ansiColors
+					? this.nonHtml.h
+						? ($0) => wrapInColorOf.variable(gobj[$0])
+						: wrapInColorOf.variable('$&')
+					: ($0) => gobj[$0]
+			);
+
+		if (
+			'variations' in this.nonHtml &&
+			this.nonHtml.variations !== VARIATION.ALL
+		) {
+			const wordIndex = this.nonHtml.variations ?? 0;
+			const replacer = ($0: string) => $0.slice(1, -1).split('|')[wordIndex];
+			text = text.replace(
+				OPTIONAL_WORDS_REGEX,
+				this.nonHtml.ansiColors
+					? ($0) => wrapInColorOf.variable(replacer($0))
+					: replacer
+			);
+		}
+
+		return finilize(applyNoFix(noFixArr, text).replace(/&#40/g, '('), '\n');
+	}
+
+	public convertToHtml(text: string) {
+		const wrapInTag = wrappers.html;
+		const isCyrillic = this.abc === ALPHABET.CYRILLIC;
+		const { splitted, splittedOrig, noFixArr } = this.process(text, '&lt;');
+		highlightChanges(splitted, splittedOrig, isCyrillic, wrapInTag.fix);
+		text = join(splitted);
+		if (isCyrillic)
+			text = replaceG(
+				text,
+				this.html.g
+					? wrapInTag.letterH('$&')
+					: ($0) => wrapInTag.letterH(gobj[$0])
+			);
+
+		return finilize(
+			applyNoFix(noFixArr, text).replace(OPTIONAL_WORDS_REGEX, ($0) => {
+				const options = $0.slice(1, -1).split('|');
+				const main = options.shift();
+				return `<tarL data-l='${options}'>${main}</tarL>`;
+			}),
+			'<br>'
+		);
+	}
+
+	private process(
+		text: string,
+		LEFT_ANGLE_BRACKET: string
+	): { splittedOrig: string[]; splitted: string[]; noFixArr: string[] } {
+		const { abc, j } = this;
+		const noFixArr: string[] = [];
+		text = ` ${text.trim()} `
+			.replace(/\ue0ff/g, '')
+			.replace(/<([,.]?)(.*?)>/gs, ($0, $1, $2) => {
+				if ($1 === ',') return LEFT_ANGLE_BRACKET + $2 + '>';
+				noFixArr.push($1 === '.' ? $2 : $0);
+				return NOFIX_CHAR;
+			})
+			.replace(/г'(?![еёіюя])/g, 'ґ')
+			.replace(/([\n\t])/g, ' $1 ')
+			.replace(/ - /g, ' — ')
+			.replace(/(\p{P}|\p{S}|\d)/gu, ' $1 ')
+			.replace(/ ['`’] (?=\S)/g, 'ʼ')
+			.replace(/\(/g, '&#40');
+
+		let splittedOrig: string[], splitted: string[];
+		splittedOrig = replaceWithDict(
+			replaceWithDict(text, letters[abc]),
+			lettersUpperCase[abc]
+		).split(' ');
+
+		text = this.taraskevize(text.toLowerCase());
+		if (j) text = replaceIbyJ(text, j === REPLACE_J.ALWAYS);
+		if (abc === ALPHABET.GREEK) text = replaceWithDict(text, thWords);
+		text = replaceWithDict(text, letters[abc]);
+
+		splitted = text.split(' ');
+		if (abc !== ALPHABET.ARABIC) splitted = restoreCase(splitted, splittedOrig);
+		return { splittedOrig, splitted, noFixArr };
+	}
+
+	private taraskevize(text: string) {
+		text = Taraskevizer._.replaceWithDict(text, Taraskevizer._.wordlist);
+		softening: do {
+			text = Taraskevizer._.replaceWithDict(text, Taraskevizer._.softers);
+			for (const [pattern, result] of Taraskevizer._.softers)
+				if (result !== '$1дзьдз' && pattern.test(text)) continue softening;
+			break;
+		} while (true);
+
+		return Taraskevizer._.replaceWithDict(text, Taraskevizer._.afterTarask);
+	}
+
+	static readonly _ = {
+		wordlist,
+		softers,
+		replaceWithDict,
+		afterTarask,
+	} as const;
+}

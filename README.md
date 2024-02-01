@@ -7,37 +7,42 @@ $ npm i taraskevizer
 ## Usage
 
 ```js
-import { tarask, taraskToHtml, ALPHABET, J, VARIATION } from 'taraskevizer';
+import { Taraskevizer, ALPHABET, J, VARIATION } from 'taraskevizer';
 
-tarask('планета'); // "плянэта"
+const taraskevizer = new Taraskevizer();
+taraskevizer.convert('планета'); // "плянэта"
 
-tarask(
-	'планета і Гродна',
-	{
+const taraskevizer = new Taraskevizer({
+	general: {
 		abc: ALPHABET.CYRILLIC,
 		j: J.ALWAYS,
 	},
-	{
+	nonHtml: {
 		ansiColors: true,
 		variations: VARIATION.FIRST,
 		h: false,
-	}
-); // "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
+	},
+});
+taraskevizer.convert('планета і Гродна'); // "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
 
-taraskToHtml(
-	'энергія планеты',
-	{
+const taraskevizer = new Taraskevizer({
+	general: {
 		abc: ALPHABET.LATIN,
 	},
-	{
+	html: {
 		g: false, // ignored, because alphabet is set to latin
-	}
-); // "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
+	},
+});
+taraskevizer.convertToHtml('энергія планеты'); // "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
+
+// properties can be rewritten after creating an object
+taraskevizer.abc = ALPHABET.ARABIC;
+taraskevizer.html.g = true;
 ```
 
 ### Function signatures are in [this file](./dist/index.d.ts) (not available if project is not built)
 
-## TaraskOptions
+## general
 
 Type: `object`
 
@@ -67,26 +72,16 @@ Default value: `0`
 | 1     | random                                            | `яна і ён` or `яна й ён` |
 | 2     | always                                            | `яна й ён`               |
 
-### OVERRIDE_toTarask
+### OVERRIDE_taraskevize
 
-Type:
+Type: `(text: string) => string`
 
-```
-(
-    text: string,
-    replaceWithDict: (
-        text: string,
-        dict?: [RegExp, string | ((...substrings: string[]) => string)][]
-    ) => string,
-    wordlist: [RegExp, string][],
-    softers: [RegExp, string][],
-    afterTarask: (text: string) => string
-) => string
-```
+Default value: internal function `taraskevize`
 
-Default value: internal function `toTarask`
+Can be overridden in order to make additional changes to the text.
+This function usually uses private api via `Taraskevizer._.`
 
-## HtmlOptions
+## html
 
 ### g
 
@@ -101,7 +96,7 @@ Do replace `г`(`h`) by `ґ`(`g`) in cyrillic alphabet?
 | true  | `<tarH>г</tarH>валт <tarH>Г</tarH>валт` |
 | false | `<tarH>ґ</tarH>валт <tarH>Ґ</tarH>валт` |
 
-## NonHtmlOptions
+## nonHtml
 
 ### ansiColors
 

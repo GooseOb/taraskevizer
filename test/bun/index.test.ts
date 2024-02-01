@@ -1,44 +1,57 @@
 import { getLabel, testOnCases, testOnCasesAsync } from './lib';
-import { ALPHABET, tarask, taraskToHtml } from '../../src';
+import { Taraskevizer, ALPHABET } from '../../src';
 import * as cases from '../cases';
 import * as path from 'path';
 
 const objectLabel = getLabel('j');
 
-testOnCases('\x1b[31mTaraskevization', tarask, cases.taraskevization);
+const taraskevizer = new Taraskevizer();
+testOnCases(
+	'\x1b[31mTaraskevization',
+	(text) => taraskevizer.convert(text),
+	cases.taraskevization
+);
 
 testOnCases(
 	'\x1b[33mHtmlOptions',
-	([text, html]) => taraskToHtml(text, {}, html),
+	([text, html]) => new Taraskevizer({ html }).convertToHtml(text),
 	cases.htmlOptions,
 	objectLabel
 );
 
 testOnCases(
 	'\x1b[34mNonHtmlOptions',
-	([text, nonHtml]) => tarask(text, {}, nonHtml),
+	([text, nonHtml]) => new Taraskevizer({ nonHtml }).convert(text),
 	cases.nonHtmlOptions,
 	objectLabel
 );
 
 testOnCases(
 	'\x1b[36mi -> j',
-	([text, j, abc]) => tarask(text, { j, abc }),
+	([text, j, abc]) => new Taraskevizer({ general: { j, abc } }).convert(text),
 	cases.itoj,
 	objectLabel
 );
 
+const taraskevizerGreek = new Taraskevizer({
+	general: { abc: ALPHABET.GREEK },
+});
 testOnCases(
 	'\x1b[37mGreek th',
-	(text) => tarask(text, { abc: ALPHABET.GREEK }),
+	(text) => taraskevizerGreek.convert(text),
 	cases.greek
 );
 
-testOnCases('\x1b[31mMultiline', tarask, cases.multiline.nonHtml, objectLabel);
+testOnCases(
+	'\x1b[31mMultiline',
+	(text) => taraskevizer.convert(text),
+	cases.multiline.nonHtml,
+	objectLabel
+);
 
 testOnCases(
 	'\x1b[31mMultiline:html',
-	taraskToHtml,
+	(text) => taraskevizer.convertToHtml(text),
 	cases.multiline.html,
 	objectLabel
 );
@@ -67,12 +80,19 @@ if (process.env.NO_CLI !== 'true') {
 	);
 }
 
+const taraskevizerLatin = new Taraskevizer({
+	general: { abc: ALPHABET.LATIN },
+});
 testOnCases(
 	'\x1b[33mLatin',
-	(text) => tarask(text, { abc: ALPHABET.LATIN }),
+	(text) => taraskevizerLatin.convert(text),
 	cases.latin
 );
 
-testOnCases('\x1b[31mSpecialConstructions', tarask, cases.specialConstructions);
+testOnCases(
+	'\x1b[31mSpecialConstructions',
+	(text) => taraskevizer.convert(text),
+	cases.specialConstructions
+);
 
 // add a new case here
