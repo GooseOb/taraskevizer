@@ -210,15 +210,8 @@ const replaceWithDict = (text: string, dict: ExtendedDict = []) => {
 	return text;
 };
 
-type Vowel = 'а' | 'е' | 'ё' | 'і' | 'о' | 'у' | 'ы' | 'э' | 'ю' | 'я';
-
-type ToJ = <TVowel extends `${Vowel} `, TU extends '' | 'ў'>(
-	vow: TVowel,
-	shortU: TU
-) => `${TVowel}й ${TU extends 'ў' ? 'у' : ''}`;
-
-const toJ: ToJ = (vow, shortU) =>
-	(vow + 'й ' + (shortU ? 'у' : '')) as ReturnType<ToJ>;
+const toJ = (vow: `${string} `, shortU: '' | 'ў') =>
+	vow + 'й ' + (shortU ? 'у' : '');
 
 const replaceIbyJ = (text: string, always = false) =>
 	text.replace(
@@ -227,6 +220,13 @@ const replaceIbyJ = (text: string, always = false) =>
 			? ($0, $1, $2) => toJ($1, $2)
 			: ($0, $1, $2) => (Math.random() >= 0.5 ? toJ($1, $2) : $0)
 	);
+
+export const __tarask__ = {
+	wordlist,
+	softers,
+	replaceWithDict,
+	afterTarask,
+} as const;
 
 export class Taraskevizer {
 	public abc: Alphabet = ALPHABET.CYRILLIC;
@@ -354,22 +354,15 @@ export class Taraskevizer {
 		return { splittedOrig, splitted, noFixArr };
 	}
 
-	private taraskevize(text: string) {
-		text = Taraskevizer._.replaceWithDict(text, Taraskevizer._.wordlist);
+	protected taraskevize(text: string) {
+		text = replaceWithDict(text, wordlist);
 		softening: do {
-			text = Taraskevizer._.replaceWithDict(text, Taraskevizer._.softers);
-			for (const [pattern, result] of Taraskevizer._.softers)
+			text = replaceWithDict(text, softers);
+			for (const [pattern, result] of softers)
 				if (result !== '$1дзьдз' && pattern.test(text)) continue softening;
 			break;
 		} while (true);
 
-		return Taraskevizer._.replaceWithDict(text, Taraskevizer._.afterTarask);
+		return replaceWithDict(text, afterTarask);
 	}
-
-	static readonly _ = {
-		wordlist,
-		softers,
-		replaceWithDict,
-		afterTarask,
-	} as const;
 }
