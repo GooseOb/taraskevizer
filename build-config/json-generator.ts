@@ -2,7 +2,7 @@ import * as path from 'path';
 import { writeFile, mkdir } from 'node:fs/promises';
 import {
 	wordlist,
-	softers,
+	softeners,
 	latinLetters,
 	latinLettersUpperCase,
 	gobj,
@@ -28,7 +28,7 @@ export default () =>
 			Promise.all(
 				[
 					['wordlist', dictToStr(wordlist)],
-					['softers', dictToStr(softers)],
+					['softeners', dictToStr(softeners)],
 					['latinLetters', dictToStr(latinLetters)],
 					['latinLettersUpperCase', dictToStr(latinLettersUpperCase)],
 					['greekLetters', dictToStr(greekLetters)],

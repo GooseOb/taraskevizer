@@ -1,6 +1,6 @@
 import {
 	wordlist,
-	softers,
+	softeners,
 	arabLetters,
 	latinLetters,
 	latinLettersUpperCase,
@@ -223,7 +223,7 @@ const replaceIbyJ = (text: string, always = false) =>
 
 export const __tarask__ = {
 	wordlist,
-	softers,
+	softeners,
 	replaceWithDict,
 	afterTarask,
 } as const;
@@ -357,8 +357,8 @@ export class Taraskevizer {
 	protected taraskevize(text: string) {
 		text = replaceWithDict(text, wordlist);
 		softening: do {
-			text = replaceWithDict(text, softers);
-			for (const [pattern, result] of softers)
+			text = replaceWithDict(text, softeners);
+			for (const [pattern, result] of softeners)
 				if (result !== '$1дзьдз' && pattern.test(text)) continue softening;
 			break;
 		} while (true);

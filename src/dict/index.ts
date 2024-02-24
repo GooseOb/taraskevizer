@@ -1664,7 +1664,7 @@ const rawWordlist: RawDict = [
 [/\ue0ff/, ''],
 ];
 
-const rawSofters: RawDict = [
+const rawsofteners: RawDict = [
 [/([лнц])\1(?=[еёіюяь])/, '$1ь$1'],
 [/(\S\S)дз?дз(?=[еёіюяь])/, '$1дзьдз'],
 	[/адзьдз([ея])л/, 'аддз$1л'],
@@ -1788,12 +1788,12 @@ const gobj = {
 
 const
 	wordlist: Dict = [],
-	softers: Dict = [],
+	softeners: Dict = [],
 	arabLetters: Dict = [];
 
 const arr: [RawDict, Dict][] = [
 	[rawWordlist, wordlist],
-	[rawSofters, softers],
+	[rawsofteners, softeners],
 	[rawArabLetters, arabLetters],
 ];
 
@@ -1812,7 +1812,7 @@ for (const word of gwords)
 
 export {
 	wordlist,
-	softers,
+	softeners,
 	arabLetters,
 	latinLetters, latinLettersUpperCase,
 	greekLetters, greekLettersUpperCase, thWords,
