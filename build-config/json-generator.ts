@@ -13,11 +13,8 @@ import {
 import type { Dict } from '../src/types';
 const outputPath = path.resolve('json');
 
-const dictToStr = (dict: Dict) => {
-	// @ts-ignore
-	for (const item of dict) item[0] = item[0].source;
-	return JSON.stringify(dict);
-};
+const dictToStr = (dict: Dict) =>
+	JSON.stringify(dict.map(([pattern, result]) => [pattern.source, result]));
 
 export default () =>
 	mkdir(outputPath)
