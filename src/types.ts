@@ -10,8 +10,8 @@ export type DeepPartialReadonly<T> = ModifyObjectType<
 	}
 >;
 
-export type Alphabet = 0 | 1 | 2 | 3;
-// cyrillic | latin | arabic | greek
+export type Alphabet = 0 | 1 | 2;
+// cyrillic | latin | arabic
 export type OptionJ = 0 | 1 | 2;
 // never | random | always
 export type Variation = 0 | 1 | 2;
