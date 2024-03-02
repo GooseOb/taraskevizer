@@ -17,9 +17,6 @@ export default () =>
 							'softeners',
 							'latinLetters',
 							'latinLettersUpperCase',
-							'greekLetters',
-							'greekLettersUpperCase',
-							'thWords',
 						] satisfies (keyof typeof dict)[]
 					).map((name) => [
 						name,

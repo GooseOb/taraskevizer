@@ -33,15 +33,6 @@ testOnCases(
 	objectLabel
 );
 
-const taraskevizerGreek = new Taraskevizer({
-	general: { abc: ALPHABET.GREEK },
-});
-testOnCases(
-	'\x1b[37mGreek th',
-	(text) => taraskevizerGreek.convert(text),
-	cases.greek
-);
-
 testOnCases(
 	'\x1b[31mMultiline',
 	(text) => taraskevizer.convert(text),

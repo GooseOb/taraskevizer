@@ -33,11 +33,6 @@ test(
 	cases.itoj
 );
 
-const taraskevizerGreek = new Taraskevizer({
-	general: { abc: ALPHABET.GREEK },
-});
-test('Greek th', (text) => taraskevizerGreek.convert(text), cases.greek);
-
 test(
 	'Multiline',
 	(text) => taraskevizer.convert(text),

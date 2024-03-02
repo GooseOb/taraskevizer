@@ -5,9 +5,6 @@ import {
 	latinLetters,
 	latinLettersUpperCase,
 	gobj,
-	greekLetters,
-	greekLettersUpperCase,
-	thWords,
 } from './dict';
 import type {
 	AlphabetDependentDict,
@@ -40,7 +37,6 @@ export const ALPHABET = {
 	CYRILLIC: 0,
 	LATIN: 1,
 	ARABIC: 2,
-	GREEK: 3,
 } as const satisfies Record<string, Alphabet>;
 export const REPLACE_J = {
 	NEVER: 0,
@@ -56,11 +52,9 @@ export const VARIATION = {
 const letters: AlphabetDependentDict = {
 	[ALPHABET.LATIN]: latinLetters,
 	[ALPHABET.ARABIC]: arabLetters,
-	[ALPHABET.GREEK]: greekLetters,
 };
 const lettersUpperCase: AlphabetDependentDict = {
 	[ALPHABET.LATIN]: latinLettersUpperCase,
-	[ALPHABET.GREEK]: greekLettersUpperCase,
 };
 
 const wrappers = {
@@ -346,7 +340,6 @@ export class Taraskevizer {
 
 		text = this.taraskevize(text.toLowerCase());
 		if (j) text = replaceIbyJ(text, j === REPLACE_J.ALWAYS);
-		if (abc === ALPHABET.GREEK) text = replaceWithDict(text, thWords);
 		text = replaceWithDict(text, letters[abc]);
 
 		splitted = text.split(' ');

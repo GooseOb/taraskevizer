@@ -52,12 +52,6 @@ const optionDict = toHashTable([
 		},
 	],
 	[
-		['--greek', '-gr'],
-		() => {
-			general.abc = ALPHABET.GREEK;
-		},
-	],
-	[
 		['--jrandom', '-jr'],
 		() => {
 			general.j = REPLACE_J.RANDOM;

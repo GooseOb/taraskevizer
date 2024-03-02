@@ -1,7 +1,6 @@
 import type { RawDict } from './types';
 import type { Dict, ExtendedDict } from "../types";
 import { latinLetters, latinLettersUpperCase } from './latin';
-import { greekLetters, greekLettersUpperCase, thWords } from './greek';
 import { rawArabLetters } from './arabic';
 
 const chemicalElements1: string[] = [
@@ -1803,7 +1802,7 @@ for (const [raw, obj] of arr)
 	for (const [pattern, result] of raw)
 		(obj as Writeable<ExtendedDict>).push([RegExp(pattern, 'g'), result]);
 
-for (const obj of [latinLetters, latinLettersUpperCase, greekLetters, greekLettersUpperCase, thWords])
+for (const obj of [latinLetters, latinLettersUpperCase])
 	for (const item of obj)
 		(item as Writeable<typeof item>)[0] = RegExp(item[0], 'g' + item[0].flags);
 
@@ -1815,6 +1814,5 @@ export {
 	softeners,
 	arabLetters,
 	latinLetters, latinLettersUpperCase,
-	greekLetters, greekLettersUpperCase, thWords,
 	gobj
 };
