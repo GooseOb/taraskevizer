@@ -10,9 +10,15 @@ const { endTestProcess, test } = startTestProcess({ long: false });
 
 const taraskevizer = new Taraskevizer();
 test(
+	'Taraskevization:no-change',
+	(text) => taraskevizer.convert(text),
+	cases.taraskevization.change
+);
+
+test(
 	'Taraskevization',
 	(text) => taraskevizer.convert(text),
-	cases.taraskevization
+	cases.taraskevization.noChange
 );
 
 test(

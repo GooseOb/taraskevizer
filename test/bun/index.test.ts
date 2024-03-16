@@ -9,7 +9,13 @@ const taraskevizer = new Taraskevizer();
 testOnCases(
 	'\x1b[31mTaraskevization',
 	(text) => taraskevizer.convert(text),
-	cases.taraskevization
+	cases.taraskevization.change
+);
+
+testOnCases(
+	'\x1b[31mTaraskevization:no-change',
+	(text) => taraskevizer.convert(text),
+	cases.taraskevization.noChange
 );
 
 testOnCases(
