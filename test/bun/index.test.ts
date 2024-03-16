@@ -47,7 +47,7 @@ testOnCases(
 	objectLabel
 );
 
-if (process.env.NO_CLI !== 'true') {
+if (!process.env.NOCLI) {
 	const root = path.resolve(import.meta.dir, '..', '..');
 	const bunBinArr = [
 		'bun',

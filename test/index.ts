@@ -44,7 +44,7 @@ test(
 	cases.multiline.html
 );
 
-if (process.env.NO_CLI !== 'true') {
+if (!process.env.NOCLI) {
 	const root = path.resolve(fileURLToPath(import.meta.url), '..', '..', '..');
 	const pathToBin = path.resolve(
 		root,
