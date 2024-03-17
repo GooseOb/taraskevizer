@@ -125,7 +125,7 @@ const restoreCase = (text: string[], orig: string[]): string[] => {
 				word[0] === '('
 					? word.replace(/.*?(?=\))/, ($0) =>
 							$0.replace(/[(|]./g, ($0) => $0.toUpperCase())
-					  )
+						)
 					: word[0].toUpperCase() + word.slice(1);
 		}
 	}

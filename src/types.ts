@@ -31,6 +31,6 @@ export type HtmlOptions = { g: boolean };
 export type Dict<T = RegExp> = readonly (readonly [T, string])[];
 export type ExtendedDict = readonly (readonly [
 	RegExp,
-	string | ((...substrings: string[]) => string)
+	string | ((...substrings: string[]) => string),
 ])[];
 export type AlphabetDependentDict = { [key in Alphabet]?: Dict };

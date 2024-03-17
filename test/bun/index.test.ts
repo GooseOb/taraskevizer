@@ -19,6 +19,12 @@ testOnCases(
 );
 
 testOnCases(
+	'\x1b[31mTaraskevization:g-words',
+	(text) => taraskevizer.convert(text),
+	cases.taraskevization.gwords
+);
+
+testOnCases(
 	'\x1b[33mHtmlOptions',
 	([text, html]) => new Taraskevizer({ html }).convertToHtml(text),
 	cases.htmlOptions,

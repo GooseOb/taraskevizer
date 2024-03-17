@@ -22,6 +22,12 @@ test(
 );
 
 test(
+	'Taraskevization:g-words',
+	(text) => taraskevizer.convert(text),
+	cases.taraskevization.gwords
+);
+
+test(
 	'HtmlOptions',
 	([text, html]) => new Taraskevizer({ html }).convertToHtml(text),
 	cases.htmlOptions
