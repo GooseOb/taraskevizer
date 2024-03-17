@@ -202,3 +202,16 @@ $ tarask "планета"
 --no-color (-nc)
 --html (-html) # options except alphabet and j will be ignored
 ```
+
+# Known bugs
+
+## Replacing `не` with `ня`
+
+`Ня` should appear before a word where the first syllabe is stressed.
+At the moment, there is no way to check exactly if it is stressed.
+Algorithm makes some heuristics, but that's not enough to cover all cases.
+
+## Unwanted `Ў` in acronyms (WIP)
+
+It is advised to apply special constructions
+to acronyms to avoid unwanted changes.
