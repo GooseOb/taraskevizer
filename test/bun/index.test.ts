@@ -98,4 +98,20 @@ testOnCases(
 	cases.specialConstructions
 );
 
+testOnCases(
+	'\x1b[31mCaseRestoring:escape-caps',
+	(text) => taraskevizer.convert(text),
+	cases.caseRestoring.escCap
+);
+
+const taraskevizerNoEscCap = new Taraskevizer({
+	general: { doEscapeCapitalized: false },
+});
+
+testOnCases(
+	'\x1b[31mCaseRestoring:no-escape-caps',
+	(text) => taraskevizerNoEscCap.convert(text),
+	cases.caseRestoring.noEscCap
+);
+
 // add a new case here

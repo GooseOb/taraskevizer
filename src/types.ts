@@ -18,6 +18,7 @@ export type Variation = 0 | 1 | 2;
 // no | first | all
 
 export type TaraskOptions = {
+	doEscapeCapitalized: boolean;
 	abc: Alphabet;
 	j: OptionJ;
 };

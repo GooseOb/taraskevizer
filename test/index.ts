@@ -89,6 +89,22 @@ test(
 	cases.specialConstructions
 );
 
+test(
+	'CaseRestoring:escape-caps',
+	(text) => taraskevizer.convert(text),
+	cases.caseRestoring.escCap
+);
+
+const taraskevizerNoEscCap = new Taraskevizer({
+	general: { doEscapeCapitalized: false },
+});
+
+test(
+	'CaseRestoring:no-escape-caps',
+	(text) => taraskevizerNoEscCap.convert(text),
+	cases.caseRestoring.noEscCap
+);
+
 // add a new case here
 
 const code = endTestProcess();

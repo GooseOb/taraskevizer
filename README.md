@@ -71,6 +71,14 @@ Default value: `0`
 | 1     | random                                            | `яна і ён` or `яна й ён` |
 | 2     | always                                            | `яна й ён`               |
 
+### doEscapeCapitalized
+
+Type: `boolean`
+
+Default `true`
+
+If set to false, may cause unwanted changes in acronyms.
+
 ### OVERRIDE_taraskevize
 
 Type: `(text: string) => string`
@@ -165,10 +173,10 @@ Can be replaced by `ґ`(`g`) letter. appears only if alphabet is cyrillic
 
 ## Special Syntax
 
-|             | fix          | no fix       |
-| ----------- | ------------ | ------------ |
-| brackets    | `<,Планета>` | `<Планета>`  |
-| no brackets | `Планета`    | `<.Планета>` |
+|             | fix          | no fix       | change only alphabet |
+| ----------- | ------------ | ------------ | -------------------- |
+| brackets    | `<,Планета>` | `<Планета>`  | `<*Планета>`         |
+| no brackets | `Планета`    | `<.Планета>` | `<*.Планета>`        |
 
 # CLI
 
@@ -199,8 +207,9 @@ $ tarask "планета"
 --no-variations (-nv)
 --first-variation-only (-fvo)
 # Other
+--not-escape-caps (-nec)
 --no-color (-nc)
---html (-html) # options except alphabet and j will be ignored
+--html (-html)
 ```
 
 # Known bugs
@@ -210,8 +219,3 @@ $ tarask "планета"
 `Ня` should appear before a word where the first syllabe is stressed.
 At the moment, there is no way to check exactly if it is stressed.
 Algorithm makes some heuristics, but that's not enough to cover all cases.
-
-## Unwanted `Ў` in acronyms (WIP)
-
-It is advised to apply special constructions
-to acronyms to avoid unwanted changes.

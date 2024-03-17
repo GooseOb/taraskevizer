@@ -64,6 +64,12 @@ const optionDict = toHashTable([
 		},
 	],
 	[
+		['--no-escape-caps', '-nec'],
+		() => {
+			general.doEscapeCapitalized = false;
+		},
+	],
+	[
 		['--h', '-h'],
 		() => {
 			nonHtml.h = true;

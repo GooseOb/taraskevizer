@@ -75,8 +75,6 @@ const iaReplacer = ($0: string, $1: string, $2: string) =>
 	$2.match(/[аеёіоуыэюя]/g)?.length === 1 ? $1 + 'я' + $2 : $0;
 
 const afterTarask: ExtendedDict = [
-	[/ [уў]асьнігл /g, ' уаснігл '],
-	[/ сь(?=нід |мі )/g, ' с'],
 	[/( б)е(зь? \S+)/g, iaReplacer],
 	[/( н)е( \S+)/g, iaReplacer],
 	[
@@ -86,7 +84,7 @@ const afterTarask: ExtendedDict = [
 ];
 
 const applyNoFix = (arr: string[], text: string) =>
-	arr.length ? text.replace(NOFIX_REGEX, () => arr.shift() as string) : text;
+	arr.length ? text.replace(NOFIX_REGEX, () => arr.shift()!) : text;
 
 const join = (textArr: string[]): string =>
 	textArr
@@ -228,6 +226,7 @@ export class Taraskevizer {
 	public html = {
 		g: false,
 	};
+	public doEscapeCapitalized = true;
 	public nonHtml = {
 		h: false,
 		ansiColors: false,
@@ -247,6 +246,8 @@ export class Taraskevizer {
 		if (general) {
 			if (general.abc) this.abc = general.abc;
 			if (general.j) this.j = general.j;
+			if ('doEscapeCapitalized' in general)
+				this.doEscapeCapitalized = general.doEscapeCapitalized!;
 		}
 		if (options.OVERRIDE_taraskevize)
 			this.taraskevize = options.OVERRIDE_taraskevize;
@@ -318,11 +319,18 @@ export class Taraskevizer {
 	): { splittedOrig: string[]; splitted: string[]; noFixArr: string[] } {
 		const { abc, j } = this;
 		const noFixArr: string[] = [];
-		text = ` ${text.trim()} `
-			.replace(/\ue0ff/g, '')
-			.replace(/<([,.]?)(.*?)>/gs, ($0, $1, $2) => {
-				if ($1 === ',') return LEFT_ANGLE_BRACKET + $2 + '>';
-				noFixArr.push($1 === '.' ? $2 : $0);
+		text = ` ${text.trim()} `.replace(/\ue0ff/g, '');
+		if (this.doEscapeCapitalized)
+			text = text.replace(/(?!<=\p{Lu} )(\p{Lu}{2,})(?!= \p{Lu})/gu, '<*.$1>');
+		text = text
+			.replace(/<(\*?)([,.]?)(.*?)>/gs, ($0, $1, $2, $3) => {
+				if ($2 === ',') return LEFT_ANGLE_BRACKET + $3 + '>';
+				if ($1)
+					$3 = restoreCase(
+						[replaceWithDict($3.toLowerCase(), letters[abc])],
+						[$3]
+					);
+				noFixArr.push($2 === '.' ? $3 : `<${$3}>`);
 				return NOFIX_CHAR;
 			})
 			.replace(/г'(?![еёіюя])/g, 'ґ')
