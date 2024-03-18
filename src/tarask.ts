@@ -330,7 +330,7 @@ export class Taraskevizer {
 						[replaceWithDict($3.toLowerCase(), letters[abc])],
 						[$3]
 					);
-				noFixArr.push($2 === '.' ? $3 : `<${$3}>`);
+				noFixArr.push($2 === '.' ? $3 : LEFT_ANGLE_BRACKET + $3 + '>');
 				return NOFIX_CHAR;
 			})
 			.replace(/г'(?![еёіюя])/g, 'ґ')

@@ -86,7 +86,13 @@ test('Latin', (text) => taraskevizerLatin.convert(text), cases.latin);
 test(
 	'SpecialConstructions',
 	(text) => taraskevizer.convert(text),
-	cases.specialConstructions
+	cases.specialConstructions.general
+);
+
+test(
+	'SpecialConstructions:latin',
+	(text) => taraskevizerLatin.convert(text),
+	cases.specialConstructions.latin
 );
 
 test(

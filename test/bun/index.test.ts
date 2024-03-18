@@ -95,7 +95,13 @@ testOnCases(
 testOnCases(
 	'\x1b[31mSpecialConstructions',
 	(text) => taraskevizer.convert(text),
-	cases.specialConstructions
+	cases.specialConstructions.general
+);
+
+testOnCases(
+	'\x1b[31mSpecialConstructions',
+	(text) => taraskevizerLatin.convert(text),
+	cases.specialConstructions.latin
 );
 
 testOnCases(
