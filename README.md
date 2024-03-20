@@ -86,7 +86,7 @@ Type: `(text: string) => string`
 Default value: internal function `taraskevize`
 
 Can be overridden in order to make additional changes to the text.
-This function usually uses private api via `Taraskevizer._.`
+This function usually uses private api via `__tarask__`
 
 ## html
 
