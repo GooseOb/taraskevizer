@@ -10,7 +10,8 @@ $ npm i taraskevizer
 import { Taraskevizer, ALPHABET, J, VARIATION } from 'taraskevizer';
 
 const taraskevizer = new Taraskevizer();
-taraskevizer.convert('планета'); // "плянэта"
+taraskevizer.convert('планета');
+// "плянэта"
 
 const taraskevizer = new Taraskevizer({
 	general: {
@@ -23,7 +24,8 @@ const taraskevizer = new Taraskevizer({
 		h: false,
 	},
 });
-taraskevizer.convert('планета і Гродна'); // "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
+taraskevizer.convert('планета і Гродна');
+// "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
 
 const taraskevizer = new Taraskevizer({
 	general: {
@@ -33,14 +35,13 @@ const taraskevizer = new Taraskevizer({
 		g: false, // ignored, because alphabet is set to latin
 	},
 });
-taraskevizer.convertToHtml('энергія планеты'); // "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
+taraskevizer.convertToHtml('энергія планеты');
+// "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
 
 // properties can be rewritten after creating an object
 taraskevizer.abc = ALPHABET.ARABIC;
 taraskevizer.html.g = true;
 ```
-
-### Function signatures are in [this file](./dist/index.d.ts) (not available if project is not built)
 
 ## general
 
