@@ -1,10 +1,10 @@
-## Install
+# Install
 
 ```bash
 $ npm i taraskevizer
 ```
 
-## Usage
+# Usage
 
 ```js
 import { Taraskevizer, ALPHABET, J, VARIATION } from 'taraskevizer';
@@ -42,6 +42,8 @@ taraskevizer.convertToHtml('энергія планеты');
 taraskevizer.abc = ALPHABET.ARABIC;
 taraskevizer.html.g = true;
 ```
+
+# Options
 
 ## general
 
@@ -138,9 +140,9 @@ Default value: `0`
 | 1     | first                                                 | Горадня           |
 | 2     | all                                                   | (Гродна\|Горадня) |
 
-## HTML tags
+# HTML tags
 
-### tarF
+## tarF
 
 Difference between an input and an output word.
 
@@ -150,7 +152,7 @@ Difference between an input and an output word.
 пл<tarF>я</tarF>н
 ```
 
-### tarL
+## tarL
 
 A part of a word wrapped in this tag is variable,
 variations are mentioned in a `data-l` attribute
@@ -162,7 +164,7 @@ and are separated by commas
 <tarL data-l="Горадня">Гродна</tarL>
 ```
 
-### tarH
+## tarH
 
 Can be replaced by `ґ`(`g`) letter. appears only if alphabet is cyrillic
 
@@ -172,7 +174,7 @@ Can be replaced by `ґ`(`g`) letter. appears only if alphabet is cyrillic
 <tarH>Г</tarH>валт
 ```
 
-## Special Syntax
+# Special Syntax
 
 |             | fix          | no fix       | change only alphabet |
 | ----------- | ------------ | ------------ | -------------------- |
