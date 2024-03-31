@@ -1,7 +1,21 @@
 # Install
 
+With npm:
+
 ```bash
-$ npm i taraskevizer
+npm install taraskevizer
+```
+
+With yarn:
+
+```bash
+yarn add taraskevizer
+```
+
+With bun:
+
+```bash
+bun add taraskevizer
 ```
 
 # Usage
@@ -185,14 +199,28 @@ Can be replaced by `ґ`(`g`) letter. appears only if alphabet is cyrillic
 
 ## Install
 
+With npm:
+
 ```bash
-$ npm i -g taraskevizer
+npm install -g taraskevizer
+```
+
+With yarn:
+
+```bash
+yarn global add taraskevizer
+```
+
+With bun:
+
+```bash
+bun add -g taraskevizer
 ```
 
 ## Usage
 
 ```bash
-$ tarask "планета"
+tarask "планета"
 ```
 
 ## Options
