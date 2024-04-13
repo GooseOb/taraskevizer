@@ -220,13 +220,29 @@ export const __tarask__ = {
 	afterTarask,
 } as const;
 
+export const convertAlphabet = (
+	text: string,
+	abc: Alphabet,
+	jiInLatin: boolean
+) =>
+	replaceWithDict(replaceWithDict(text, letters[abc]), lettersUpperCase[abc]);
+
+const moveFromTo = <TKey extends string, TValue>(
+	prop: TKey,
+	from: { readonly [p in TKey]?: TValue },
+	to: { [p in TKey]: TValue }
+) => {
+	if (prop in from) to[prop] = from[prop]!;
+};
+
 export class Taraskevizer {
 	public abc: Alphabet = ALPHABET.CYRILLIC;
 	public j: OptionJ = REPLACE_J.NEVER;
+	public ji = true;
+	public doEscapeCapitalized = true;
 	public html = {
 		g: false,
 	};
-	public doEscapeCapitalized = true;
 	public nonHtml = {
 		h: false,
 		ansiColors: false,
@@ -244,10 +260,13 @@ export class Taraskevizer {
 		if (!options) return;
 		const general = options.general;
 		if (general) {
-			if (general.abc) this.abc = general.abc;
-			if (general.j) this.j = general.j;
-			if ('doEscapeCapitalized' in general)
-				this.doEscapeCapitalized = general.doEscapeCapitalized!;
+			for (const prop of [
+				'abc',
+				'j',
+				'ji',
+				'doEscapeCapitalized',
+			] satisfies (keyof TaraskOptions)[])
+				moveFromTo(prop, general, this);
 		}
 		if (options.OVERRIDE_taraskevize)
 			this.taraskevize = options.OVERRIDE_taraskevize;
@@ -317,7 +336,7 @@ export class Taraskevizer {
 		text: string,
 		LEFT_ANGLE_BRACKET: string
 	): { splittedOrig: string[]; splitted: string[]; noFixArr: string[] } {
-		const { abc, j } = this;
+		const { abc, j, ji } = this;
 		const noFixArr: string[] = [];
 		text = ` ${text.trim()} `.replace(/\ue0ff/g, '');
 		if (this.doEscapeCapitalized)
@@ -341,10 +360,7 @@ export class Taraskevizer {
 			.replace(/\(/g, '&#40');
 
 		let splittedOrig: string[], splitted: string[];
-		splittedOrig = replaceWithDict(
-			replaceWithDict(text, letters[abc]),
-			lettersUpperCase[abc]
-		).split(' ');
+		splittedOrig = convertAlphabet(text, abc, ji).split(' ');
 
 		text = this.taraskevize(text.toLowerCase());
 		if (j) text = replaceIbyJ(text, j === REPLACE_J.ALWAYS);

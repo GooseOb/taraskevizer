@@ -10,5 +10,5 @@ export default [
 		'Ja žorstka zabju prosta ŭ serca hety raskviečany profil, što chodzić la majoj chaty',
 	],
 	['грошы', 'hrošy'],
-	// ['еёёююяя', 'jejojojujujaja'],
+	['еёёююяя', 'jejojojujujaja'],
 ] as const;

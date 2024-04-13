@@ -1,5 +1,5 @@
 import { benchmark, print, startTestProcess } from './lib';
-import { Taraskevizer, ALPHABET } from '../src';
+import { Taraskevizer, convertAlphabet, ALPHABET } from '../src';
 import * as cases from './cases';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
@@ -109,6 +109,18 @@ test(
 	'CaseRestoring:no-escape-caps',
 	(text) => taraskevizerNoEscCap.convert(text),
 	cases.caseRestoring.noEscCap
+);
+
+test(
+	'AlphabetConversion:latin-no-ji',
+	(text) => convertAlphabet(text, ALPHABET.LATIN, false),
+	cases.alphabetConversion.latin
+);
+
+test(
+	'AlphabetConversion:latin-ji',
+	(text) => convertAlphabet(text, ALPHABET.LATIN, true),
+	cases.alphabetConversion.latinJi
 );
 
 // add a new case here

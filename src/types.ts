@@ -21,6 +21,7 @@ export type TaraskOptions = {
 	doEscapeCapitalized: boolean;
 	abc: Alphabet;
 	j: OptionJ;
+	ji: boolean;
 };
 export type NonHtmlOptions = {
 	ansiColors: boolean;

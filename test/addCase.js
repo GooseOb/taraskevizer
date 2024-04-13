@@ -1,4 +1,4 @@
-import { appendFile, readFile, writeFile } from 'fs/promises';
+import { appendFile, readFile, writeFile, exists } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
@@ -11,17 +11,22 @@ if (process.argv.length < 3) {
 
 const fileNameWithoutExt = process.argv[2];
 
-const varName =
-	process.argv[3] ||
-	fileNameWithoutExt.replace(/-(.)/g, ($0, $1) => $1.toUpperCase());
-const testName = varName[0].toUpperCase() + varName.slice(1);
-
 const testPath = path.dirname(fileURLToPath(import.meta.url));
 const casesPath = path.resolve(testPath, 'cases');
 const casesIndexPath = path.resolve(casesPath, 'index.ts');
 const filePath = path.resolve(casesPath, fileNameWithoutExt + '.ts');
 const indexTestPath = path.resolve(testPath, 'index.ts');
 const bunIndexTestPath = path.resolve(testPath, 'bun', 'index.test.ts');
+
+if (await exists(filePath)) {
+	process.stderr.write(`\x1b[35m${fileNameWithoutExt}\x1b[0m already exists\n`);
+	process.exit(1);
+}
+
+const varName =
+	process.argv[3] ||
+	fileNameWithoutExt.replace(/-(.)/g, ($0, $1) => $1.toUpperCase());
+const testName = varName[0].toUpperCase() + varName.slice(1);
 
 const addToFile = (filePath, code) =>
 	readFile(filePath, 'utf8').then((content) =>
