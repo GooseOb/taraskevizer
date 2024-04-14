@@ -116,17 +116,15 @@ while ((currOption = process.argv.shift())) {
 let text = '';
 if (process.argv.length) {
 	text = process.argv.join(' ');
+} else if (process.stdin.isTTY) {
+	text = await readline
+		.createInterface({
+			input: process.stdin,
+			output: process.stdout,
+		})
+		.question(prefix + 'Enter the text:\n');
 } else {
-	if (process.stdin.isTTY) {
-		text = await readline
-			.createInterface({
-				input: process.stdin,
-				output: process.stdout,
-			})
-			.question(prefix + 'Enter the text:\n');
-	} else {
-		for await (const chunk of process.stdin) text += chunk;
-	}
+	for await (const chunk of process.stdin) text += chunk;
 }
 
 const taraskevizer = new Taraskevizer({ general, html, nonHtml });
