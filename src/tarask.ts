@@ -29,7 +29,7 @@ const getLastLetter = (word: string, i: number) => {
 
 const NOFIX_CHAR = ' \ue0fe ';
 const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
-const OPTIONAL_WORDS_REGEX = /\([^\)]*?\)/g;
+const OPTIONAL_WORDS_REGEX = /\([^)]*?\)/g;
 const G_REGEX = /[Ґґ]/g;
 type G_REGEX_MATCH = 'Ґ' | 'ґ';
 
