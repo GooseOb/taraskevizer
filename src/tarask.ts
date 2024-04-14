@@ -29,7 +29,7 @@ const getLastLetter = (word: string, i: number) => {
 
 const NOFIX_CHAR = ' \ue0fe ';
 const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
-const OPTIONAL_WORDS_REGEX = /\(.*?\)/g;
+const OPTIONAL_WORDS_REGEX = /\([^\)]*?\)/g;
 const G_REGEX = /[Ґґ]/g;
 type G_REGEX_MATCH = 'Ґ' | 'ґ';
 
@@ -37,6 +37,7 @@ export const ALPHABET = {
 	CYRILLIC: 0,
 	LATIN: 1,
 	ARABIC: 2,
+	LATIN_JI: 1,
 } as const satisfies Record<string, Alphabet>;
 export const REPLACE_J = {
 	NEVER: 0,
@@ -121,7 +122,7 @@ const restoreCase = (text: string[], orig: string[]): string[] => {
 		} else {
 			text[i] =
 				word[0] === '('
-					? word.replace(/.*?(?=\))/, ($0) =>
+					? word.replace(/[^)]*?(?=\))/, ($0) =>
 							$0.replace(/[(|]./g, ($0) => $0.toUpperCase())
 						)
 					: word[0].toUpperCase() + word.slice(1);
@@ -220,25 +221,12 @@ export const __tarask__ = {
 	afterTarask,
 } as const;
 
-export const convertAlphabet = (
-	text: string,
-	abc: Alphabet,
-	jiInLatin: boolean
-) =>
+export const convertAlphabet = (text: string, abc: Alphabet) =>
 	replaceWithDict(replaceWithDict(text, letters[abc]), lettersUpperCase[abc]);
-
-const moveFromTo = <TKey extends string, TValue>(
-	prop: TKey,
-	from: { readonly [p in TKey]?: TValue },
-	to: { [p in TKey]: TValue }
-) => {
-	if (prop in from) to[prop] = from[prop]!;
-};
 
 export class Taraskevizer {
 	public abc: Alphabet = ALPHABET.CYRILLIC;
 	public j: OptionJ = REPLACE_J.NEVER;
-	public ji = true;
 	public doEscapeCapitalized = true;
 	public html = {
 		g: false,
@@ -263,10 +251,9 @@ export class Taraskevizer {
 			for (const prop of [
 				'abc',
 				'j',
-				'ji',
 				'doEscapeCapitalized',
 			] satisfies (keyof TaraskOptions)[])
-				moveFromTo(prop, general, this);
+				if (prop in general) this[prop] = general[prop] as never;
 		}
 		if (options.OVERRIDE_taraskevize)
 			this.taraskevize = options.OVERRIDE_taraskevize;
@@ -336,13 +323,13 @@ export class Taraskevizer {
 		text: string,
 		LEFT_ANGLE_BRACKET: string
 	): { splittedOrig: string[]; splitted: string[]; noFixArr: string[] } {
-		const { abc, j, ji } = this;
+		const { abc, j } = this;
 		const noFixArr: string[] = [];
 		text = ` ${text.trim()} `.replace(/\ue0ff/g, '');
 		if (this.doEscapeCapitalized)
 			text = text.replace(/(?!<=\p{Lu} )(\p{Lu}{2,})(?!= \p{Lu})/gu, '<*.$1>');
 		text = text
-			.replace(/<(\*?)([,.]?)(.*?)>/gs, ($0, $1, $2, $3) => {
+			.replace(/<(\*?)([,.]?)([^>]*?)>/gs, ($0, $1, $2, $3) => {
 				if ($2 === ',') return LEFT_ANGLE_BRACKET + $3 + '>';
 				if ($1)
 					$3 = restoreCase(
@@ -360,7 +347,7 @@ export class Taraskevizer {
 			.replace(/\(/g, '&#40');
 
 		let splittedOrig: string[], splitted: string[];
-		splittedOrig = convertAlphabet(text, abc, ji).split(' ');
+		splittedOrig = convertAlphabet(text, abc).split(' ');
 
 		text = this.taraskevize(text.toLowerCase());
 		if (j) text = replaceIbyJ(text, j === REPLACE_J.ALWAYS);

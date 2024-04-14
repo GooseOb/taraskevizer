@@ -122,19 +122,14 @@ testOnCases(
 
 testOnCases(
 	'\x1b[31mAlphabetConversion:latin-no-ji',
-	(text) => convertAlphabet(text, ALPHABET.LATIN, false),
+	(text) => convertAlphabet(text, ALPHABET.LATIN),
 	cases.alphabetConversion.latin
 );
 
-testOnCases(
-	'\x1b[31mAlphabetConversion:latin-ji',
-	(text) => convertAlphabet(text, ALPHABET.LATIN, true),
-	cases.alphabetConversion.latinJi
-);
-testOnCases(
-	'\x1b[31mAlphabetConversion:latin-ji',
-	(text) => convertAlphabet(text, ALPHABET.LATIN, true),
-	cases.alphabetConversion.latin
-);
+// testOnCases(
+// 	'\x1b[31mAlphabetConversion:latin-ji',
+// 	(text) => convertAlphabet(text, ALPHABET.LATIN_JI),
+// 	cases.alphabetConversion.latinJi
+// );
 
 // add a new case here

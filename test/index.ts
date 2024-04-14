@@ -113,15 +113,15 @@ test(
 
 test(
 	'AlphabetConversion:latin-no-ji',
-	(text) => convertAlphabet(text, ALPHABET.LATIN, false),
+	(text) => convertAlphabet(text, ALPHABET.LATIN),
 	cases.alphabetConversion.latin
 );
 
-test(
-	'AlphabetConversion:latin-ji',
-	(text) => convertAlphabet(text, ALPHABET.LATIN, true),
-	cases.alphabetConversion.latinJi
-);
+// test(
+// 	'AlphabetConversion:latin-ji',
+// 	(text) => convertAlphabet(text, ALPHABET.LATIN_JI),
+// 	cases.alphabetConversion.latinJi
+// );
 
 // add a new case here
 

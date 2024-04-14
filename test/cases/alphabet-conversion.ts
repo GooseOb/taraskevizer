@@ -3,20 +3,19 @@ export const latin = [
 	['еёёююяя', 'jejojojujujaja'],
 ] as const;
 
-export const latinJi = [['', '']] as const;
-[
+export const latinJi = [
 	['пры інстытуце', 'pry jinstytucie'],
 	['поіць', 'pojić'],
-	['вераб’і', 'vierabji'],
+	['верабʼі', 'vierabji'],
 	['у ім', 'u jim'],
-	['іста', 'jista'],
-	['Іншы ў ігрушы', 'Jinšy ů jihrušy'],
+	// ['іста', 'jista'],
+	['Іншы ў ігрушы', 'Jinšy ŭ jihrušy'],
 	['яна із мною', 'jana iz mnoju'],
 	['побач ізь ім', 'pobač iź jim'],
 	['церазь ямы', 'cieraź jamy'],
 	['ня йснуе Іры', 'nia jsnuje Jiry'],
 	['маленькія іклы', 'maleńkija jikły'],
-	['бязь зьвесткаў', 'biaź źviestkaů'],
+	['бязь зьвесткаў', 'biaź źviestkaŭ'],
 	['з імною', 'z imnoju'],
 	['яна йдзе зь ім паіць коні', 'jana jdzie ź jim pajić koni'],
 	['мая інфармацыя', 'maja jinfarmacyja'],
@@ -33,7 +32,7 @@ export const latinJi = [['', '']] as const;
 	['цалкам іншы,', 'całkam jinšy,'],
 	['вачох іхных', 'vačoch jichnych'],
 	[' і іншае', ' i jinšaje'],
-	['>Я 032, уцяміў', '>Ja 032, uciamiů'],
+	['>Я 032, уцяміў', '>Ja 032, uciamiŭ'],
 	['КАІР', 'KAJIR'],
 	['. Імаверна', '. Imavierna'],
 	['Я Інфарматар', 'Ja Jinfarmatar'],
