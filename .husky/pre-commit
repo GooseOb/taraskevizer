@@ -7,8 +7,7 @@
   exit 1
 }
 
-npm run build
-bun run typecheck
-npm run test
+bun run build
+bun run typecheck & bun run test
 prettier --write .
 git add -A .
