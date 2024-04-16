@@ -2,7 +2,7 @@ import { ALPHABET, REPLACE_J, TaraskOptions } from '../../src';
 
 type ItoJCase = [
 	[string, TaraskOptions['j']?, TaraskOptions['abc']?],
-	string,
+	string
 ][];
 
 export default [
