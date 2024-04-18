@@ -61,7 +61,7 @@ const latinizerWithJi = new Taraskevizer({
 });
 
 latinizerWithJi.convertAlphabetOnly('яна і іншыя');
-// "jana ji jinšyja"
+// "jana j jinšyja"
 ```
 
 # Options
