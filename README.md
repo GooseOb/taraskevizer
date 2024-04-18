@@ -55,6 +55,13 @@ taraskevizer.convertToHtml('энергія планеты');
 // properties can be rewritten after creating an object
 taraskevizer.abc = ALPHABET.ARABIC;
 taraskevizer.html.g = true;
+
+const latinizerWithJi = new Taraskevizer({
+	general: { abc: ALPHABET.LATIN_JI },
+});
+
+latinizerWithJi.convertAlphabetOnly('яна і іншыя');
+// "jana ji jinšyja"
 ```
 
 # Options
@@ -74,6 +81,7 @@ Default value: `0`
 | 0     | cyrillic                |
 | 1     | latin                   |
 | 2     | arabic                  |
+| 3     | latin with ji           |
 
 ### j
 
@@ -87,6 +95,8 @@ Default value: `0`
 | 0     | never                                             | `яна і ён`               |
 | 1     | random                                            | `яна і ён` or `яна й ён` |
 | 2     | always                                            | `яна й ён`               |
+
+Has no effect with `LATIN_JI` alphabet.
 
 ### doEscapeCapitalized
 
@@ -241,6 +251,7 @@ tarask "планета"
 --not-escape-caps (-nec)
 --no-color (-nc)
 --html (-html)
+--alphabet-only (-abc) # not working; WIP
 ```
 
 # Known bugs
