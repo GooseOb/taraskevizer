@@ -1,5 +1,5 @@
 import { benchmark, print, startTestProcess } from './lib';
-import { Taraskevizer, convertAlphabet, ALPHABET } from '../src';
+import { Taraskevizer, ALPHABET } from '../src';
 import * as cases from './cases';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
@@ -113,15 +113,17 @@ test(
 
 test(
 	'AlphabetConversion:latin-no-ji',
-	(text) => convertAlphabet(text, ALPHABET.LATIN),
+	(text) => taraskevizerLatin.convertAlphabetOnly(text),
 	cases.alphabetConversion.latin
 );
 
-// test(
-// 	'AlphabetConversion:latin-ji',
-// 	(text) => convertAlphabet(text, ALPHABET.LATIN_JI),
-// 	cases.alphabetConversion.latinJi
-// );
+const latinizerJi = new Taraskevizer({ general: { abc: ALPHABET.LATIN_JI } });
+
+test(
+	'AlphabetConversion:latin-ji',
+	(text) => latinizerJi.convertAlphabetOnly(text),
+	cases.alphabetConversion.latinJi
+);
 
 // add a new case here
 

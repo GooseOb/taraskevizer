@@ -1,5 +1,5 @@
 import { getLabel, testOnCases, testOnCasesAsync } from './lib';
-import { Taraskevizer, ALPHABET, convertAlphabet } from '../../src';
+import { Taraskevizer, ALPHABET } from '../../src';
 import * as cases from '../cases';
 import * as path from 'path';
 
@@ -122,14 +122,16 @@ testOnCases(
 
 testOnCases(
 	'\x1b[31mAlphabetConversion:latin-no-ji',
-	(text) => convertAlphabet(text, ALPHABET.LATIN),
+	(text) => taraskevizerLatin.convertAlphabetOnly(text),
 	cases.alphabetConversion.latin
 );
 
-// testOnCases(
-// 	'\x1b[31mAlphabetConversion:latin-ji',
-// 	(text) => convertAlphabet(text, ALPHABET.LATIN_JI),
-// 	cases.alphabetConversion.latinJi
-// );
+const latinizerJi = new Taraskevizer({ general: { abc: ALPHABET.LATIN_JI } });
+
+testOnCases(
+	'\x1b[31mAlphabetConversion:latin-ji',
+	(text) => latinizerJi.convertAlphabetOnly(text),
+	cases.alphabetConversion.latinJi
+);
 
 // add a new case here

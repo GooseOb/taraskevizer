@@ -5,6 +5,8 @@ import {
 	latinLetters,
 	latinLettersUpperCase,
 	gobj,
+	latinLettersJi,
+	latinLettersUpperCaseJi,
 } from './dict';
 import type {
 	AlphabetDependentDict,
@@ -37,7 +39,7 @@ export const ALPHABET = {
 	CYRILLIC: 0,
 	LATIN: 1,
 	ARABIC: 2,
-	LATIN_JI: 1,
+	LATIN_JI: 3,
 } as const satisfies Record<string, Alphabet>;
 export const REPLACE_J = {
 	NEVER: 0,
@@ -53,9 +55,11 @@ export const VARIATION = {
 const letters: AlphabetDependentDict = {
 	[ALPHABET.LATIN]: latinLetters,
 	[ALPHABET.ARABIC]: arabLetters,
+	[ALPHABET.LATIN_JI]: latinLettersJi,
 };
 const lettersUpperCase: AlphabetDependentDict = {
 	[ALPHABET.LATIN]: latinLettersUpperCase,
+	[ALPHABET.LATIN_JI]: latinLettersUpperCaseJi,
 };
 
 const wrappers = {
@@ -92,7 +96,7 @@ const join = (textArr: string[]): string =>
 		.join(' ')
 		.replace(/&nbsp;/g, ' ')
 		.replace(/ (\p{P}|\p{S}|\d|&#40) /gu, '$1');
-const finilize = (text: string, newLine: string) =>
+const finalize = (text: string, newLine: string) =>
 	text.replace(/ \t /g, '\t').replace(/ \n /g, newLine).trim();
 
 const replaceG = (
@@ -124,7 +128,7 @@ const restoreCase = (text: string[], orig: string[]): string[] => {
 				word[0] === '('
 					? word.replace(/[^)]*?(?=\))/, ($0) =>
 							$0.replace(/[(|]./g, ($0) => $0.toUpperCase())
-					  )
+						)
 					: word[0].toUpperCase() + word.slice(1);
 		}
 	}
@@ -203,15 +207,14 @@ const replaceWithDict = (text: string, dict: ExtendedDict = []) => {
 	return text;
 };
 
-const toJ = (vow: `${string} `, shortU: '' | 'ў') =>
-	vow + 'й ' + (shortU ? 'у' : '');
+const toJ = (shortU: '' | 'ў') => 'й ' + (shortU ? 'у' : '');
 
 const replaceIbyJ = (text: string, always = false) =>
 	text.replace(
-		/([аеёіоуыэюя] )і (ў?)/g,
+		/(?<=[аеёіоуыэюя] )і (ў?)/g,
 		always
-			? ($0, $1, $2) => toJ($1, $2)
-			: ($0, $1, $2) => (Math.random() >= 0.5 ? toJ($1, $2) : $0)
+			? ($0, $1) => toJ($1)
+			: ($0, $1) => (Math.random() >= 0.5 ? toJ($1) : $0)
 	);
 
 export const __tarask__ = {
@@ -221,7 +224,7 @@ export const __tarask__ = {
 	afterTarask,
 } as const;
 
-export const convertAlphabet = (text: string, abc: Alphabet) =>
+const convertAlphabet = (text: string, abc: Alphabet) =>
 	replaceWithDict(replaceWithDict(text, letters[abc]), lettersUpperCase[abc]);
 
 export class Taraskevizer {
@@ -264,7 +267,10 @@ export class Taraskevizer {
 	public convert(text: string) {
 		const wrapInColorOf = wrappers.ansiColors;
 		const isCyrillic = this.abc === ALPHABET.CYRILLIC;
-		const { splitted, splittedOrig, noFixArr } = this.process(text, '<');
+		const noFixArr: string[] = [];
+		const { splitted, splittedOrig } = this.process(
+			this.prepare(text, noFixArr, '<')
+		);
 		if (this.nonHtml.ansiColors)
 			highlightChanges(splitted, splittedOrig, isCyrillic, wrapInColorOf.fix);
 		text = join(splitted);
@@ -292,13 +298,16 @@ export class Taraskevizer {
 			);
 		}
 
-		return finilize(applyNoFix(noFixArr, text).replace(/&#40/g, '('), '\n');
+		return finalize(applyNoFix(noFixArr, text).replace(/&#40/g, '('), '\n');
 	}
 
 	public convertToHtml(text: string) {
 		const wrapInTag = wrappers.html;
 		const isCyrillic = this.abc === ALPHABET.CYRILLIC;
-		const { splitted, splittedOrig, noFixArr } = this.process(text, '&lt;');
+		const noFixArr: string[] = [];
+		const { splitted, splittedOrig } = this.process(
+			this.prepare(text, noFixArr, '&lt;')
+		);
 		highlightChanges(splitted, splittedOrig, isCyrillic, wrapInTag.fix);
 		text = join(splitted);
 		if (isCyrillic)
@@ -309,7 +318,7 @@ export class Taraskevizer {
 					: ($0) => wrapInTag.letterH(gobj[$0])
 			);
 
-		return finilize(
+		return finalize(
 			applyNoFix(noFixArr, text).replace(OPTIONAL_WORDS_REGEX, ($0) => {
 				const options = $0.slice(1, -1).split('|');
 				const main = options.shift();
@@ -319,21 +328,21 @@ export class Taraskevizer {
 		);
 	}
 
-	private process(
+	private prepare(
 		text: string,
-		LEFT_ANGLE_BRACKET: string
-	): { splittedOrig: string[]; splitted: string[]; noFixArr: string[] } {
-		const { abc, j } = this;
-		const noFixArr: string[] = [];
+		noFixArr: string[],
+		LEFT_ANGLE_BRACKET: string,
+		doEscapeCapitalized = this.doEscapeCapitalized
+	) {
 		text = ` ${text.trim()} `.replace(/\ue0ff/g, '');
-		if (this.doEscapeCapitalized)
+		if (doEscapeCapitalized)
 			text = text.replace(/(?!<=\p{Lu} )(\p{Lu}{2,})(?!= \p{Lu})/gu, '<*.$1>');
-		text = text
+		return text
 			.replace(/<(\*?)([,.]?)([^>]*?)>/gs, ($0, $1, $2, $3) => {
 				if ($2 === ',') return LEFT_ANGLE_BRACKET + $3 + '>';
 				if ($1)
 					$3 = restoreCase(
-						[replaceWithDict($3.toLowerCase(), letters[abc])],
+						[replaceWithDict($3.toLowerCase(), letters[this.abc])],
 						[$3]
 					);
 				noFixArr.push($2 === '.' ? $3 : LEFT_ANGLE_BRACKET + $3 + '>');
@@ -345,17 +354,37 @@ export class Taraskevizer {
 			.replace(/(\p{P}|\p{S}|\d)/gu, ' $1 ')
 			.replace(/ ['`’] (?=\S)/g, 'ʼ')
 			.replace(/\(/g, '&#40');
+	}
 
-		let splittedOrig: string[], splitted: string[];
-		splittedOrig = convertAlphabet(text, abc).split(' ');
+	public convertAlphabetOnly(text: string) {
+		const noFixArr: string[] = [];
+		return finalize(
+			applyNoFix(
+				noFixArr,
+				convertAlphabet(this.prepare(text, noFixArr, '<', false), this.abc)
+			)
+				.replace(/&nbsp;/g, ' ')
+				.replace(/ (\p{P}|\p{S}|\d|&#40) /gu, '$1'),
+			'\n'
+		);
+	}
+
+	private process(text: string): {
+		splittedOrig: string[];
+		splitted: string[];
+	} {
+		const { abc, j } = this;
+
+		const splittedOrig = convertAlphabet(text, abc).split(' ');
 
 		text = this.taraskevize(text.toLowerCase());
-		if (j) text = replaceIbyJ(text, j === REPLACE_J.ALWAYS);
+		if (j && abc !== ALPHABET.LATIN_JI)
+			text = replaceIbyJ(text, j === REPLACE_J.ALWAYS);
 		text = replaceWithDict(text, letters[abc]);
 
-		splitted = text.split(' ');
+		let splitted = text.split(' ');
 		if (abc !== ALPHABET.ARABIC) splitted = restoreCase(splitted, splittedOrig);
-		return { splittedOrig, splitted, noFixArr };
+		return { splittedOrig, splitted };
 	}
 
 	protected taraskevize(text: string) {

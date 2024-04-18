@@ -41,11 +41,11 @@ export const startTestProcess = ({ long = false } = {}) => {
 				if (output !== expectedValue) {
 					let charIndex = 0;
 					while (output[charIndex] === expectedValue[charIndex]) ++charIndex;
-					const coloredOutput = colorizeCharInStr(output, charIndex, '41');
+					const coloredOutput = colorizeCharInStr(output, charIndex, '31');
 					const coloredExpected = colorizeCharInStr(
 						expectedValue,
 						charIndex,
-						'42'
+						'32'
 					);
 					failed.push(
 						`${name}:\ninput:    ${format(input)}\noutput:   ${format(

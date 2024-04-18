@@ -1,7 +1,8 @@
 import type { RawDict } from './types';
 import type { Dict, ExtendedDict } from "../types";
-import { latinLetters, latinLettersUpperCase } from './latin';
+import { latinLetters,latinLettersUpperCase, rawLatinLettersJi, rawLatinLettersUpperCaseJi } from './latin';
 import { rawArabLetters } from './arabic';
+import { iwords, toOneLine } from './iwords';
 
 const chemicalElements1: string[] = [
 	'сканд|ванад|рубід|род|ірыд|рэзэрфорд',
@@ -15,70 +16,11 @@ const chemicalElements2: string[] = [
 chemicalElements2[1] = chemicalElements2[0] + '|айнштайн|мендзялев|сыборг|гас|флеров';
 const chemicalElements3 = ' гал|бэрыл|тул|бэркл|набэл';
 
-const toOneLine = (str: string): string =>
-	str.replace(/\n/g, '|');
 
 const ia = (word: string, words: string): string =>
 	` ${word} (?=\\(?(?:[бвгджзйклмнпстфцчшў]*[оё]|${
 		words.replace(/\(/g, '(?:')
 	}|i(?:${iwords})))`;
-
-const iwords = toOneLine(` 
-біс
-бсэн
-в[аеоы] 
-верс
-вал[гз]
-гар
-грышч
-грэк
-дал
-дыш
-жыц
-канапіс
-кань?н
-ка[цўл]
-каў[кц]
-ксі
-леус
-л(іст| )
-лістас
-льк
-мант
-мась?ц
-мбры[кч]
-менна 
-мідж
-мпар[тц]
-мпульс[аеуы]
-нахадз
-нды([ійюя] |ев)
-ндэкс(а(ў|мі?)? |[еуыі])
-н[еі][ейяю]
-нк([аіу])
-нтэрым
-нфікс
-нфімум
-ншась?ц
-нш(а[ейя]?|ась?ц|ую|ы(мі|х|я)?) 
-псілан
-рад
-рбіс
-рмас
-рха
-рыс 
-скарк
-скарак
-скра
-скравец
-скрачк
-с[нт]ась?ц
-сь?цік
-сь?цін
-тар
-тры
-ць?він
-шыяс`);
 
 const rawWordlist: RawDict = [
 /* А */
@@ -1757,19 +1699,23 @@ const gobj = {
 const
 	wordlist: Dict = [],
 	softeners: Dict = [],
-	arabLetters: Dict = [];
+	arabLetters: Dict = [],
+	latinLettersJi: Dict = [],
+	latinLettersUpperCaseJi: Dict = [];
 
 const arr: [RawDict, Dict][] = [
 	[rawWordlist, wordlist],
 	[rawsofteners, softeners],
 	[rawArabLetters, arabLetters],
+	[rawLatinLettersJi, latinLettersJi],
+	[rawLatinLettersUpperCaseJi, latinLettersUpperCaseJi],
 ];
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
 for (const [raw, obj] of arr)
 	for (const [pattern, result] of raw)
-		(obj as Writeable<ExtendedDict>).push([RegExp(pattern, 'g'), result]);
+		(obj as Writeable<ExtendedDict>).push([RegExp(pattern, pattern instanceof RegExp ? pattern.flags + 'g' : 'g'), result]);
 
 for (const obj of [latinLetters, latinLettersUpperCase])
 	for (const item of obj)
@@ -1783,5 +1729,6 @@ export {
 	softeners,
 	arabLetters,
 	latinLetters, latinLettersUpperCase,
+	latinLettersJi, latinLettersUpperCaseJi,
 	gobj
 };
