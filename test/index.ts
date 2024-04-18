@@ -66,7 +66,7 @@ if (!process.env.NOCLI) {
 	test(
 		'CLI',
 		(options) => {
-			const { stdout, stderr } = spawnSync('node', [pathToBin, ...options], {
+			const { stdout, stderr } = spawnSync('bun', [pathToBin, ...options], {
 				encoding: 'utf-8',
 			});
 

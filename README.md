@@ -106,6 +106,8 @@ Default `true`
 
 If set to false, may cause unwanted changes in acronyms.
 
+Is always `true` in `convertAlphabetOnly`.
+
 ### OVERRIDE_taraskevize
 
 Type: `(text: string) => string`
@@ -238,6 +240,7 @@ tarask "планета"
 ```bash
 # Alpabet
 --latin (-l)
+--latin-ji (-lj)
 --arabic (-a)
 # When to replace і(i) by й(j) after vowels
 --jrandom (-jr)
@@ -247,11 +250,12 @@ tarask "планета"
 # Variations
 --no-variations (-nv)
 --first-variation-only (-fvo)
+# Mode
+--html (-html)
+--alphabet-only (-abc)
 # Other
 --not-escape-caps (-nec)
 --no-color (-nc)
---html (-html)
---alphabet-only (-abc) # not working; WIP
 ```
 
 # Known bugs

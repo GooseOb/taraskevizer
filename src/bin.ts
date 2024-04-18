@@ -29,7 +29,8 @@ const nonHtml: Partial<NonHtmlOptions> = {
 };
 const html: Partial<HtmlOptions> = { g: true };
 
-let isHtml = false;
+type Mode = 'nonHtml' | 'html' | 'alphabetOnly';
+let mode: Mode = 'nonHtml';
 
 const toHashTable = (dict: [string[], () => void][]) => {
 	const result: Record<string, () => void> = {};
@@ -43,6 +44,12 @@ const optionDict = toHashTable([
 		['--latin', '-l'],
 		() => {
 			general.abc = ALPHABET.LATIN;
+		},
+	],
+	[
+		['--latin-ji', '-lj'],
+		() => {
+			general.abc = ALPHABET.LATIN_JI;
 		},
 	],
 	[
@@ -97,7 +104,13 @@ const optionDict = toHashTable([
 	[
 		['--html', '-html'],
 		() => {
-			isHtml = true;
+			mode = 'html';
+		},
+	],
+	[
+		['--alphabet-only', '-abc'],
+		() => {
+			mode = 'alphabetOnly';
 		},
 	],
 ]);
@@ -130,7 +143,10 @@ if (process.argv.length) {
 const taraskevizer = new Taraskevizer({ general, html, nonHtml });
 
 process.stdout.write(
-	(isHtml ? taraskevizer.convertToHtml(text) : taraskevizer.convert(text)) +
-		'\n'
+	{
+		nonHtml: taraskevizer.convert,
+		html: taraskevizer.convertToHtml,
+		alphabetOnly: taraskevizer.convertAlphabetOnly,
+	}[mode].apply(taraskevizer, [text]) + '\n'
 );
 process.exit(0);

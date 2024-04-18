@@ -15,4 +15,6 @@ export default [
 	[['-h', 'энергія'], 'эн\x1b[32mэ\x1b[0mр\x1b[35mг\x1b[0mія'],
 	[['-html', 'энергія'], 'эн<tarF>э</tarF>р<tarH>ґ</tarH>ія'],
 	[['-html', '-h', 'энергія'], 'эн<tarF>э</tarF>р<tarH>г</tarH>ія'],
+	[['-nc', '-abc', '-lj', 'яна і іншыя'], 'jana j jinšyja'],
+	[['-nc', '-abc', '-l', 'планета'], 'płanieta'],
 ] satisfies [string[], string][];
