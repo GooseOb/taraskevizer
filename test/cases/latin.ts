@@ -1,4 +1,4 @@
-export default [
+export const general = [
 	['Здароўе здароўе ЗДАРОЎЕ', 'Zdaroŭje zdaroŭje ZDAROŬJE'],
 	["падвор'і ПАДВОР'І", 'padvorji PADVORJI'],
 	[
@@ -12,3 +12,5 @@ export default [
 	['грошы', 'hrošy'],
 	['еёёююяя', 'jejojojujujaja'],
 ] as const;
+
+export const ji = [['БЕЛАЯ ІКРА', 'BIEŁAJA JIKRA']] as const;

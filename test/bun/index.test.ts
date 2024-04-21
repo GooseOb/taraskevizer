@@ -89,7 +89,16 @@ const taraskevizerLatin = new Taraskevizer({
 testOnCases(
 	'\x1b[33mLatin',
 	(text) => taraskevizerLatin.convert(text),
-	cases.latin
+	cases.latin.general
+);
+
+const taraskevizerLatinJi = new Taraskevizer({
+	general: { abc: ALPHABET.LATIN_JI },
+});
+testOnCases(
+	'\x1b[33mLatin:ji',
+	(text) => taraskevizerLatinJi.convert(text),
+	cases.latin.ji
 );
 
 testOnCases(
@@ -126,11 +135,9 @@ testOnCases(
 	cases.alphabetConversion.latin
 );
 
-const latinizerJi = new Taraskevizer({ general: { abc: ALPHABET.LATIN_JI } });
-
 testOnCases(
 	'\x1b[31mAlphabetConversion:latin-ji',
-	(text) => latinizerJi.convertAlphabetOnly(text),
+	(text) => taraskevizerLatinJi.convertAlphabetOnly(text),
 	cases.alphabetConversion.latinJi
 );
 

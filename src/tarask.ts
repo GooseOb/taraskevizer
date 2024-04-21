@@ -336,7 +336,10 @@ export class Taraskevizer {
 	) {
 		text = ` ${text.trim()} `.replace(/\ue0ff/g, '');
 		if (doEscapeCapitalized)
-			text = text.replace(/(?!<=\p{Lu} )(\p{Lu}{2,})(?!= \p{Lu})/gu, '<*.$1>');
+			text = text.replace(
+				/(?!<=\p{Lu} )(\p{Lu}{2}[\p{Lu}\s\dʼ'\p{P}]*)(?!= \p{Lu})/gu,
+				'<*.$1>'
+			);
 		return text
 			.replace(/<(\*?)([,.]?)([^>]*?)>/gs, ($0, $1, $2, $3) => {
 				if ($2 === ',') return LEFT_ANGLE_BRACKET + $3 + '>';

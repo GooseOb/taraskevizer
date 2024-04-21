@@ -81,7 +81,13 @@ if (!process.env.NOCLI) {
 const taraskevizerLatin = new Taraskevizer({
 	general: { abc: ALPHABET.LATIN },
 });
-test('Latin', (text) => taraskevizerLatin.convert(text), cases.latin);
+test('Latin', (text) => taraskevizerLatin.convert(text), cases.latin.general);
+
+const taraskevizerLatinJi = new Taraskevizer({
+	general: { abc: ALPHABET.LATIN_JI },
+});
+
+test('Latin:ji', (text) => taraskevizerLatinJi.convert(text), cases.latin.ji);
 
 test(
 	'SpecialConstructions',
@@ -117,11 +123,9 @@ test(
 	cases.alphabetConversion.latin
 );
 
-const latinizerJi = new Taraskevizer({ general: { abc: ALPHABET.LATIN_JI } });
-
 test(
 	'AlphabetConversion:latin-ji',
-	(text) => latinizerJi.convertAlphabetOnly(text),
+	(text) => taraskevizerLatinJi.convertAlphabetOnly(text),
 	cases.alphabetConversion.latinJi
 );
 
