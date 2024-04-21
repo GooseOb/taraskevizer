@@ -139,6 +139,6 @@ export const rawLatinLettersUpperCaseJi: RawDict = [
 	...common.upper[0],
 	[/(?<=[eoua] *)І(?=[ \p{P}\d]*\p{Lu}?\p{Ll})/u, 'Ji'],
 	...common.upper[1],
-	[/(?<=[АЕЁІОУЎЫЭЮЯЬ]\(?)І/, 'JI'],
+	[/(?<=[AOEUАЕЁІОУЎЫЭЮЯЬ][( ]*)І/, 'JI'],
 	...common.upper[2],
 ];
