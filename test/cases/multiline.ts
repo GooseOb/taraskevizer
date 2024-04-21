@@ -1,7 +1,7 @@
 export const html = [
 	[
 		'жыццясцвярджальны\n\t\t\tплан',
-		'жыц<tarF>ьцясьць</tarF>вярджальны<br>\t\t\tпл<tarF>я</tarF>н',
+		'жыц<tarF>ь</tarF>цяс<tarF>ь</tarF>ц<tarF>ь</tarF>вярджальны<br>\t\t\tпл<tarF>я</tarF>н',
 	],
 ] as const;
 
