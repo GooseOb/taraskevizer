@@ -337,7 +337,7 @@ export class Taraskevizer {
 		text = ` ${text.trim()} `.replace(/\ue0ff/g, '');
 		if (doEscapeCapitalized)
 			text = text.replace(
-				/(?!<=\p{Lu} )(\p{Lu}{2}[\p{Lu}\s]*)(?!= \p{Lu})/gu,
+				/(?!<=\p{Lu} )(\p{Lu}{2}[\p{Lu} ]*)(?!= \p{Lu})/gu,
 				'<*.$1>'
 			);
 		return text
