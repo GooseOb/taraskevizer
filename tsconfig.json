@@ -4,6 +4,7 @@
 		"module": "ESNext",
 		"isolatedModules": true,
 		"noEmit": true,
+		"skipLibCheck": true,
 
 		"strict": true,
 		"noImplicitAny": true,
