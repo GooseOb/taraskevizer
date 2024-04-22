@@ -92,11 +92,10 @@ const afterTarask: ExtendedDict = [
 const applyNoFix = (arr: string[], text: string) =>
 	arr.length ? text.replace(NOFIX_REGEX, () => arr.shift()!) : text;
 
+const afterJoin = (text: string) =>
+	text.replace(/&nbsp;/g, ' ').replace(/ (\p{P}|\p{S}|\d|&#40) /gu, '$1');
 const join = (textArr: readonly string[]): string =>
-	textArr
-		.join(' ')
-		.replace(/&nbsp;/g, ' ')
-		.replace(/ (\p{P}|\p{S}|\d|&#40) /gu, '$1');
+	afterJoin(textArr.join(' '));
 const finalize = (text: string, newLine: string) =>
 	text.replace(/ \t /g, '\t').replace(/ \n /g, newLine).trim();
 
@@ -233,7 +232,11 @@ export class Taraskevizer {
 		const origInTargetAlphabet = convertAlphabet(text, this.abc);
 		text = this.process(text, origInTargetAlphabet);
 		if (this.nonHtml.ansiColors)
-			text = highlightChanges(text, origInTargetAlphabet, wrapInColorOf.fix);
+			text = highlightChanges(
+				text,
+				afterJoin(origInTargetAlphabet),
+				wrapInColorOf.fix
+			);
 		if (
 			this.abc === ALPHABET.CYRILLIC &&
 			(this.nonHtml.h || this.nonHtml.ansiColors)
@@ -271,7 +274,7 @@ export class Taraskevizer {
 		const origInTargetAlphabet = convertAlphabet(text, this.abc);
 		text = highlightChanges(
 			this.process(text, origInTargetAlphabet),
-			origInTargetAlphabet,
+			afterJoin(origInTargetAlphabet),
 			wrapInTag.fix
 		);
 		if (this.abc === ALPHABET.CYRILLIC)
