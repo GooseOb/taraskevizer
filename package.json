@@ -1,6 +1,6 @@
 {
 	"name": "taraskevizer",
-	"version": "5.3.2",
+	"version": "5.3.3",
 	"author": "GooseOb",
 	"repository": {
 		"type": "git",
@@ -8,9 +8,6 @@
 	},
 	"main": "dist/index.js",
 	"module": "dist/index.js",
-	"dependencies": {
-		"diff": "^5.2.0"
-	},
 	"devDependencies": {
 		"@digitak/esrun": "^3.2.26",
 		"@types/diff": "^5.2.0",

@@ -19,7 +19,6 @@ import type {
 	OptionJ,
 	Variation,
 } from './types';
-import { diffChars } from 'diff';
 import * as debug from './tools.debug';
 
 const isUpperCase = (str: string): boolean => str === str.toUpperCase();
@@ -135,27 +134,70 @@ const restoreCase = (text: string[], orig: string[]): string[] => {
 
 	return text;
 };
-
-const highlightChanges = (
-	text: string,
-	orig: string,
+const highlightDiff = (
+	text: string[],
+	orig: readonly string[],
+	isCyrillic: boolean,
 	highlight: (content: string) => string
-): string =>
-	diffChars(orig, text)
-		.reduce(
-			(acc, diff) =>
-				acc +
-				(diff.removed
-					? '\ufffd'
-					: diff.added
-						? highlight(diff.value)
-						: diff.value),
-			''
-		)
-		.replace(/([^<>\x1b])\ufffd([^<>\x1b])/g, ($0, $1, $2) =>
-			highlight($1 + $2)
-		)
-		.replace(/\ufffd/g, '');
+): void => {
+	for (let i = 0; i < text.length; i++) {
+		const word = text[i];
+		const oWord = orig[i];
+		if (oWord === word) continue;
+		const wordH = isCyrillic ? replaceG(word, ($0) => gobj[$0]) : word;
+		if (oWord === wordH) continue;
+		if (!/\(/.test(word)) {
+			if (word.length === oWord.length) {
+				const wordLetters = word.split('');
+				for (let j = 0; j < wordLetters.length; j++) {
+					if (wordH[j] !== oWord[j]) wordLetters[j] = highlight(wordLetters[j]);
+				}
+				text[i] = wordLetters.join('');
+				continue;
+			}
+			if (isCyrillic) {
+				const word1 = word.replace(/ь/g, '');
+				switch (oWord) {
+					case word1:
+						text[i] = word.replace(/ь/g, highlight('ь'));
+						continue;
+					case word1 + 'ь':
+						text[i] = word.slice(0, -1).replace(/ь/g, highlight('ь')) + 'ь';
+						continue;
+				}
+			}
+		}
+
+		const oWordEnd = oWord.length - 1;
+		let fromStart = 0;
+		let fromWordEnd = word.length - 1;
+		let fromOWordEnd = oWordEnd;
+
+		while (wordH[fromStart] === oWord[fromStart]) ++fromStart;
+		while (wordH[fromWordEnd] === oWord[fromOWordEnd]) {
+			--fromWordEnd;
+			--fromOWordEnd;
+		}
+
+		if (oWord.length < word.length) {
+			if (fromOWordEnd === oWordEnd) {
+				text[i] = highlight(word);
+				continue;
+			}
+			if (fromWordEnd < 0) fromWordEnd = 0;
+		}
+
+		if (fromStart === fromWordEnd + 1) {
+			--fromStart;
+			++fromWordEnd;
+		}
+
+		text[i] =
+			word.slice(0, fromStart) +
+			highlight(word.slice(fromStart, fromWordEnd + 1)) +
+			word.slice(fromWordEnd + 1);
+	}
+};
 
 const replaceWithDict = (text: string, dict: ExtendedDict = []) => {
 	for (const [pattern, result] of dict)
@@ -227,20 +269,15 @@ export class Taraskevizer {
 
 	public convert(text: string) {
 		const wrapInColorOf = wrappers.ansiColors;
+		const isCyrillic = this.abc === ALPHABET.CYRILLIC;
 		const noFixArr: string[] = [];
-		text = this.prepare(text, noFixArr, '<');
-		const origInTargetAlphabet = convertAlphabet(text, this.abc);
-		text = this.process(text, origInTargetAlphabet);
+		const { splitted, splittedOrig } = this.process(
+			this.prepare(text, noFixArr, '<')
+		);
 		if (this.nonHtml.ansiColors)
-			text = highlightChanges(
-				text,
-				afterJoin(origInTargetAlphabet),
-				wrapInColorOf.fix
-			);
-		if (
-			this.abc === ALPHABET.CYRILLIC &&
-			(this.nonHtml.h || this.nonHtml.ansiColors)
-		)
+			highlightDiff(splitted, splittedOrig, isCyrillic, wrapInColorOf.fix);
+		text = join(splitted);
+		if (isCyrillic && (this.nonHtml.h || this.nonHtml.ansiColors))
 			text = replaceG(
 				text,
 				this.nonHtml.ansiColors
@@ -269,15 +306,14 @@ export class Taraskevizer {
 
 	public convertToHtml(text: string) {
 		const wrapInTag = wrappers.html;
+		const isCyrillic = this.abc === ALPHABET.CYRILLIC;
 		const noFixArr: string[] = [];
-		text = this.prepare(text, noFixArr, '&lt;');
-		const origInTargetAlphabet = convertAlphabet(text, this.abc);
-		text = highlightChanges(
-			this.process(text, origInTargetAlphabet),
-			afterJoin(origInTargetAlphabet),
-			wrapInTag.fix
+		const { splitted, splittedOrig } = this.process(
+			this.prepare(text, noFixArr, '&lt;')
 		);
-		if (this.abc === ALPHABET.CYRILLIC)
+		highlightDiff(splitted, splittedOrig, isCyrillic, wrapInTag.fix);
+		text = join(splitted);
+		if (isCyrillic)
 			text = replaceG(
 				text,
 				this.html.g
@@ -338,11 +374,13 @@ export class Taraskevizer {
 			'\n'
 		);
 	}
-
-	private process(text: string, textInTargetAlphabet: string): string {
+	private process(text: string): {
+		splittedOrig: string[];
+		splitted: string[];
+	} {
 		const { abc, j } = this;
 
-		const splittedOrig = textInTargetAlphabet.split(' ');
+		const splittedOrig = convertAlphabet(text, abc).split(' ');
 
 		text = this.taraskevize(text.toLowerCase());
 		if (j && abc !== ALPHABET.LATIN_JI)
@@ -351,7 +389,7 @@ export class Taraskevizer {
 
 		let splitted = text.split(' ');
 		if (abc !== ALPHABET.ARABIC) splitted = restoreCase(splitted, splittedOrig);
-		return join(splitted);
+		return { splittedOrig, splitted };
 	}
 
 	protected taraskevize(text: string) {
