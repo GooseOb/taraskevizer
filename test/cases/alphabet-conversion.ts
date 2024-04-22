@@ -53,4 +53,6 @@ export const latinJi = [
 	['Белая ікра', 'Biełaja jikra'],
 	['БЕЛАЯ ІКРА', 'BIEŁAJA JIKRA'],
 	['ЁЮ', 'JOJU'],
+	['Забраць інфармацыю', 'Zabrać infarmacyju'],
+	['Зь іншым', 'Ź jinšym'],
 ] as const;

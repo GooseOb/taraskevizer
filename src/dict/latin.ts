@@ -131,7 +131,7 @@ export const rawLatinLettersJi: RawDict = [
 	[`І(?=${iwords})`, 'Ji'],
 	[`І(?=${iwords.toUpperCase()})`, 'JI'],
 	...common.lower[0],
-	[/(?<=[eouaаеёіоуўыэюяьʼАЕЁІОУЎЫЭЮЯЬ] *)і/, 'ji'],
+	[/(?<=[eouaаеёіоуўыэюяʼАЕЁІОУЎЫЭЮЯЬ] *)і/, 'ji'],
 	...common.lower[1],
 ];
 
@@ -139,6 +139,6 @@ export const rawLatinLettersUpperCaseJi: RawDict = [
 	...common.upper[0],
 	[/(?<=[eoua] *)І(?=[ \p{P}\d]*\p{Lu}?\p{Ll})/u, 'Ji'],
 	...common.upper[1],
-	[/(?<=[AOEUАЕЁІОУЎЫЭЮЯЬ][( ]*)І/, 'JI'],
+	[/(?<=[AOEUАЕЁІОУЎЫЭЮЯ][( ]*)І/, 'JI'],
 	...common.upper[2],
 ];
