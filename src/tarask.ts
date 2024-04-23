@@ -250,12 +250,14 @@ export class Taraskevizer {
 			general: TaraskOptions;
 			html: HtmlOptions;
 			nonHtml: NonHtmlOptions;
+			taraskevize(this: Taraskevizer, text: string): string;
 		}>
 	) {
 		if (!options) return;
 		Object.assign(this.general, options.general);
 		Object.assign(this.html, options.html);
 		Object.assign(this.nonHtml, options.nonHtml);
+		if (options.taraskevize) this.taraskevize = options.taraskevize;
 	}
 
 	public convert(text: string) {
