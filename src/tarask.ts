@@ -231,9 +231,11 @@ const convertAlphabet = (text: string, abc: Alphabet) =>
 	replaceWithDict(replaceWithDict(text, letters[abc]), lettersUpperCase[abc]);
 
 export class Taraskevizer {
-	public abc: Alphabet = ALPHABET.CYRILLIC;
-	public j: OptionJ = REPLACE_J.NEVER;
-	public doEscapeCapitalized = true;
+	public general = {
+		abc: ALPHABET.CYRILLIC as Alphabet,
+		j: REPLACE_J.NEVER as OptionJ,
+		doEscapeCapitalized: true,
+	};
 	public html = {
 		g: false,
 	};
@@ -252,24 +254,14 @@ export class Taraskevizer {
 		}>
 	) {
 		if (!options) return;
-		const general = options.general;
-		if (general) {
-			for (const prop of [
-				'abc',
-				'j',
-				'doEscapeCapitalized',
-			] satisfies (keyof TaraskOptions)[])
-				if (prop in general) this[prop] = general[prop] as never;
-		}
-		if (options.OVERRIDE_taraskevize)
-			this.taraskevize = options.OVERRIDE_taraskevize;
+		Object.assign(this.general, options.general);
 		Object.assign(this.html, options.html);
 		Object.assign(this.nonHtml, options.nonHtml);
 	}
 
 	public convert(text: string) {
 		const wrapInColorOf = wrappers.ansiColors;
-		const isCyrillic = this.abc === ALPHABET.CYRILLIC;
+		const isCyrillic = this.general.abc === ALPHABET.CYRILLIC;
 		const noFixArr: string[] = [];
 		const { splitted, splittedOrig } = this.process(
 			this.prepare(text, noFixArr, '<')
@@ -306,7 +298,7 @@ export class Taraskevizer {
 
 	public convertToHtml(text: string) {
 		const wrapInTag = wrappers.html;
-		const isCyrillic = this.abc === ALPHABET.CYRILLIC;
+		const isCyrillic = this.general.abc === ALPHABET.CYRILLIC;
 		const noFixArr: string[] = [];
 		const { splitted, splittedOrig } = this.process(
 			this.prepare(text, noFixArr, '&lt;')
@@ -335,7 +327,7 @@ export class Taraskevizer {
 		text: string,
 		noFixArr: string[],
 		LEFT_ANGLE_BRACKET: string,
-		doEscapeCapitalized = this.doEscapeCapitalized
+		doEscapeCapitalized = this.general.doEscapeCapitalized
 	) {
 		text = ` ${text.trim()} `.replace(/\ue0ff/g, '');
 		if (doEscapeCapitalized)
@@ -348,7 +340,7 @@ export class Taraskevizer {
 				if ($2 === ',') return LEFT_ANGLE_BRACKET + $3 + '>';
 				if ($1)
 					$3 = restoreCase(
-						[replaceWithDict($3.toLowerCase(), letters[this.abc])],
+						[replaceWithDict($3.toLowerCase(), letters[this.general.abc])],
 						[$3]
 					);
 				noFixArr.push($2 === '.' ? $3 : LEFT_ANGLE_BRACKET + $3 + '>');
@@ -367,7 +359,10 @@ export class Taraskevizer {
 		return finalize(
 			applyNoFix(
 				noFixArr,
-				convertAlphabet(this.prepare(text, noFixArr, '<', false), this.abc)
+				convertAlphabet(
+					this.prepare(text, noFixArr, '<', false),
+					this.general.abc
+				)
 			)
 				.replace(/&nbsp;/g, ' ')
 				.replace(/ (\p{P}|\p{S}|\d|&#40) /gu, '$1'),
@@ -378,7 +373,7 @@ export class Taraskevizer {
 		splittedOrig: string[];
 		splitted: string[];
 	} {
-		const { abc, j } = this;
+		const { abc, j } = this.general;
 
 		const splittedOrig = convertAlphabet(text, abc).split(' ');
 

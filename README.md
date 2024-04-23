@@ -53,7 +53,7 @@ taraskevizer.convertToHtml('энергія планеты');
 // "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
 
 // properties can be rewritten after creating an object
-taraskevizer.abc = ALPHABET.ARABIC;
+taraskevizer.general.abc = ALPHABET.ARABIC;
 taraskevizer.html.g = true;
 
 const latinizerWithJi = new Taraskevizer({
@@ -108,13 +108,13 @@ If set to false, may cause unwanted changes in acronyms.
 
 Is always `true` in `convertAlphabetOnly`.
 
-### OVERRIDE_taraskevize
+### taraskevize
 
 Type: `(text: string) => string`
 
 Default value: internal function `taraskevize`
 
-Can be overridden in order to make additional changes to the text.
+Overriddes internal function in order to change behaviour of taraskevization.
 This function usually uses private api via `__tarask__`
 
 ## html
