@@ -250,7 +250,6 @@ export class Taraskevizer {
 			general: TaraskOptions;
 			html: HtmlOptions;
 			nonHtml: NonHtmlOptions;
-			OVERRIDE_taraskevize(this: Taraskevizer, text: string): string;
 		}>
 	) {
 		if (!options) return;
