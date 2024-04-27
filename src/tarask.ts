@@ -230,6 +230,8 @@ export const __tarask__ = {
 const convertAlphabet = (text: string, abc: Alphabet) =>
 	replaceWithDict(replaceWithDict(text, letters[abc]), lettersUpperCase[abc]);
 
+const restoreBraces = (text: string) => text.replace(/&#40/g, '(');
+
 export class Taraskevizer {
 	public general = {
 		abc: ALPHABET.CYRILLIC as Alphabet,
@@ -294,7 +296,7 @@ export class Taraskevizer {
 			);
 		}
 
-		return finalize(applyNoFix(noFixArr, text).replace(/&#40/g, '('), '\n');
+		return finalize(restoreBraces(applyNoFix(noFixArr, text)), '\n');
 	}
 
 	public convertToHtml(text: string) {
@@ -348,9 +350,8 @@ export class Taraskevizer {
 				return NOFIX_CHAR;
 			})
 			.replace(/г'(?![еёіюя])/g, 'ґ')
-			.replace(/([\n\t])/g, ' $1 ')
 			.replace(/ - /g, ' — ')
-			.replace(/(\p{P}|\p{S}|\d)/gu, ' $1 ')
+			.replace(/([\n\t]|\p{P}|\p{S}|\d)/gu, ' $1 ')
 			.replace(/ ['`’] (?=\S)/g, 'ʼ')
 			.replace(/\(/g, '&#40');
 	}
@@ -358,18 +359,21 @@ export class Taraskevizer {
 	public convertAlphabetOnly(text: string) {
 		const noFixArr: string[] = [];
 		return finalize(
-			applyNoFix(
-				noFixArr,
-				convertAlphabet(
-					this.prepare(text, noFixArr, '<', false),
-					this.general.abc
+			afterJoin(
+				restoreBraces(
+					applyNoFix(
+						noFixArr,
+						convertAlphabet(
+							this.prepare(text, noFixArr, '<', false),
+							this.general.abc
+						)
+					)
 				)
-			)
-				.replace(/&nbsp;/g, ' ')
-				.replace(/ (\p{P}|\p{S}|\d|&#40) /gu, '$1'),
+			),
 			'\n'
 		);
 	}
+
 	private process(text: string): {
 		splittedOrig: string[];
 		splitted: string[];
