@@ -13,7 +13,7 @@ export const latinJi = [
 	['верабʼі', 'vierabji'],
 	['у ім', 'u jim'],
 	['іста', 'jista'],
-	['Іншы ў ігрушы', 'Jinšy ŭ jihrušy'],
+	['Іншы ў ігрушы', 'Jinšy ŭ ihrušy'],
 	// ['яна із мною', 'jana iz mnoju'],
 	// ['побач ізь ім', 'pobač iź jim'],
 	['церазь ямы', 'cieraź jamy'],
@@ -57,4 +57,6 @@ export const latinJi = [
 	['Зь іншым', 'Ź jinšym'],
 	['яна (ён)', 'jana (jon)'],
 	['яна &#40ён)', 'jana &#40jon)'],
+	['нейкіх', 'niejkich'],
+	['прыцягнуў і ...', 'pryciahnuŭ i ...'],
 ] as const;
