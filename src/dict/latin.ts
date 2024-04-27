@@ -1,6 +1,6 @@
 import type { Dict } from '../types';
+import type { RawDict } from './types';
 import { iwords } from './iwords';
-import { RawDict } from './types';
 
 const common = {
 	lower: [
@@ -141,4 +141,5 @@ export const rawLatinLettersUpperCaseJi: RawDict = [
 	...common.upper[1],
 	[/(?<=[AOEUАЕЁІОУЎЫЭЮЯ][( ]*)І/, 'JI'],
 	...common.upper[2],
+	[/ JIŁ -/, ' IŁ -'],
 ];
