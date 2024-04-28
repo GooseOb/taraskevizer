@@ -226,6 +226,7 @@ export const __tarask__ = {
 	softeners,
 	replaceWithDict,
 	afterTarask,
+	noSoften,
 } as const;
 
 const convertAlphabet = (text: string, abc: Alphabet) =>

@@ -1,3 +1,5 @@
+import type { Dict } from './dict/types';
+
 type ModifyObjectType<T, TResultObj> = T extends object
 	? T extends (...args: any[]) => any
 		? T
@@ -29,7 +31,6 @@ export type NonHtmlOptions = {
 };
 export type HtmlOptions = { g: boolean };
 
-export type Dict<T = RegExp> = readonly (readonly [T, string])[];
 export type ExtendedDict = readonly (readonly [
 	RegExp,
 	string | ((...substrings: string[]) => string),

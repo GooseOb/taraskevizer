@@ -1,4 +1,4 @@
-export const toOneLine = (str: string): string => str.replace(/\n/g, '|');
+import { toOneLine } from './lib';
 
 /**
  * Words with first `i` letter stressed

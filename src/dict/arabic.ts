@@ -1,9 +1,9 @@
-import type { RawDict } from './types';
+import { dictFrom } from './lib';
 
 const soft = '\u0652(?=[еёіюяь])';
 const presoft = '([تزكثࢮбвгджзйклмнпрстфхцчшў])\u0652?(\u0651?)';
 
-export const rawArabLetters: RawDict = [
+export const arabLetters = dictFrom.raw([
 	[/ л[ая]/, ' لا'],
 	[/л[ая]/, 'ـلا'],
 	// падваеньне зычнага, шадда
@@ -58,4 +58,4 @@ export const rawArabLetters: RawDict = [
 	[/ш/, 'ش'],
 	[/,/, '،'],
 	[/\?/, '؟'],
-];
+]);
