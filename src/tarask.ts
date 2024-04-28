@@ -7,6 +7,7 @@ import {
 	gobj,
 	latinLettersJi,
 	latinLettersUpperCaseJi,
+	noSoften,
 } from './dict';
 import type {
 	AlphabetDependentDict,
@@ -393,7 +394,7 @@ export class Taraskevizer {
 	}
 
 	protected taraskevize(text: string) {
-		text = replaceWithDict(text, wordlist);
+		text = replaceWithDict(replaceWithDict(text, wordlist), noSoften);
 		softening: do {
 			text = replaceWithDict(text, softeners);
 			for (const [pattern, result] of softeners)
@@ -401,6 +402,6 @@ export class Taraskevizer {
 			break;
 		} while (true);
 
-		return replaceWithDict(text, afterTarask);
+		return replaceWithDict(text.replace(/\ue0ff/g, ''), afterTarask);
 	}
 }

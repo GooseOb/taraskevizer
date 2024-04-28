@@ -16,7 +16,6 @@ const chemicalElements2: string[] = [
 chemicalElements2[1] = chemicalElements2[0] + '|айнштайн|мендзялев|сыборг|гас|флеров';
 const chemicalElements3 = ' гал|бэрыл|тул|бэркл|набэл';
 
-
 const ia = (word: string, words: string): string =>
 	` ${word} (?=\\(?(?:[бвгджзйклмнпстфцчшў]*[оё]|${
 		words.replace(/\(/g, '(?:')
@@ -1589,6 +1588,11 @@ const rawWordlist: RawDict = [
 [/\ue0ff/, ''],
 ];
 
+const noSoften: Dict = [
+	[/масфільм/, 'мас\ue0ffфільм'],
+	[/пэндзлік/, 'пэндз\ue0ffлік'],
+];
+
 const rawsofteners: RawDict = [
 [/([лнц])\1(?=[еёіюяь])/, '$1ь$1'],
 [/(\S\S)дз?дз(?=[еёіюяь])/, '$1дзьдз'],
@@ -1717,7 +1721,7 @@ for (const [raw, obj] of arr)
 	for (const [pattern, result] of raw)
 		(obj as Writeable<ExtendedDict>).push([RegExp(pattern, pattern instanceof RegExp ? pattern.flags + 'g' : 'g'), result]);
 
-for (const obj of [latinLetters, latinLettersUpperCase])
+for (const obj of [latinLetters, latinLettersUpperCase, noSoften])
 	for (const item of obj)
 		(item as Writeable<typeof item>)[0] = RegExp(item[0], 'g' + item[0].flags);
 
@@ -1730,5 +1734,6 @@ export {
 	arabLetters,
 	latinLetters, latinLettersUpperCase,
 	latinLettersJi, latinLettersUpperCaseJi,
-	gobj
+	gobj,
+	noSoften,
 };

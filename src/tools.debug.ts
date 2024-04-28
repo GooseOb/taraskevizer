@@ -29,4 +29,5 @@ export const replaceWithDict = (
 
 export const log = (...msgs: any[]) => {
 	console.log('[debug]', ...msgs);
+	return msgs[0];
 };
