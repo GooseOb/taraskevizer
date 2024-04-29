@@ -15,8 +15,11 @@ export default () =>
 						[
 							'wordlist',
 							'softeners',
-							'latinLetters',
+							'noSoften',
+							'latinLettersLowerCase',
+							'latinLettersLowerCaseJi',
 							'latinLettersUpperCase',
+							'latinLettersUpperCaseJi',
 						] satisfies (keyof typeof dict)[]
 					).map((name) => [
 						name,

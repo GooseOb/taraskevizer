@@ -116,7 +116,7 @@ const common = {
 	).map(dictFrom.nonGlobal),
 };
 
-export const latinLetters = [
+export const latinLettersLowerCase = [
 	...common.lower[0],
 	[/ʼі/g, 'ji'],
 	...common.lower[1],
@@ -124,7 +124,7 @@ export const latinLetters = [
 
 export const latinLettersUpperCase = common.upper.flat();
 
-export const latinLettersJi = dictFrom
+export const latinLettersLowerCaseJi = dictFrom
 	.raw([
 		[/(?<=[аеёіоуыэюяАЕЁІОУЫЭЮЯ] )і Ў/, 'j U'],
 		[/(?<=[аеёіоуыэюяАЕЁІОУЫЭЮЯ] )і ў/, 'j u'],

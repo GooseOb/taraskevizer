@@ -2,10 +2,10 @@ import {
 	wordlist,
 	softeners,
 	arabLetters,
-	latinLetters,
+	latinLettersLowerCase,
 	latinLettersUpperCase,
 	gobj,
-	latinLettersJi,
+	latinLettersLowerCaseJi,
 	latinLettersUpperCaseJi,
 	noSoften,
 } from './dict';
@@ -54,9 +54,9 @@ export const VARIATION = {
 } as const satisfies Record<string, Variation>;
 
 const letters: AlphabetDependentDict = {
-	[ALPHABET.LATIN]: latinLetters,
+	[ALPHABET.LATIN]: latinLettersLowerCase,
 	[ALPHABET.ARABIC]: arabLetters,
-	[ALPHABET.LATIN_JI]: latinLettersJi,
+	[ALPHABET.LATIN_JI]: latinLettersLowerCaseJi,
 };
 const lettersUpperCase: AlphabetDependentDict = {
 	[ALPHABET.LATIN]: latinLettersUpperCase,
