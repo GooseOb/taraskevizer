@@ -227,6 +227,8 @@ export const __tarask__ = {
 	replaceWithDict,
 	afterTarask,
 	noSoften,
+	latinLettersLowerCaseJi,
+	latinLettersUpperCaseJi,
 } as const;
 
 const convertAlphabet = (text: string, abc: Alphabet) =>
