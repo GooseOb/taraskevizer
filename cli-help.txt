@@ -1,0 +1,45 @@
+Usage: tarask [options] text
+If text is not passed, interactive mode will be enabled
+
+EXAMPLES
+
+Convert and latinize a word
+	tarask --latin 'планета'
+Will print "p<fix>l</fix>a<fix>ne</fix>ta"
+
+Read from one file and write converted text to another
+	tarask < ./cyr-text.txt > ./lat-text.txt
+
+Enter interactive mode
+	tarask
+Will print "[taraskevizer] Enter the text:" and wait until you press Enter
+
+OPTIONS
+
+General:
+	-h --help
+	-v --version
+
+Alphabet:
+  -l --latin
+  -lj --latin-ji
+  -a --arabic
+
+When to replace і(i) by й(j) after vowels:
+  -jr --jrandom
+  -ja --jalways
+
+Replace ґ(g) by г(h) in cyrillic alphabet:
+  --h
+
+Variations:
+  -nv --no-variations
+  -fvo --first-variation-only
+
+Mode (only one can be used):
+  -html --html
+  -abc --alphabet-only
+
+Other:
+  -nec --not-escape-caps
+  -nc --no-color

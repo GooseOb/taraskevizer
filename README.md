@@ -232,30 +232,24 @@ bun add -g taraskevizer
 ## Usage
 
 ```bash
-tarask "планета"
+tarask [options] text
 ```
 
-## Options
+For usage examples and options use `--help` option
+(in source, content of `--help` is in [this file](./cli-help.txt))
+
+### "Without installation"
+
+With npm:
 
 ```bash
-# Alpabet
---latin (-l)
---latin-ji (-lj)
---arabic (-a)
-# When to replace і(i) by й(j) after vowels
---jrandom (-jr)
---jalways (-ja)
-# Replace ґ(g) by г(h) in cyrillic alphabet
---h (-h)
-# Variations
---no-variations (-nv)
---first-variation-only (-fvo)
-# Mode
---html (-html)
---alphabet-only (-abc)
-# Other
---not-escape-caps (-nec)
---no-color (-nc)
+npx taraskevizer [options] text
+```
+
+With bun:
+
+```bash
+bunx taraskevizer [options] text
 ```
 
 # Known bugs

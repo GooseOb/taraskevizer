@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import { ALPHABET, REPLACE_J, Taraskevizer, VARIATION } from './index.js';
 import readline from 'readline/promises';
-import { readFile } from 'fs/promises';
 import type { NonHtmlOptions, TaraskOptions, HtmlOptions } from './types';
+declare const __CLI_HELP__: string;
+declare const __VERSION__: string;
 
 const prefix = '\x1b[34m[taraskevizer]\x1b[0m ';
 const printWithPrefix = (msg: string) => {
@@ -15,10 +16,12 @@ const checkForOptions = (options: string[]) =>
 	process.argv[0] && options.includes(process.argv[0].toLowerCase());
 
 if (checkForOptions(['-v', '--version'])) {
-	const { version } = JSON.parse(
-		await readFile(new URL('../package.json', import.meta.url), 'utf8')
-	);
-	printWithPrefix(version);
+	printWithPrefix(__VERSION__);
+	process.exit(0);
+}
+
+if (checkForOptions(['-h', '--help'])) {
+	printWithPrefix(__CLI_HELP__);
 	process.exit(0);
 }
 
@@ -40,6 +43,7 @@ const toHashTable = (dict: [string[], () => void][]) => {
 };
 
 const optionDict = toHashTable([
+	[['--help', '-h'], () => {}],
 	[
 		['--latin', '-l'],
 		() => {
@@ -77,7 +81,7 @@ const optionDict = toHashTable([
 		},
 	],
 	[
-		['--h', '-h'],
+		['--h'],
 		() => {
 			nonHtml.h = true;
 			html.g = false;

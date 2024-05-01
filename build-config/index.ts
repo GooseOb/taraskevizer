@@ -25,6 +25,16 @@ const fixCharsIn = (fileName: string) => {
 	);
 };
 
+const define = {
+	__VERSION__: `"${JSON.parse(await readFile(path.resolve(root, 'package.json'), 'utf8')).version}"`,
+	__CLI_HELP__: JSON.stringify(
+		(await readFile(path.resolve(root, 'cli-help.txt'), 'utf8'))
+			.replace(/<fix>/g, '\x1b[32m')
+			.replace(/<\/fix>/g, '\x1b[0m')
+			.replace(/\[taraskevizer\]/g, '\x1b[34m[taraskevizer]\x1b[0m')
+	),
+};
+
 export default defineConfig({
 	...common,
 	clean: true,
@@ -36,6 +46,7 @@ export default defineConfig({
 		if (!isDeploy) generateJSON();
 		await build({
 			...common,
+			define,
 			entry: [path.resolve(root, 'src/bin.ts')],
 			bundle: false,
 			format: 'esm',
