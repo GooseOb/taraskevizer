@@ -31,7 +31,7 @@ const define = {
 		(await readFile(path.resolve(root, 'cli-help.txt'), 'utf8'))
 			.replace(/<fix>/g, '\x1b[32m')
 			.replace(/<\/fix>/g, '\x1b[0m')
-			.replace(/\[taraskevizer\]/g, '\x1b[34m[taraskevizer]\x1b[0m')
+			.replace(/\[taraskevizer]/g, '\x1b[34m[taraskevizer]\x1b[0m')
 	),
 };
 
@@ -44,16 +44,18 @@ export default defineConfig({
 	esbuildPlugins: [noDebugFiles],
 	async onSuccess() {
 		if (!isDeploy) generateJSON();
-		await build({
-			...common,
-			define,
-			entry: [path.resolve(root, 'src/bin.ts')],
-			bundle: false,
-			format: 'esm',
-			async onSuccess() {
-				await fixCharsIn('bin.js');
-			},
-		});
-		for (const ext of ['js', 'cjs']) await fixCharsIn('index.' + ext);
+		await Promise.all([
+			build({
+				...common,
+				define,
+				entry: [path.resolve(root, 'src/bin.ts')],
+				bundle: false,
+				format: 'esm',
+				async onSuccess() {
+					await fixCharsIn('bin.js');
+				},
+			}),
+			['js', 'cjs'].map((ext) => fixCharsIn('index.' + ext)),
+		]);
 	},
 });
