@@ -1,7 +1,7 @@
 import type { Dict, RawDict, WritableDict } from './types';
 
 export const dictFrom = {
-	raw: (dict: RawDict) => {
+	raw: (dict: RawDict): Dict => {
 		for (const item of dict)
 			item[0] = RegExp(
 				item[0],
@@ -9,7 +9,7 @@ export const dictFrom = {
 			);
 		return dict as Dict;
 	},
-	nonGlobal: (dict: WritableDict) => {
+	nonGlobal: (dict: WritableDict): Dict => {
 		for (const item of dict) item[0] = RegExp(item[0], 'g' + item[0].flags);
 		return dict;
 	},
