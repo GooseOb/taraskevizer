@@ -1,4 +1,4 @@
-import { benchmark, print, startTestProcess } from './lib';
+import { startTestProcess } from './lib';
 import { Taraskevizer, ALPHABET } from '../src';
 import * as cases from './cases';
 import * as path from 'path';
@@ -131,20 +131,4 @@ test(
 
 // add a new case here
 
-const code = endTestProcess();
-
-if (process.argv.includes('--benchmark')) {
-	const { existsSync } = await import('node:fs');
-	const path = 'test/large-text.txt';
-
-	if (!existsSync(path)) {
-		print('benchmark', path + ': no such a file', '36');
-		process.exit(1);
-	}
-	const text = await readFile(path, 'utf8');
-	benchmark('Taraskevization', () => {
-		taraskevizer.convert(text);
-	});
-}
-
-process.exit(code);
+process.exit(endTestProcess());
