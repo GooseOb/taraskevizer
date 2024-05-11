@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { ALPHABET, REPLACE_J, Taraskevizer, VARIATION } from './index.js';
 import readline from 'readline/promises';
-import type { NonHtmlOptions, TaraskOptions, HtmlOptions } from './types';
 import { readFileSync } from 'fs';
+import { ALPHABET, REPLACE_J, Taraskevizer, VARIATION } from './index.js';
+import type { NonHtmlOptions, TaraskOptions, HtmlOptions } from './types';
 declare const __CLI_HELP__: string;
 declare const __VERSION__: string;
 
