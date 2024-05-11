@@ -2,6 +2,7 @@
 import { ALPHABET, REPLACE_J, Taraskevizer, VARIATION } from './index.js';
 import readline from 'readline/promises';
 import type { NonHtmlOptions, TaraskOptions, HtmlOptions } from './types';
+import { readFileSync } from 'fs';
 declare const __CLI_HELP__: string;
 declare const __VERSION__: string;
 
@@ -141,7 +142,7 @@ if (process.argv.length) {
 		})
 		.question(prefix + 'Enter the text:\n');
 } else {
-	for await (const chunk of process.stdin) text += chunk;
+	text = readFileSync(0, 'utf8');
 }
 
 const taraskevizer = new Taraskevizer({ general, html, nonHtml });
