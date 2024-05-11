@@ -8,7 +8,7 @@ declare const __VERSION__: string;
 
 const prefix = '\x1b[34m[taraskevizer]\x1b[0m ';
 const printWithPrefix = (msg: string) => {
-	process.stdout.write(prefix + msg.toString() + '\n');
+	process.stdout.write(prefix + msg + '\n');
 };
 
 process.argv.splice(0, 2);
