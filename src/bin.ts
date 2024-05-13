@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-import readline from 'readline/promises';
-import { readFileSync } from 'fs';
 import { ALPHABET, REPLACE_J, Taraskevizer, VARIATION } from './index.js';
 import type { NonHtmlOptions, TaraskOptions, HtmlOptions } from './types';
 declare const __CLI_HELP__: string;
@@ -134,24 +132,41 @@ while ((currOption = process.argv.shift())) {
 let text = '';
 if (process.argv.length) {
 	text = process.argv.join(' ');
-} else if (process.stdin.isTTY) {
-	text = await readline
-		.createInterface({
-			input: process.stdin,
-			output: process.stdout,
-		})
-		.question(prefix + 'Enter the text:\n');
 } else {
-	text = readFileSync(0, 'utf8');
+	const chunks = [];
+	let length = 0;
+
+	if (process.stdin.isTTY) {
+		printWithPrefix('Enter the text');
+		for await (const chunk of process.stdin) {
+			chunks.push(chunk);
+			length += chunk.length;
+			if (chunk.includes('\n')) break;
+		}
+	} else {
+		for await (const chunk of process.stdin) {
+			chunks.push(chunk);
+			length += chunk.length;
+		}
+	}
+
+	text = Buffer.concat(chunks, length).toString();
 }
 
 const taraskevizer = new Taraskevizer({ general, html, nonHtml });
 
-process.stdout.write(
-	{
-		nonHtml: taraskevizer.convert,
-		html: taraskevizer.convertToHtml,
-		alphabetOnly: taraskevizer.convertAlphabetOnly,
-	}[mode].apply(taraskevizer, [text]) + '\n'
-);
-process.exit(0);
+if (
+	!process.stdout.write(
+		{
+			nonHtml: taraskevizer.convert,
+			html: taraskevizer.convertToHtml,
+			alphabetOnly: taraskevizer.convertAlphabetOnly,
+		}[mode].apply(taraskevizer, [text]) + '\n'
+	)
+) {
+	process.stdout.once('drain', () => {
+		process.exit(0);
+	});
+} else {
+	process.exit(0);
+}
