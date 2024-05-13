@@ -156,7 +156,7 @@ if (process.argv.length) {
 const taraskevizer = new Taraskevizer({ general, html, nonHtml });
 
 if (
-	!process.stdout.write(
+	process.stdout.write(
 		{
 			nonHtml: taraskevizer.convert,
 			html: taraskevizer.convertToHtml,
@@ -164,9 +164,9 @@ if (
 		}[mode].apply(taraskevizer, [text]) + '\n'
 	)
 ) {
+	process.exit(0);
+} else {
 	process.stdout.once('drain', () => {
 		process.exit(0);
 	});
-} else {
-	process.exit(0);
 }
