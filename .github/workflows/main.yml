@@ -17,6 +17,8 @@ jobs:
       - uses: oven-sh/setup-bun@v1
 
       - run: bun i --frozen-lockfile
+        env:
+          HUSKY: 0
       - run: bun run build
         env:
           BUILD_MODE: deployment
