@@ -17,8 +17,8 @@ Will print "[taraskevizer] Enter the text:" and wait until you press Enter
 OPTIONS
 
 General:
-	-h --help
-	-v --version
+  -h --help
+  -v --version
 
 Alphabet:
   -l --latin
