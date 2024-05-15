@@ -23,7 +23,7 @@ jobs:
         env:
           BUILD_MODE: deployment
       - run: bun run typecheck
-      - run: bun test
+      - run: bun run test
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

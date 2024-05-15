@@ -11,6 +11,8 @@ export const general = [
 	],
 	['грошы', 'hrošy'],
 	['еёёююяя', 'jejojojujujaja'],
+	// Originally latin alphabet words should not be affected
+	// ['Мы з LGB Alliance', 'My z LGB Alliance'],
 ] as const;
 
 export const ji = [['БЕЛАЯ ІКРА', 'BIEŁAJA JIKRA']] as const;
