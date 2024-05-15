@@ -7,7 +7,7 @@ import { afterTarask } from './after-tarask';
 import { ALPHABET, REPLACE_J, VARIATION } from './config-constants';
 import { letters } from './letters';
 import { replaceWithDict, convertAlphabet } from './tools';
-import { resolveSpecialSyntax } from './resolve-syntax';
+import { resolveSpecialSyntax, applyNoFix } from './resolve-syntax';
 import type {
 	NonHtmlOptions,
 	HtmlOptions,
@@ -18,7 +18,6 @@ import type {
 	Variation,
 } from './types';
 import * as debug from './tools.debug';
-import { applyNoFix } from './no-fix';
 
 const OPTIONAL_WORDS_REGEX = /\([^)]*?\)/g;
 
@@ -132,23 +131,19 @@ export class Taraskevizer {
 		doEscapeCapitalized = this.general.doEscapeCapitalized
 	) {
 		text = ` ${text.trim()} `.replace(/\ue0ff/g, '');
-		if (doEscapeCapitalized)
-			text = text.replace(
-				/(?!<=\p{Lu} )(\p{Lu}{2}[\p{Lu} ]*)(?!= \p{Lu})/gu,
-				'<*.$1>'
-			);
 		return resolveSpecialSyntax(
 			text,
 			noFixArr,
 			LEFT_ANGLE_BRACKET,
-			(abcOnlySequence) =>
+			(abcOnlyText) =>
 				restoreCase(
 					replaceWithDict(
-						abcOnlySequence.toLowerCase(),
+						abcOnlyText.toLowerCase(),
 						letters[this.general.abc]
 					).split(' '),
-					abcOnlySequence.split(' ')
-				).join(' ')
+					abcOnlyText.split(' ')
+				).join(' '),
+			doEscapeCapitalized
 		)
 			.replace(/г'(?![еёіюя])/g, 'ґ')
 			.replace(/ - /g, ' — ')

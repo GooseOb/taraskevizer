@@ -1,26 +1,65 @@
-import { NOFIX_CHAR } from './no-fix';
+const NOFIX_CHAR = ' \ue0fe ';
+const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
+
+export const applyNoFix = (arr: string[], text: string) =>
+	arr.length ? text.replace(NOFIX_REGEX, () => arr.shift()!) : text;
 
 export const resolveSpecialSyntax = (
 	text: string,
 	noFixArr: string[],
 	leftAngleBracket: string,
-	convertAlphavet: (text: string) => string
+	convertAlphavet: (text: string) => string,
+	doEscapeCaps: boolean
 ) => {
-	let result = '';
-	let endOfPart = 0;
-	const counter = {
-		'<': 0,
-		'>': 0,
-	};
+	const escapeCapsIfNeeded = (text: string) =>
+		doEscapeCaps
+			? text.replace(/(?!<=\p{Lu} )\p{Lu}{2}[\p{Lu} ]*(?!= \p{Lu})/gu, ($0) => {
+					noFixArr.push(convertAlphavet($0));
+					return NOFIX_CHAR;
+				})
+			: text;
+	const parts = text.split(/(?=[<>])/g);
+	if (parts.length === 1) return escapeCapsIfNeeded(text);
+	let result = text[0] === '<' ? '' : escapeCapsIfNeeded(parts.shift()!);
+	let depth = 0;
 	let currentPart = '';
-	for (const part of text.split(/[<>]/g)) {
-		endOfPart += part.length;
-		++counter[text[endOfPart] as keyof typeof counter];
+	for (const part of parts) {
+		if (part[0] === '<') {
+			++depth;
+			currentPart += part;
+		} else if (depth) {
+			--depth;
+			if (depth) {
+				currentPart += part;
+			} else {
+				let char = '';
+				const abc = currentPart[1] === '*';
+				if (abc) {
+					char = currentPart[2];
+					currentPart = convertAlphavet(
+						currentPart.slice(char === ',' || char === '.' ? 3 : 2)
+					);
+				} else {
+					char = currentPart[1];
+					currentPart = currentPart.slice(2);
+				}
+				let toAddToResult = NOFIX_CHAR;
+				switch (char) {
+					case '.':
+						noFixArr.push(currentPart);
+						break;
+					case ',':
+						toAddToResult = leftAngleBracket + currentPart + '>';
+						break;
+					default:
+						noFixArr.push('<' + (abc ? '' : char) + currentPart + '>');
+				}
+				result += toAddToResult + escapeCapsIfNeeded(part.slice(1));
+				currentPart = '';
+			}
+		} else {
+			result += escapeCapsIfNeeded(part);
+		}
 	}
-	return text.replace(/<(\*?)([,.]?)([^>]*?)>/gs, ($0, $1, $2, $3) => {
-		if ($2 === ',') return leftAngleBracket + $3 + '>';
-		if ($1) $3 = convertAlphavet($3);
-		noFixArr.push($2 === '.' ? $3 : leftAngleBracket + $3 + '>');
-		return NOFIX_CHAR;
-	});
+	return result + escapeCapsIfNeeded(currentPart);
 };

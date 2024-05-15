@@ -106,7 +106,7 @@ Default `true`
 
 If set to false, may cause unwanted changes in acronyms.
 
-Is always `true` in `convertAlphabetOnly`.
+Is always `false` in `convertAlphabetOnly`.
 
 ### taraskevize
 

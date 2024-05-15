@@ -92,13 +92,13 @@ test('Latin:ji', (text) => taraskevizerLatinJi.convert(text), cases.latin.ji);
 test(
 	'SpecialConstructions',
 	(text) => taraskevizer.convert(text),
-	cases.specialConstructions.general
+	cases.specialSyntax.general
 );
 
 test(
 	'SpecialConstructions:latin',
 	(text) => taraskevizerLatin.convert(text),
-	cases.specialConstructions.latin
+	cases.specialSyntax.latin
 );
 
 test(
