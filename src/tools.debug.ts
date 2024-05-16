@@ -1,17 +1,11 @@
 import type { ExtendedDict } from './types';
 
-type AddParameter<TFn, TNewArg> = TFn extends (
-	...args: infer TArgs
-) => infer TReturn
-	? (...args: [...TArgs, TNewArg]) => TReturn
-	: never;
-
 export const replaceWithDict = (
 	text: string,
 	dict: ExtendedDict,
 	regex: RegExp
 ) => {
-	for (const item of dict!) {
+	for (const item of dict) {
 		const [pattern, result] = item;
 		text = text.replace(
 			pattern,

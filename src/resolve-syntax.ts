@@ -20,11 +20,11 @@ export const resolveSpecialSyntax = (
 			: text;
 	const parts = text.split(/(?=[<>])/g);
 	if (parts.length === 1) return escapeCapsIfNeeded(text);
-	let result = text[0] === '<' ? '' : escapeCapsIfNeeded(parts.shift()!);
+	let result = text.startsWith('<') ? '' : escapeCapsIfNeeded(parts.shift()!);
 	let depth = 0;
 	let currentPart = '';
 	for (const part of parts) {
-		if (part[0] === '<') {
+		if (part.startsWith('<')) {
 			++depth;
 			currentPart += part;
 		} else if (depth) {
