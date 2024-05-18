@@ -3,7 +3,9 @@ const isUpperCase = (str: string): boolean => str === str.toUpperCase();
 const getLastLetter = (word: string, i: number) => {
 	const result = /\p{L}(?=[^\p{L}]*$)/u.exec(word);
 	if (result) return result[0];
-	throw new Error(`the last letter of the word ${word} not found. index: ${i}`);
+	throw new Error(
+		`the last letter of the word "${word}" not found. index: ${i}`
+	);
 };
 
 export const restoreCase = (text: string[], orig: string[]): string[] => {
