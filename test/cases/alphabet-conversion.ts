@@ -5,6 +5,8 @@ export const latin = [
 	['Харошы', 'Charošy'],
 	['Я 77-ы', 'Ja 77-y'],
 	['Я Фанат', 'Ja Fanat'],
+	// Originally latin alphabet words should not be affected
+	['Мы з LGB Alliance', 'My z LGB Alliance'],
 ] as const;
 
 export const latinJi = [

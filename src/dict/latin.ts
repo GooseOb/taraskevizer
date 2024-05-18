@@ -50,7 +50,7 @@ const common = {
 				[/э/, 'e'],
 				[/ю/, 'iu'],
 				[/я/, 'ia'],
-				[/[łl]i([eoua])/, 'l$1'],
+				[/łi(?=[eoua])/, 'l'],
 				[/łi/, 'li'],
 			],
 		] satisfies WritableDict[]
@@ -108,9 +108,8 @@ const common = {
 				[/Ш/, 'Š'],
 				[/Ы/, 'Y'],
 				[/Э/, 'E'],
-				[/[ŁL][Ii]([AEOUaeou])/, 'L$1'],
-				[/Łi/, 'Li'],
-				[/ŁI/, 'LI'],
+				[/Ł[Ii](?=[AEOUaeou])/, 'L'],
+				[/Ł(?=[Ii])/, 'L'],
 			],
 		] satisfies WritableDict[]
 	).map(dictFrom.nonGlobal),
