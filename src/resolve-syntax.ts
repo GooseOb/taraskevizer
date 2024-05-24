@@ -48,16 +48,18 @@ export const resolveSpecialSyntax = (
 					char = currentPart[1];
 					currentPart = currentPart.slice(2);
 				}
-				let toAddToResult = NOFIX_CHAR;
+				let toAddToResult;
 				switch (char) {
 					case '.':
+						toAddToResult = NOFIX_CHAR;
 						noFixArr.push(currentPart);
 						break;
 					case ',':
 						toAddToResult = leftAngleBracket + currentPart + '>';
 						break;
 					default:
-						noFixArr.push('<' + (abc ? '' : char) + currentPart + '>');
+						toAddToResult = leftAngleBracket + NOFIX_CHAR;
+						noFixArr.push((abc ? '' : char) + currentPart + '>');
 				}
 				result += toAddToResult + escapeCapsIfNeeded(part.slice(1));
 				currentPart = '';
