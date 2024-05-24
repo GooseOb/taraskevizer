@@ -11,7 +11,7 @@ const printWithPrefix = (msg: string) => {
 
 process.argv.splice(0, 2);
 
-const checkForOptions = (options: string[]) =>
+const checkForOptions = (options: readonly string[]) =>
 	process.argv[0] && options.includes(process.argv[0].toLowerCase());
 
 if (checkForOptions(['-v', '--version'])) {
@@ -34,7 +34,9 @@ const html: Partial<HtmlOptions> = { g: true };
 type Mode = 'nonHtml' | 'html' | 'alphabetOnly';
 let mode: Mode = 'nonHtml';
 
-const toHashTable = (dict: [string[], () => void][]) => {
+const toHashTable = (
+	dict: readonly (readonly [readonly string[], () => void])[]
+) => {
 	const result: Record<string, () => void> = {};
 	for (const [options, callback] of dict)
 		for (const option of options) result[option] = callback;

@@ -7,7 +7,11 @@ import { afterTarask } from './after-tarask';
 import { ALPHABET, REPLACE_J, VARIATION } from './config-constants';
 import { letters } from './letters';
 import { replaceWithDict, convertAlphabet } from './tools';
-import { resolveSpecialSyntax, applyNoFix } from './resolve-syntax';
+import {
+	resolveSpecialSyntax,
+	applyNoFix,
+	applyVariableParts,
+} from './resolve-syntax';
 import type {
 	NonHtmlOptions,
 	HtmlOptions,
@@ -19,8 +23,6 @@ import type {
 } from './types';
 import * as debug from './tools.debug';
 
-const OPTIONAL_WORDS_REGEX = /\([^)]*?\)/g;
-
 const afterJoin = (text: string) =>
 	text.replace(/&nbsp;/g, ' ').replace(/ (\p{P}|\p{S}|\d|&#40) /gu, '$1');
 const join = (textArr: readonly string[]): string =>
@@ -28,7 +30,9 @@ const join = (textArr: readonly string[]): string =>
 const finalize = (text: string, newLine: string) =>
 	text.replace(/ \t /g, '\t').replace(/ \n /g, newLine).trim();
 
-const restoreBraces = (text: string) => text.replace(/&#40/g, '(');
+const restoreParentheses = (text: string) => text.replace(/&#40/g, '(');
+
+const wordlistPlusNoSoften = wordlist.concat(noSoften);
 
 export class Taraskevizer {
 	public general = {
@@ -80,21 +84,17 @@ export class Taraskevizer {
 					: ($0) => gobj[$0]
 			);
 
-		if (
-			'variations' in this.nonHtml &&
-			this.nonHtml.variations !== VARIATION.ALL
-		) {
-			const wordIndex = this.nonHtml.variations ?? 0;
-			const replacer = ($0: string) => $0.slice(1, -1).split('|')[wordIndex];
-			text = text.replace(
-				OPTIONAL_WORDS_REGEX,
+		if (this.nonHtml.variations !== VARIATION.ALL) {
+			const partIndex = this.nonHtml.variations;
+			text = applyVariableParts(
+				text,
 				this.nonHtml.ansiColors
-					? ($0) => wrapInColorOf.variable(replacer($0))
-					: replacer
+					? (parts) => wrapInColorOf.variable(parts[partIndex])
+					: (parts) => parts[partIndex]
 			);
 		}
 
-		return finalize(restoreBraces(applyNoFix(noFixArr, text)), '\n');
+		return finalize(restoreParentheses(applyNoFix(noFixArr, text)), '\n');
 	}
 
 	public convertToHtml(text: string) {
@@ -115,10 +115,9 @@ export class Taraskevizer {
 			);
 
 		return finalize(
-			applyNoFix(noFixArr, text).replace(OPTIONAL_WORDS_REGEX, ($0) => {
-				const options = $0.slice(1, -1).split('|');
-				const main = options.shift();
-				return `<tarL data-l='${options}'>${main}</tarL>`;
+			applyVariableParts(applyNoFix(noFixArr, text), (parts) => {
+				const main = parts.shift();
+				return `<tarL data-l='${parts}'>${main}</tarL>`;
 			}),
 			'<br>'
 		);
@@ -156,7 +155,7 @@ export class Taraskevizer {
 		const noFixArr: string[] = [];
 		return finalize(
 			afterJoin(
-				restoreBraces(
+				restoreParentheses(
 					applyNoFix(
 						noFixArr,
 						convertAlphabet(
@@ -189,7 +188,7 @@ export class Taraskevizer {
 	}
 
 	protected taraskevize(text: string) {
-		text = replaceWithDict(replaceWithDict(text, wordlist), noSoften);
+		text = replaceWithDict(text, wordlistPlusNoSoften);
 		softening: do {
 			text = replaceWithDict(text, softeners);
 			for (const [pattern, result] of softeners)

@@ -4,6 +4,11 @@ const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
 export const applyNoFix = (arr: string[], text: string) =>
 	arr.length ? text.replace(NOFIX_REGEX, () => arr.shift()!) : text;
 
+export const applyVariableParts = (
+	text: string,
+	callback: (arr: string[]) => string
+) => text.replace(/\([^)]*?\)/g, ($0) => callback($0.slice(1, -1).split('|')));
+
 export const resolveSpecialSyntax = (
 	text: string,
 	noFixArr: string[],
