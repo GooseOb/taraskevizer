@@ -24,11 +24,11 @@ import type {
 import * as debug from './tools.debug';
 
 const afterJoin = (text: string) =>
-	text.replace(/&nbsp;/g, ' ').replace(/ (\p{P}|\p{S}|\d|&#40) /gu, '$1');
+	text.replace(/&nbsp;/g, ' ').replace(/ (\p{P}|\p{S}|\d+|&#40) /gu, '$1');
 const join = (textArr: readonly string[]): string =>
 	afterJoin(textArr.join(' '));
 const finalize = (text: string, newLine: string) =>
-	text.replace(/ \t /g, '\t').replace(/ \n /g, newLine).trim();
+	text.replace(/\n/g, newLine).trim();
 
 const restoreParentheses = (text: string) => text.replace(/&#40/g, '(');
 
@@ -48,6 +48,11 @@ export class Taraskevizer {
 		ansiColors: false,
 		variations: VARIATION.ALL as Variation,
 	};
+
+	private spaces: string[] = [];
+	restoreSpaces(text: string) {
+		return text.replace(/ /g, () => this.spaces.shift()!);
+	}
 
 	constructor(
 		options?: DeepPartialReadonly<{
@@ -73,7 +78,7 @@ export class Taraskevizer {
 		);
 		if (this.nonHtml.ansiColors)
 			highlightDiff(splitted, splittedOrig, isCyrillic, wrapInColorOf.fix);
-		text = join(splitted);
+		text = afterJoin(this.restoreSpaces(splitted.join(' ')));
 		if (isCyrillic && (this.nonHtml.h || this.nonHtml.ansiColors))
 			text = replaceG(
 				text,
@@ -105,7 +110,7 @@ export class Taraskevizer {
 			this.prepare(text, noFixArr, '&lt;')
 		);
 		highlightDiff(splitted, splittedOrig, isCyrillic, wrapInTag.fix);
-		text = join(splitted);
+		text = afterJoin(this.restoreSpaces(splitted.join(' ')));
 		if (isCyrillic)
 			text = replaceG(
 				text,
@@ -129,9 +134,8 @@ export class Taraskevizer {
 		LEFT_ANGLE_BRACKET: string,
 		doEscapeCapitalized = this.general.doEscapeCapitalized
 	) {
-		text = ` ${text.trim()} `.replace(/\ue0ff/g, '');
-		return resolveSpecialSyntax(
-			text,
+		text = resolveSpecialSyntax(
+			` ${text.trim()} `.replace(/\ue0ff/g, ''),
 			noFixArr,
 			LEFT_ANGLE_BRACKET,
 			(abcOnlyText) =>
@@ -146,9 +150,14 @@ export class Taraskevizer {
 		)
 			.replace(/г'(?![еёіюя])/g, 'ґ')
 			.replace(/ - /g, ' — ')
-			.replace(/([\n\t]|\p{P}|\p{S}|\d)/gu, ' $1 ')
+			.replace(/(\p{P}|\p{S}|\d+)/gu, ' $1 ')
 			.replace(/ ['`’] (?=\S)/g, 'ʼ')
 			.replace(/\(/g, '&#40');
+		text = text.replace(/\s+/g, (match) => {
+			this.spaces.push(match);
+			return ' ';
+		});
+		return text;
 	}
 
 	public convertAlphabetOnly(text: string) {
@@ -158,9 +167,11 @@ export class Taraskevizer {
 				restoreParentheses(
 					applyNoFix(
 						noFixArr,
-						convertAlphabet(
-							this.prepare(text, noFixArr, '<', false),
-							this.general.abc
+						this.restoreSpaces(
+							convertAlphabet(
+								this.prepare(text, noFixArr, '<', false),
+								this.general.abc
+							)
 						)
 					)
 				)
