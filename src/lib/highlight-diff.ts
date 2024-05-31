@@ -1,19 +1,5 @@
-import { gobj } from './dict';
 import { replaceG } from './replace-g';
-
-export const wrappers = {
-	html: {
-		fix: (content) => `<tarF>${content}</tarF>`,
-		letterH: (content) => `<tarH>${content}</tarH>`,
-	},
-	ansiColors: {
-		fix: (content) => `\x1b[32m${content}\x1b[0m`,
-		variable: (content) => `\x1b[35m${content}\x1b[0m`,
-	},
-} satisfies Record<
-	'html' | 'ansiColors',
-	{ [p in 'fix' | 'letterH' | 'variable']?: (content: string) => string }
->;
+import { gobj } from '../dict';
 
 export const highlightDiff = (
 	text: string[],
@@ -21,11 +7,12 @@ export const highlightDiff = (
 	isCyrillic: boolean,
 	highlight: (content: string) => string
 ): void => {
+	const replaceGByOpposite = replaceG(($0) => gobj[$0]);
 	for (let i = 0; i < text.length; i++) {
 		const word = text[i];
 		const oWord = orig[i];
 		if (oWord === word) continue;
-		const wordH = isCyrillic ? replaceG(word, ($0) => gobj[$0]) : word;
+		const wordH = isCyrillic ? replaceGByOpposite(word) : word;
 		if (oWord === wordH) continue;
 		if (!/\(/.test(word)) {
 			if (word.length === oWord.length) {

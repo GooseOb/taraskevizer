@@ -12,8 +12,10 @@ export type DeepPartialReadonly<T> = ModifyObjectType<
 	}
 >;
 
-export type Alphabet = 0 | 1 | 2 | 3;
-// cyrillic | latin | arabic | latin with ji
+export type Alphabet = {
+	lower: Dict;
+	upper?: Dict;
+};
 export type OptionJ = 0 | 1 | 2;
 // never | random | always
 export type Variation = 0 | 1 | 2;
@@ -35,4 +37,3 @@ export type ExtendedDict = readonly (readonly [
 	RegExp,
 	string | ((...substrings: string[]) => string),
 ])[];
-export type AlphabetDependentDict = { [key in Alphabet]?: Dict };

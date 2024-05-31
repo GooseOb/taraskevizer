@@ -21,13 +21,21 @@ bun add taraskevizer
 # Usage
 
 ```js
-import { Taraskevizer, ALPHABET, J, VARIATION } from 'taraskevizer';
+import {
+	tarask,
+	plainTextPipeline,
+	htmlPipeline,
+	abcOnlyPipeline,
+	TaraskConfig,
+	ALPHABET,
+	J,
+	VARIATION,
+} from 'taraskevizer';
 
-const taraskevizer = new Taraskevizer();
-taraskevizer.convert('планета');
+tarask('планета', plainTextPipeline);
 // "плянэта"
 
-const taraskevizer = new Taraskevizer({
+const cfg = new TaraskConfig({
 	general: {
 		abc: ALPHABET.CYRILLIC,
 		j: J.ALWAYS,
@@ -38,10 +46,10 @@ const taraskevizer = new Taraskevizer({
 		h: false,
 	},
 });
-taraskevizer.convert('планета і Гродна');
+tarask('планета і Гродна', plainTextPipeline, cfg);
 // "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
 
-const taraskevizer = new Taraskevizer({
+const cfg = new TaraskConfig({
 	general: {
 		abc: ALPHABET.LATIN,
 	},
@@ -49,20 +57,19 @@ const taraskevizer = new Taraskevizer({
 		g: false, // ignored, because alphabet is set to latin
 	},
 });
-taraskevizer.convertToHtml('энергія планеты');
+tarask('энергія планеты', htmlPipeline, cfg);
 // "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
 
-// properties can be rewritten after creating an object
-taraskevizer.general.abc = ALPHABET.ARABIC;
-taraskevizer.html.g = true;
-
-const latinizerWithJi = new Taraskevizer({
+const latinWithJiCfg = new TaraskConfig({
 	general: { abc: ALPHABET.LATIN_JI },
 });
 
-latinizerWithJi.convertAlphabetOnly('яна і іншыя');
+tarask('яна і іншыя', abcOnlyPipeline, latinWithJiCfg);
 // "jana j jinšyja"
 ```
+
+Explanation of pipeline steps and
+how to create your own will come soon.
 
 # Options
 
@@ -72,16 +79,11 @@ Type: `object`
 
 ### abc
 
-Type: `number`
+Type: `object` with schema: `{lower: Dict, upper?: Dict}`,
+where `Dict` is `[pattern: RegExp, result: string][]`
+(may be empty)
 
-Default value: `0`
-
-| Value | Alphabet of output text |
-| ----- | ----------------------- |
-| 0     | cyrillic                |
-| 1     | latin                   |
-| 2     | arabic                  |
-| 3     | latin with ji           |
+Default value: `ALPHABET.CYRILLIC`
 
 ### j
 
@@ -107,15 +109,6 @@ Default `true`
 If set to false, may cause unwanted changes in acronyms.
 
 Is always `false` in `convertAlphabetOnly`.
-
-### taraskevize
-
-Type: `(text: string) => string`
-
-Default value: internal function `taraskevize`
-
-Overriddes internal function in order to change behaviour of taraskevization.
-This function usually uses private api via `__tarask__`
 
 ## html
 

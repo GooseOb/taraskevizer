@@ -8,10 +8,7 @@ const getLastLetter = (word: string, i: number) => {
 	);
 };
 
-export const restoreCase = (
-	text: string[],
-	orig: readonly string[]
-): string[] => {
+export const restoreCase = (text: string[], orig: readonly string[]) => {
 	for (let i = 0; i < text.length; i++) {
 		const word = text[i];
 		const oWord = orig[i];

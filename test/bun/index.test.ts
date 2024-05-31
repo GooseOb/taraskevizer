@@ -1,60 +1,68 @@
 import { getLabel, testOnCases, testOnCasesAsync } from './lib';
-import { Taraskevizer, ALPHABET } from '../../src';
+import {
+	tarask,
+	plainTextPipeline,
+	ALPHABET,
+	TaraskConfig,
+	htmlPipeline,
+	abcOnlyPipeline,
+} from '../../src';
 import * as cases from '../cases';
 import * as path from 'path';
 
 const objectLabel = getLabel('j');
 
-const taraskevizer = new Taraskevizer();
 testOnCases(
 	'\x1b[31mTaraskevization',
-	(text) => taraskevizer.convert(text),
+	(text) => tarask(text, plainTextPipeline),
 	cases.taraskevization.change
 );
 
 testOnCases(
 	'\x1b[31mTaraskevization:no-change',
-	(text) => taraskevizer.convert(text),
+	(text) => tarask(text, plainTextPipeline),
 	cases.taraskevization.noChange
 );
 
 testOnCases(
 	'\x1b[31mTaraskevization:g-words',
-	(text) => taraskevizer.convert(text),
+	(text) => tarask(text, plainTextPipeline),
 	cases.taraskevization.gwords
 );
 
 testOnCases(
 	'\x1b[33mHtmlOptions',
-	([text, html]) => new Taraskevizer({ html }).convertToHtml(text),
+	([text, html]) => tarask(text, htmlPipeline, new TaraskConfig({ html })),
 	cases.htmlOptions,
 	objectLabel
 );
 
 testOnCases(
 	'\x1b[34mNonHtmlOptions',
-	([text, nonHtml]) => new Taraskevizer({ nonHtml }).convert(text),
+	([text, nonHtml]) =>
+		tarask(text, plainTextPipeline, new TaraskConfig({ nonHtml })),
 	cases.nonHtmlOptions,
 	objectLabel
 );
 
 testOnCases(
 	'\x1b[36mi -> j',
-	([text, j, abc]) => new Taraskevizer({ general: { j, abc } }).convert(text),
+	([text, j, abc]) =>
+		tarask(text, plainTextPipeline, new TaraskConfig({ general: { j, abc } })),
 	cases.itoj,
 	objectLabel
 );
 
 testOnCases(
 	'\x1b[31mMultiline',
-	(text) => taraskevizer.convert(text),
+	(text) => tarask(text, plainTextPipeline),
 	cases.multiline.nonHtml,
 	objectLabel
 );
 
 testOnCases(
 	'\x1b[31mMultiline:html',
-	(text) => taraskevizer.convertToHtml(text),
+	(text) => tarask(text, htmlPipeline),
 	cases.multiline.html,
 	objectLabel
 );
@@ -83,61 +91,61 @@ if (!process.env.NOCLI) {
 	);
 }
 
-const taraskevizerLatin = new Taraskevizer({
+const latinCfg = new TaraskConfig({
 	general: { abc: ALPHABET.LATIN },
 });
 testOnCases(
 	'\x1b[33mLatin',
-	(text) => taraskevizerLatin.convert(text),
+	(text) => tarask(text, plainTextPipeline, latinCfg),
 	cases.latin.general
 );
 
-const taraskevizerLatinJi = new Taraskevizer({
+const latinJiCfg = new TaraskConfig({
 	general: { abc: ALPHABET.LATIN_JI },
 });
 testOnCases(
 	'\x1b[33mLatin:ji',
-	(text) => taraskevizerLatinJi.convert(text),
+	(text) => tarask(text, plainTextPipeline, latinJiCfg),
 	cases.latin.ji
 );
 
 testOnCases(
 	'\x1b[31mSpecialConstructions',
-	(text) => taraskevizer.convert(text),
+	(text) => tarask(text, plainTextPipeline),
 	cases.specialSyntax.general
 );
 
 testOnCases(
 	'\x1b[31mSpecialConstructions',
-	(text) => taraskevizerLatin.convert(text),
+	(text) => tarask(text, plainTextPipeline, latinCfg),
 	cases.specialSyntax.latin
 );
 
 testOnCases(
 	'\x1b[31mCaseRestoring:escape-caps',
-	(text) => taraskevizer.convert(text),
+	(text) => tarask(text, plainTextPipeline),
 	cases.caseRestoring.escCap
 );
 
-const taraskevizerNoEscCap = new Taraskevizer({
+const noEscCapCfg = new TaraskConfig({
 	general: { doEscapeCapitalized: false },
 });
 
 testOnCases(
 	'\x1b[31mCaseRestoring:no-escape-caps',
-	(text) => taraskevizerNoEscCap.convert(text),
+	(text) => tarask(text, plainTextPipeline, noEscCapCfg),
 	cases.caseRestoring.noEscCap
 );
 
 testOnCases(
 	'\x1b[31mAlphabetConversion:latin-no-ji',
-	(text) => taraskevizerLatin.convertAlphabetOnly(text),
+	(text) => tarask(text, abcOnlyPipeline, latinCfg),
 	cases.alphabetConversion.latin
 );
 
 testOnCases(
 	'\x1b[31mAlphabetConversion:latin-ji',
-	(text) => taraskevizerLatinJi.convertAlphabetOnly(text),
+	(text) => tarask(text, abcOnlyPipeline, latinJiCfg),
 	cases.alphabetConversion.latinJi
 );
 

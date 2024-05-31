@@ -1,5 +1,8 @@
 export type { HtmlOptions, NonHtmlOptions, TaraskOptions } from './types';
-export { gobj } from './dict/index';
+export * as dicts from './dict';
 export * from './tarask';
-export * from './config-constants';
-export * as __TARASK__ from './for-plugins';
+export * from './config';
+export * from './alphabet';
+export * as pipelineSteps from './steps';
+export * from './pipelines';
+export * as lib from './lib';

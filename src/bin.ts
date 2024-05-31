@@ -1,5 +1,14 @@
 #!/usr/bin/env node
-import { ALPHABET, REPLACE_J, Taraskevizer, VARIATION } from './index.js';
+import {
+	ALPHABET,
+	REPLACE_J,
+	VARIATION,
+	TaraskConfig,
+	tarask,
+	abcOnlyPipeline,
+	htmlPipeline,
+	plainTextPipeline,
+} from './index.js';
 import type { NonHtmlOptions, TaraskOptions, HtmlOptions } from './types';
 declare const __CLI_HELP__: string;
 declare const __VERSION__: string;
@@ -155,17 +164,15 @@ if (process.argv.length) {
 	text = Buffer.concat(chunks, length).toString();
 }
 
-const taraskevizer = new Taraskevizer({ general, html, nonHtml });
+const cfg = new TaraskConfig({ general, html, nonHtml });
 
-if (
-	process.stdout.write(
-		{
-			nonHtml: taraskevizer.convert,
-			html: taraskevizer.convertToHtml,
-			alphabetOnly: taraskevizer.convertAlphabetOnly,
-		}[mode].apply(taraskevizer, [text]) + '\n'
-	)
-) {
+const piplineByMode = {
+	nonHtml: plainTextPipeline,
+	html: htmlPipeline,
+	alphabetOnly: abcOnlyPipeline,
+};
+
+if (process.stdout.write(tarask(text, piplineByMode[mode], cfg) + '\n')) {
 	process.exit(0);
 } else {
 	process.stdout.once('drain', () => {
