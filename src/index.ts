@@ -3,6 +3,6 @@ export * as dicts from './dict';
 export * from './tarask';
 export * from './config';
 export * from './alphabet';
-export * as pipelineSteps from './steps';
+export * as steps from './steps';
 export * from './pipelines';
 export * as lib from './lib';

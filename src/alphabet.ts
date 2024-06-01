@@ -5,7 +5,7 @@ import {
 	latinLettersUpperCase,
 	latinLettersUpperCaseJi,
 } from './dict';
-import { Alphabet } from './types';
+import type { Alphabet } from './types';
 
 export const ALPHABET = {
 	LATIN: {

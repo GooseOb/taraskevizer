@@ -83,6 +83,9 @@ Type: `object` with schema: `{lower: Dict, upper?: Dict}`,
 where `Dict` is `[pattern: RegExp, result: string][]`
 (may be empty)
 
+`ALPHABET` contains the following pre-defined alphabets:
+`CYRILLIC`, `LATIN`, `LATIN_JI`, `ARABIC`
+
 Default value: `ALPHABET.CYRILLIC`
 
 ### j
@@ -108,7 +111,7 @@ Default `true`
 
 If set to false, may cause unwanted changes in acronyms.
 
-Is always `false` in `convertAlphabetOnly`.
+Is always `false` in `abcOnlyPipeline`.
 
 ## html
 
