@@ -1,7 +1,7 @@
 import { applyVariableParts } from './resolve-syntax';
 import { replaceG, ansiColorWrappers } from '../lib';
 import { VARIATION } from '../config';
-import { ALPHABET } from '../alphabet';
+import { alphabets } from '../dict';
 import { gobj } from '../dict';
 import type { TaraskStep } from './types';
 
@@ -28,7 +28,7 @@ export const applyNonHtmlG: TaraskStep = (
 	}
 ) => {
 	const colorize = ansiColorWrappers.variable;
-	return abc === ALPHABET.CYRILLIC && (h || ansiColors)
+	return abc === alphabets.cyrillic && (h || ansiColors)
 		? replaceG(
 				ansiColors
 					? h

@@ -1,4 +1,4 @@
-import { ALPHABET } from '../alphabet';
+import { alphabets } from '../dict';
 import { htmlWrappers, replaceG } from '../lib';
 import { applyVariableParts } from './resolve-syntax';
 import { gobj } from '../dict';
@@ -19,7 +19,7 @@ export const applyHtmlG: TaraskStep = (
 	}
 ) => {
 	const colorize = htmlWrappers.letterH;
-	return abc === ALPHABET.CYRILLIC
+	return abc === alphabets.cyrillic
 		? replaceG(g ? colorize('$&') : ($0) => colorize(gobj[$0]))(text)
 		: text;
 };

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import {
-	ALPHABET,
+	dicts,
 	REPLACE_J,
 	VARIATION,
 	TaraskConfig,
@@ -57,19 +57,19 @@ const optionDict = toHashTable([
 	[
 		['--latin', '-l'],
 		() => {
-			general.abc = ALPHABET.LATIN;
+			general.abc = dicts.alphabets.latin;
 		},
 	],
 	[
 		['--latin-ji', '-lj'],
 		() => {
-			general.abc = ALPHABET.LATIN_JI;
+			general.abc = dicts.alphabets.latinJi;
 		},
 	],
 	[
 		['--arabic', '-a'],
 		() => {
-			general.abc = ALPHABET.ARABIC;
+			general.abc = dicts.alphabets.arabic;
 		},
 	],
 	[

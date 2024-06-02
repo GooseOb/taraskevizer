@@ -1,6 +1,6 @@
 import type { TaraskStep, SplittedTextStorage } from './types';
 import { highlightDiff, ansiColorWrappers } from '../lib';
-import { ALPHABET } from '../alphabet';
+import { alphabets } from '../dict';
 
 export const highlightDiffStep =
 	(highlight: (content: string) => string): TaraskStep<SplittedTextStorage> =>
@@ -13,7 +13,7 @@ export const highlightDiffStep =
 			storage: { text, orig },
 		}
 	) => {
-		highlightDiff(text, orig, abc === ALPHABET.CYRILLIC, highlight);
+		highlightDiff(text, orig, abc === alphabets.cyrillic, highlight);
 		return _;
 	};
 
@@ -28,6 +28,11 @@ export const highlightDiffNonHtmlStep: TaraskStep<SplittedTextStorage> = (
 	}
 ) => {
 	if (ansiColors)
-		highlightDiff(text, orig, abc === ALPHABET.CYRILLIC, ansiColorWrappers.fix);
+		highlightDiff(
+			text,
+			orig,
+			abc === alphabets.cyrillic,
+			ansiColorWrappers.fix
+		);
 	return _;
 };

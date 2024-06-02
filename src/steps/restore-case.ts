@@ -1,4 +1,3 @@
-import { ALPHABET } from '../alphabet';
 import { restoreCase } from '../lib';
 import type { TaraskStep, SplittedTextStorage } from './types';
 
@@ -11,7 +10,7 @@ export const restoreCaseStep: TaraskStep<SplittedTextStorage> = (
 		storage,
 	}
 ) => {
-	if (abc !== ALPHABET.ARABIC) {
+	if (abc.upper) {
 		storage.text = restoreCase(storage.text, storage.orig);
 	}
 	return _;

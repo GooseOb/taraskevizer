@@ -2,7 +2,7 @@ import { getLabel, testOnCases, testOnCasesAsync } from './lib';
 import {
 	tarask,
 	plainTextPipeline,
-	ALPHABET,
+	dicts,
 	TaraskConfig,
 	htmlPipeline,
 	abcOnlyPipeline,
@@ -92,7 +92,7 @@ if (!process.env.NOCLI) {
 }
 
 const latinCfg = new TaraskConfig({
-	general: { abc: ALPHABET.LATIN },
+	general: { abc: dicts.alphabets.latin },
 });
 testOnCases(
 	'\x1b[33mLatin',
@@ -101,7 +101,7 @@ testOnCases(
 );
 
 const latinJiCfg = new TaraskConfig({
-	general: { abc: ALPHABET.LATIN_JI },
+	general: { abc: dicts.alphabets.latinJi },
 });
 testOnCases(
 	'\x1b[33mLatin:ji',

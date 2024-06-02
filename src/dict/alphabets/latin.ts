@@ -1,6 +1,7 @@
-import type { Dict, WritableDict } from './types';
-import { iwords } from './iwords';
-import { dictFrom } from './lib';
+import type { Alphabet } from './types';
+import type { WritableDict } from '../types';
+import { iwords } from '../iwords';
+import { dictFrom } from '../lib';
 
 const common = {
 	lower: (
@@ -115,37 +116,35 @@ const common = {
 	).map(dictFrom.nonGlobal),
 };
 
-export const latinLettersLowerCase = [
-	...common.lower[0],
-	[/ʼі/g, 'ji'],
-	...common.lower[1],
-] satisfies Dict;
+export const latin = {
+	lower: [...common.lower[0], [/ʼі/g, 'ji'], ...common.lower[1]],
+	upper: common.upper.flat(),
+} satisfies Alphabet;
 
-export const latinLettersUpperCase = common.upper.flat();
-
-export const latinLettersLowerCaseJi = dictFrom
-	.raw([
-		[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )і Ў/, '$1j U'],
-		[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )і ў/, '$1j u'],
-		[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )і /, '$1j '],
-		[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )І Ў/, '$1J U'],
-		[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )І ў/, '$1J u'],
-		[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )І /, '$1J '],
-		[` і(?=${iwords})`, ' ji'],
-		[` І(?=${iwords})`, ' Ji'],
-		[` І(?=${iwords.toUpperCase()})`, ' JI'],
-	])
-	.concat([
-		...common.lower[0],
-		[/([eouaаеёіоуыэюяʼАЕЁІОУЫЭЮЯЬ] *)і/g, '$1ji'],
-		...common.lower[1],
-	]) satisfies Dict;
-
-export const latinLettersUpperCaseJi = [
-	...common.upper[0],
-	[/([eoua] *)І(?=[ \p{P}\d]*\p{Lu}?\p{Ll})/gu, '$1Ji'],
-	...common.upper[1],
-	[/([AOEUАЕЁІОУЎЫЭЮЯ][( ]*)І/g, '$1JI'],
-	...common.upper[2],
-	[/ JIŁ -/g, ' IŁ -'],
-] satisfies Dict;
+export const latinJi = {
+	lower: dictFrom
+		.raw([
+			[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )і Ў/, '$1j U'],
+			[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )і ў/, '$1j u'],
+			[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )і /, '$1j '],
+			[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )І Ў/, '$1J U'],
+			[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )І ў/, '$1J u'],
+			[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )І /, '$1J '],
+			[` і(?=${iwords})`, ' ji'],
+			[` І(?=${iwords})`, ' Ji'],
+			[` І(?=${iwords.toUpperCase()})`, ' JI'],
+		])
+		.concat([
+			...common.lower[0],
+			[/([eouaаеёіоуыэюяʼАЕЁІОУЫЭЮЯЬ] *)і/g, '$1ji'],
+			...common.lower[1],
+		]),
+	upper: [
+		...common.upper[0],
+		[/([eoua] *)І(?=[ \p{P}\d]*\p{Lu}?\p{Ll})/gu, '$1Ji'],
+		...common.upper[1],
+		[/([AOEUАЕЁІОУЎЫЭЮЯ][( ]*)І/g, '$1JI'],
+		...common.upper[2],
+		[/ JIŁ -/g, ' IŁ -'],
+	],
+} satisfies Alphabet;

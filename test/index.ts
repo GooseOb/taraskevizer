@@ -5,7 +5,7 @@ import {
 	abcOnlyPipeline,
 	plainTextPipeline,
 	TaraskConfig,
-	ALPHABET,
+	dicts,
 } from '../src';
 import * as cases from './cases';
 import * as path from 'path';
@@ -87,7 +87,7 @@ if (!process.env.NOCLI) {
 }
 
 const latinCfg = new TaraskConfig({
-	general: { abc: ALPHABET.LATIN },
+	general: { abc: dicts.alphabets.latin },
 });
 test(
 	'Latin',
@@ -96,7 +96,7 @@ test(
 );
 
 const latinJiCfg = new TaraskConfig({
-	general: { abc: ALPHABET.LATIN_JI },
+	general: { abc: dicts.alphabets.latinJi },
 });
 
 test(

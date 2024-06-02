@@ -27,7 +27,7 @@ import {
 	htmlPipeline,
 	abcOnlyPipeline,
 	TaraskConfig,
-	ALPHABET,
+	alphabets,
 	J,
 	VARIATION,
 } from 'taraskevizer';
@@ -37,7 +37,7 @@ tarask('планета', plainTextPipeline);
 
 const cfg = new TaraskConfig({
 	general: {
-		abc: ALPHABET.CYRILLIC,
+		abc: alphabets.cyrillic,
 		j: J.ALWAYS,
 	},
 	nonHtml: {
@@ -51,7 +51,7 @@ tarask('планета і Гродна', plainTextPipeline, cfg);
 
 const cfg = new TaraskConfig({
 	general: {
-		abc: ALPHABET.LATIN,
+		abc: alphabets.latin,
 	},
 	html: {
 		g: false, // ignored, because alphabet is set to latin
@@ -61,7 +61,7 @@ tarask('энергія планеты', htmlPipeline, cfg);
 // "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
 
 const latinWithJiCfg = new TaraskConfig({
-	general: { abc: ALPHABET.LATIN_JI },
+	general: { abc: alphabets.latinJi },
 });
 
 tarask('яна і іншыя', abcOnlyPipeline, latinWithJiCfg);
@@ -83,10 +83,10 @@ Type: `object` with schema: `{lower: Dict, upper?: Dict}`,
 where `Dict` is `[pattern: RegExp, result: string][]`
 (may be empty)
 
-`ALPHABET` contains the following pre-defined alphabets:
-`CYRILLIC`, `LATIN`, `LATIN_JI`, `ARABIC`
+`alphabets` contains the following pre-defined alphabets:
+`cyrillic`, `latin`, `latinJi`, `arabic`
 
-Default value: `ALPHABET.CYRILLIC`
+Default value: `alphabets.cyrillic`
 
 ### j
 

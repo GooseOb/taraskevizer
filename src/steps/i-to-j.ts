@@ -1,4 +1,4 @@
-import { ALPHABET } from '../alphabet';
+import { alphabets } from '../dict';
 import { REPLACE_J } from '../config';
 import type { TaraskStep } from './types';
 
@@ -12,7 +12,7 @@ export const replaceIbyJ: TaraskStep = (
 		},
 	}
 ) =>
-	j && abc !== ALPHABET.LATIN_JI
+	j && abc !== alphabets.latinJi
 		? text.replace(
 				/(?<=[аеёіоуыэюя] )і (ў?)/g,
 				j === REPLACE_J.ALWAYS

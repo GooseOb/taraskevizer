@@ -1,4 +1,4 @@
-import type { Dict } from './dict/types';
+import type { Alphabet } from './dict';
 
 type ModifyObjectType<T, TResultObj> = T extends object
 	? T extends (...args: any[]) => any
@@ -12,10 +12,6 @@ export type DeepPartialReadonly<T> = ModifyObjectType<
 	}
 >;
 
-export type Alphabet = {
-	lower: Dict;
-	upper?: Dict;
-};
 export type OptionJ = 0 | 1 | 2;
 // never | random | always
 export type Variation = 0 | 1 | 2;

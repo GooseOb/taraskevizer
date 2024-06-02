@@ -1,6 +1,6 @@
-import { ALPHABET } from './alphabet';
+import { alphabets } from './dict';
+import type { Alphabet } from './dict';
 import type {
-	Alphabet,
 	DeepPartialReadonly,
 	HtmlOptions,
 	NonHtmlOptions,
@@ -30,7 +30,7 @@ export class TaraskConfig {
 		}
 	}
 	public general = {
-		abc: ALPHABET.CYRILLIC as Alphabet,
+		abc: alphabets.cyrillic as Alphabet,
 		j: REPLACE_J.NEVER as OptionJ,
 		doEscapeCapitalized: true,
 	};
