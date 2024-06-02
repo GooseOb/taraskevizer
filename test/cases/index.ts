@@ -5,6 +5,7 @@ export * as taraskevization from './taraskevization';
 export * as multiline from './multiline';
 export { default as cli } from './cli';
 export * as latin from './latin';
+export { default as arabic } from './arabic';
 export * as specialSyntax from './special-syntax';
 export * as caseRestoring from './case-restoring';
 export * as alphabetConversion from './alphabet-conversion';

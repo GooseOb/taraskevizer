@@ -1,11 +1,13 @@
 import type { Dict, RawDict, WritableDict } from './types';
 
 export const dictFrom = {
-	raw: (dict: RawDict): Dict => {
+	raw: (dict: RawDict, additionalFlags = 'g'): Dict => {
 		for (const item of dict)
 			item[0] = RegExp(
 				item[0],
-				item[0] instanceof RegExp ? item[0].flags + 'g' : 'g'
+				item[0] instanceof RegExp
+					? item[0].flags + additionalFlags
+					: additionalFlags
 			);
 		return dict as Dict;
 	},

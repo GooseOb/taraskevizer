@@ -105,6 +105,16 @@ test(
 	cases.latin.ji
 );
 
+const arabicCfg = new TaraskConfig({
+	general: { abc: dicts.alphabets.arabic },
+});
+
+test(
+	'Arabic',
+	(text) => tarask(text, plainTextPipeline, arabicCfg),
+	cases.arabic
+);
+
 test(
 	'SpecialConstructions',
 	(text) => tarask(text, plainTextPipeline),
@@ -134,7 +144,7 @@ test(
 );
 
 test(
-	'AlphabetConversion:latin-no-ji',
+	'AlphabetConversion:latin',
 	(text) => tarask(text, abcOnlyPipeline, latinCfg),
 	cases.alphabetConversion.latin
 );
@@ -143,6 +153,12 @@ test(
 	'AlphabetConversion:latin-ji',
 	(text) => tarask(text, abcOnlyPipeline, latinJiCfg),
 	cases.alphabetConversion.latinJi
+);
+
+test(
+	'AlphabetConversion:arabic',
+	(text) => tarask(text, abcOnlyPipeline, arabicCfg),
+	cases.alphabetConversion.arabic
 );
 
 // add a new case here

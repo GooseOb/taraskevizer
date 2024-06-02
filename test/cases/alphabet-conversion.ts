@@ -5,7 +5,7 @@ export const latin = [
 	['Харошы', 'Charošy'],
 	['Я 77-ы', 'Ja 77-y'],
 	['Я Фанат', 'Ja Fanat'],
-	// Originally latin alphabet words should not be affected
+	// Originally latin alphabet words to be not affected
 	['Мы з LGB Alliance', 'My z LGB Alliance'],
 ] as const;
 
@@ -63,4 +63,9 @@ export const latinJi = [
 	['прыцягнуў і ...', 'pryciahnuŭ i ...'],
 	['ІЛ-86', 'IŁ-86'],
 	['іклы', 'jikły'],
+] as const;
+
+export const arabic = [
+	// Uppercase lettes to be converted, non-belarusian characters to be not affected
+	['Прывет, Čalaviek!', 'پْرِوَطْ، Čalaviek!'],
 ] as const;
