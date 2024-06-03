@@ -1,6 +1,6 @@
 {
 	"name": "taraskevizer",
-	"version": "7.1.1",
+	"version": "7.1.2",
 	"author": "GooseOb",
 	"repository": {
 		"type": "git",
@@ -50,6 +50,7 @@
 		"prepare": "husky",
 		"typecheck": "tsc --project src/tsconfig.json"
 	},
+	"sideEffects": false,
 	"type": "module",
 	"types": "dist/index.d.ts"
 }
