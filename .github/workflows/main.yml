@@ -5,7 +5,7 @@ on:
       - 'main'
 
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v3
@@ -47,6 +47,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            docs
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
