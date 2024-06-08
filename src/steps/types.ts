@@ -1,14 +1,12 @@
 import { TaraskConfig } from '../config';
 
-export type TaraskStep<Storage = {}> = (
-	text: string,
-	args: {
-		storage: Storage;
-		cfg: TaraskConfig;
-	}
-) => string;
+export type TaraskStep<Storage = {}> = (args: {
+	text: string;
+	storage: Storage;
+	cfg: TaraskConfig;
+}) => void;
 
 export type SplittedTextStorage = {
-	text: string[];
-	orig: readonly string[];
+	textArr: string[];
+	origArr: readonly string[];
 };

@@ -1,36 +1,48 @@
 import { restoreCase, replaceWithDict } from '../lib';
 import type { TaraskStep } from './types';
-import type { Alphabet } from '../dict';
+import type { Alphabet } from '../dict/alphabets';
 
 const NOFIX_CHAR = ' \ue0fe ';
 const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
 
-export const applyNoFix: TaraskStep<SpecialSyntaxStorage> = (
-	text: string,
-	{ storage: { noFixArr } }
-) =>
-	noFixArr.length ? text.replace(NOFIX_REGEX, () => noFixArr.shift()!) : text;
-
-export const applyVariableParts =
-	(callback: (arr: string[]) => string): TaraskStep =>
-	(text) =>
-		text.replace(/\([^)]*?\)/g, ($0) => callback($0.slice(1, -1).split('|')));
-
-type SpecialSyntaxStorage = {
+/**
+ * Created in {@link resolveSpecialSyntax}.
+ *
+ * Emptied in {@link applyNoFix}.
+ */
+export type SpecialSyntaxStorage = {
 	noFixArr: string[];
 };
 
+/**
+ * Brings parts from {@link SpecialSyntaxStorage} back to the text.
+ *
+ * Empties {@link SpecialSyntaxStorage.noFixArr}.
+ */
+export const applyNoFix: TaraskStep<SpecialSyntaxStorage> = (options) => {
+	const { noFixArr } = options.storage;
+	if (noFixArr.length)
+		options.text = options.text.replace(NOFIX_REGEX, () => noFixArr.shift()!);
+};
+
+/**
+ * Captures noFix parts and stores them in {@link SpecialSyntaxStorage.noFixArr}.
+ * Places a special character `" \ue0fe "` in their place.
+ *
+ * Use {@link applyNoFix} to bring the parts back to the text.
+ *
+ * Creates storage: {@link SpecialSyntaxStorage}.
+ */
 export const resolveSpecialSyntax =
 	(leftAngleBracket: string): TaraskStep<SpecialSyntaxStorage> =>
-	(
-		text,
-		{
+	(options) => {
+		const {
+			text,
 			storage,
 			cfg: {
 				general: { doEscapeCapitalized, abc },
 			},
-		}
-	) => {
+		} = options;
 		const noFixArr = (storage.noFixArr = [] as string[]);
 		const convertAlphavet = (abcOnlyText: string, abc: Alphabet) =>
 			restoreCase(
@@ -49,7 +61,10 @@ export const resolveSpecialSyntax =
 					)
 				: text;
 		const parts = text.split(/(?=[<>])/g);
-		if (parts.length === 1) return escapeCapsIfNeeded(text);
+		if (parts.length === 1) {
+			options.text = escapeCapsIfNeeded(text);
+			return;
+		}
 		let result = text.startsWith('<') ? '' : escapeCapsIfNeeded(parts.shift()!);
 		let depth = 0;
 		let currentPart = '';
@@ -94,5 +109,5 @@ export const resolveSpecialSyntax =
 				result += escapeCapsIfNeeded(part);
 			}
 		}
-		return result + escapeCapsIfNeeded(currentPart);
+		options.text = result + escapeCapsIfNeeded(currentPart);
 	};

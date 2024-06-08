@@ -1,13 +1,22 @@
+/**
+ * A pipeline in Taraskevizer is basically
+ * an array of steps of type {@link steps.TaraskStep}.
+ *
+ * You can use pre-made pipelines from this module or create your own.
+ *
+ * @module
+ */
+
 import {
-	applyHtmlG,
-	applyHtmlVariations,
+	applyVariationsHtml,
+	applyVariationsNonHtml,
+	applyGHtml,
+	applyGNonHtml,
+	highlightDiffStep,
+	highlightDiffStepNonHtml,
 	applyNoFix,
-	applyNonHtmlG,
-	applyNonHtmlVariations,
 	convertAlphabet,
 	convertAlphabetLowerCase,
-	highlightDiffNonHtmlStep,
-	highlightDiffStep,
 	joinSplittedText,
 	prepare,
 	replaceIbyJ,
@@ -19,28 +28,37 @@ import {
 	taraskevize,
 	whitespacesToSpaces,
 	trim,
+	finalize,
+	restoreParentheses,
+	afterJoin,
+	toLowerCase,
 	type TaraskStep,
 } from './steps';
 import { htmlWrappers } from './lib/wrappers';
 
-const restoreParentheses: TaraskStep = (text) => text.replace(/&#40/g, '(');
-const afterJoin: TaraskStep = (text) =>
-	text.replace(/&nbsp;/g, ' ').replace(/ (\p{P}|\p{S}|\d+|&#40) /gu, '$1');
-const finalize =
-	(newLine: string): TaraskStep =>
-	(text) =>
-		text.replace(/\n/g, newLine).trim();
-
 const resolveSpecialSyntaxWithLAB = resolveSpecialSyntax('<');
-const toLowerCase: TaraskStep = (text) => text.toLowerCase();
+
 const finalizeWithNewLine = finalize('\n');
 
-export const abcOnlyPipeline = [
-	((_, { storage, cfg: { general } }) => {
+/**
+ * Storage for the pipeline {@link abcOnly}.
+ */
+type AbcOnlyStorage = {
+	doEscapeCapitalized: boolean;
+};
+
+/**
+ * Pipeline for changing only the alphabet.
+ *
+ * The property `cfg.general.doEscapeCapitalized` is set to `false` during the pipeline execution.
+ *
+ * To see the full list of steps, check the source code.
+ */
+export const abcOnly = [
+	(({ storage, cfg: { general } }) => {
 		storage.doEscapeCapitalized = general.doEscapeCapitalized;
 		general.doEscapeCapitalized = false;
-		return _;
-	}) satisfies TaraskStep<{ doEscapeCapitalized: boolean }>,
+	}) satisfies TaraskStep<AbcOnlyStorage>,
 	trim,
 	resolveSpecialSyntaxWithLAB,
 	prepare,
@@ -51,10 +69,9 @@ export const abcOnlyPipeline = [
 	restoreParentheses,
 	afterJoin,
 	finalizeWithNewLine,
-	((_, { storage, cfg: { general } }) => {
+	(({ storage, cfg: { general } }) => {
 		general.doEscapeCapitalized = storage.doEscapeCapitalized;
-		return _;
-	}) satisfies TaraskStep<{ doEscapeCapitalized: boolean }>,
+	}) satisfies TaraskStep<AbcOnlyStorage>,
 ] satisfies TaraskStep<any>[];
 
 const createPipeline = (
@@ -87,18 +104,28 @@ const createPipeline = (
 		finalize,
 	] satisfies TaraskStep<any>[];
 
-export const plainTextPipeline = createPipeline(
+/**
+ * Pipeline for taraskevizing into plain text.
+ *
+ * To see the full list of steps, check the source code.
+ */
+export const plainText = createPipeline(
 	resolveSpecialSyntaxWithLAB,
-	applyNonHtmlG,
-	applyNonHtmlVariations,
+	applyGNonHtml,
+	applyVariationsNonHtml,
 	finalizeWithNewLine,
-	highlightDiffNonHtmlStep
+	highlightDiffStepNonHtml
 );
 
-export const htmlPipeline = createPipeline(
+/**
+ * Pipeline for taraskevizing into HTML.
+ *
+ * To see the full list of steps, check the source code.
+ */
+export const html = createPipeline(
 	resolveSpecialSyntax('&lt;'),
-	applyHtmlG,
-	applyHtmlVariations,
+	applyGHtml,
+	applyVariationsHtml,
 	finalize('<br>'),
 	highlightDiffStep(htmlWrappers.fix)
 );

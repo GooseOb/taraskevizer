@@ -1,20 +1,18 @@
 import { alphabets } from './dict';
-import type { Alphabet } from './dict';
 import type {
-	DeepPartialReadonly,
+	PartialReadonly,
 	HtmlOptions,
 	NonHtmlOptions,
-	OptionJ,
 	TaraskOptions,
-	Variation,
 } from './types';
+import { REPLACE_J, VARIATION } from './constants';
 
 export class TaraskConfig {
 	constructor(
-		options?: DeepPartialReadonly<{
-			general: TaraskOptions;
-			html: HtmlOptions;
-			nonHtml: NonHtmlOptions;
+		options?: PartialReadonly<{
+			general: PartialReadonly<TaraskOptions>;
+			html: PartialReadonly<HtmlOptions>;
+			nonHtml: PartialReadonly<NonHtmlOptions>;
 		}>
 	) {
 		if (!options) return;
@@ -29,29 +27,23 @@ export class TaraskConfig {
 				}
 		}
 	}
+
+	/** @see {@link TaraskOptions} */
 	public general = {
-		abc: alphabets.cyrillic as Alphabet,
-		j: REPLACE_J.NEVER as OptionJ,
+		abc: alphabets.cyrillic,
+		j: REPLACE_J.NEVER,
 		doEscapeCapitalized: true,
-	};
+	} as TaraskOptions;
+
+	/** @see {@link HtmlOptions} */
 	public html = {
 		g: false,
-	};
+	} as HtmlOptions;
+
+	/** @see {@link NonHtmlOptions} */
 	public nonHtml = {
 		h: false,
 		ansiColors: false,
-		variations: VARIATION.ALL as Variation,
-	};
+		variations: VARIATION.ALL,
+	} as NonHtmlOptions;
 }
-
-export const REPLACE_J = {
-	NEVER: 0,
-	RANDOM: 1,
-	ALWAYS: 2,
-} as const satisfies Record<string, OptionJ>;
-
-export const VARIATION = {
-	NO: 0,
-	FIRST: 1,
-	ALL: 2,
-} as const satisfies Record<string, Variation>;

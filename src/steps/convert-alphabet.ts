@@ -1,20 +1,11 @@
 import { replaceWithDict } from '../lib';
 import type { TaraskStep } from './types';
 
-export const convertAlphabet: TaraskStep = (
-	text,
-	{
-		cfg: {
-			general: { abc },
-		},
-	}
-) => replaceWithDict(replaceWithDict(text, abc.lower), abc.upper);
+export const convertAlphabet: TaraskStep = (options) => {
+	const { lower, upper } = options.cfg.general.abc;
+	options.text = replaceWithDict(replaceWithDict(options.text, lower), upper);
+};
 
-export const convertAlphabetLowerCase: TaraskStep = (
-	text,
-	{
-		cfg: {
-			general: { abc },
-		},
-	}
-) => replaceWithDict(text, abc.lower);
+export const convertAlphabetLowerCase: TaraskStep = (options) => {
+	options.text = replaceWithDict(options.text, options.cfg.general.abc.lower);
+};

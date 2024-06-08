@@ -1,6 +1,6 @@
 {
 	"name": "taraskevizer",
-	"version": "7.1.2",
+	"version": "8.0.0",
 	"author": "GooseOb",
 	"repository": {
 		"type": "git",
@@ -16,6 +16,7 @@
 		"husky": "^9.0.11",
 		"prettier": "^3.2.5",
 		"tsup": "^8.0.2",
+		"typedoc": "^0.25.13",
 		"typescript": "^5.4.5"
 	},
 	"bin": {
@@ -48,7 +49,8 @@
 		"test": "esrun --send-code-mode=temporaryFile test",
 		"test-cli": "bun run build && esrun --send-code-mode=temporaryFile test",
 		"prepare": "husky",
-		"typecheck": "tsc --project src/tsconfig.json"
+		"typecheck": "tsc --project src/tsconfig.json",
+		"docs": "typedoc --out docs src/index.ts --skipErrorChecking"
 	},
 	"sideEffects": false,
 	"type": "module",

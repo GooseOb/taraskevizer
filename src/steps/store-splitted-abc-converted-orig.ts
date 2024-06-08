@@ -1,10 +1,16 @@
-import { convertAlphabet } from './convert-alphabet';
+import { replaceWithDict } from '../lib';
 import type { TaraskStep, SplittedTextStorage } from './types';
 
-export const storeSplittedAbcConvertedOrig: TaraskStep<SplittedTextStorage> = (
+export const storeSplittedAbcConvertedOrig: TaraskStep<SplittedTextStorage> = ({
+	cfg: {
+		general: {
+			abc: { lower, upper },
+		},
+	},
 	text,
-	options
-) => {
-	options.storage.orig = convertAlphabet(text, options).split(' ');
-	return text;
+	storage,
+}) => {
+	storage.origArr = replaceWithDict(replaceWithDict(text, lower), upper).split(
+		' '
+	);
 };

@@ -5,3 +5,4 @@ export * from './replace-with-dict';
 export * from './restore-case';
 export * from './wrappers';
 export { dictFrom } from './../dict/lib';
+export type * from './types';

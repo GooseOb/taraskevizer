@@ -5,9 +5,7 @@ import {
 	VARIATION,
 	TaraskConfig,
 	tarask,
-	abcOnlyPipeline,
-	htmlPipeline,
-	plainTextPipeline,
+	pipelines,
 } from './index.js';
 import type { NonHtmlOptions, TaraskOptions, HtmlOptions } from './types';
 declare const __CLI_HELP__: string;
@@ -40,8 +38,8 @@ const nonHtml: Partial<NonHtmlOptions> = {
 };
 const html: Partial<HtmlOptions> = { g: true };
 
-type Mode = 'nonHtml' | 'html' | 'alphabetOnly';
-let mode: Mode = 'nonHtml';
+type Mode = keyof typeof pipelines;
+let mode: Mode = 'plainText';
 
 const toHashTable = (
 	dict: readonly (readonly [readonly string[], () => void])[]
@@ -124,7 +122,7 @@ const optionDict = toHashTable([
 	[
 		['--alphabet-only', '-abc'],
 		() => {
-			mode = 'alphabetOnly';
+			mode = 'abcOnly';
 		},
 	],
 ]);
@@ -166,13 +164,7 @@ if (process.argv.length) {
 
 const cfg = new TaraskConfig({ general, html, nonHtml });
 
-const piplineByMode = {
-	nonHtml: plainTextPipeline,
-	html: htmlPipeline,
-	alphabetOnly: abcOnlyPipeline,
-};
-
-if (process.stdout.write(tarask(text, piplineByMode[mode], cfg) + '\n')) {
+if (process.stdout.write(tarask(text, pipelines[mode], cfg) + '\n')) {
 	process.exit(0);
 } else {
 	process.stdout.once('drain', () => {

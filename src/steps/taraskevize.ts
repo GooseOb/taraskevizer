@@ -4,7 +4,8 @@ import type { TaraskStep } from './types';
 
 const wordlistPlusNoSoften = wordlist.concat(noSoften);
 
-export const taraskevize: TaraskStep = (text) => {
+export const taraskevize: TaraskStep = (options) => {
+	let { text } = options;
 	text = replaceWithDict(text, wordlistPlusNoSoften);
 	softening: do {
 		text = replaceWithDict(text, softeners);
@@ -13,5 +14,5 @@ export const taraskevize: TaraskStep = (text) => {
 		break;
 	} while (true);
 
-	return replaceWithDict(text.replace(/\ue0ff/g, ''), afterTarask);
+	options.text = replaceWithDict(text.replace(/\ue0ff/g, ''), afterTarask);
 };

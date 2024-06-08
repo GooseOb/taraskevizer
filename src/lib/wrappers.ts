@@ -1,9 +1,10 @@
 type Wrappers = {
 	[p in 'fix' | 'letterH' | 'variable']?: (content: string) => string;
 };
+
 export const htmlWrappers = {
-	fix: (content) => `<tarF>${content}</tarF>`,
-	letterH: (content) => `<tarH>${content}</tarH>`,
+	fix: (content) => `<tarF>${content}</tarF>` as const,
+	letterH: (content) => `<tarH>${content}</tarH>` as const,
 } satisfies Wrappers;
 
 export const ansiColorWrappers = {

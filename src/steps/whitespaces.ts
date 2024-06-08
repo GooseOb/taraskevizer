@@ -1,22 +1,33 @@
 import type { TaraskStep } from './types';
 
-type WhiteSpaceStorage = { spaces: string[] };
+/**
+ * Created in {@link whitespacesToSpaces}.
+ *
+ * Emptied in {@link restoreWhitespaces}.
+ */
+export type WhiteSpaceStorage = { spaces: string[] };
 
-export const whitespacesToSpaces: TaraskStep<WhiteSpaceStorage> = (
-	text,
-	{ storage }
-) => {
+/**
+ * Captures all whitespaces and replaces them with a single space.
+ *
+ * Creates storage: {@link WhiteSpaceStorage}.
+ */
+export const whitespacesToSpaces: TaraskStep<WhiteSpaceStorage> = (options) => {
+	const { storage } = options;
 	storage.spaces = [];
-	return text.replace(/\s+/g, (match) => {
+	options.text = options.text.replace(/\s+/g, (match) => {
 		storage.spaces.push(match);
 		return ' ';
 	});
 };
 
-export const restoreWhitespaces: TaraskStep<WhiteSpaceStorage> = (
-	text,
-	{ storage }
-) => {
-	storage.spaces.reverse();
-	return text.replace(/ /g, () => storage.spaces.pop()!);
+/**
+ * Brings original whitespaces back to the text.
+ *
+ * Empties {@link WhiteSpaceStorage.spaces}.
+ */
+export const restoreWhitespaces: TaraskStep<WhiteSpaceStorage> = (options) => {
+	const { spaces } = options.storage;
+	spaces.reverse();
+	options.text = options.text.replace(/ /g, () => spaces.pop()!);
 };

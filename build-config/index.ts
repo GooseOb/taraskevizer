@@ -41,6 +41,9 @@ export default defineConfig({
 	entry: ['src/index.ts'],
 	format: ['cjs', 'esm'],
 	dts: true,
+	esbuildOptions: (options) => {
+		options.legalComments = 'inline';
+	},
 	esbuildPlugins: [noDebugFiles],
 	async onSuccess() {
 		if (!isDeploy) generateJSON();

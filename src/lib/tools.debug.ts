@@ -1,4 +1,4 @@
-import type { ExtendedDict } from '../types';
+import type { ExtendedDict } from './types';
 
 export const replaceWithDict = (
 	text: string,

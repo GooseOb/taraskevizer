@@ -106,7 +106,7 @@ const gwords = [
 ' цуґл',
 ].reverse().map(word => [RegExp(word.replace(/ґ/g, 'г'), 'g'), word]) as Dict;
 
-export const wordlist = dictFrom.raw([
+export const wordlist: Dict = dictFrom.raw([
 /* А */
 [/аахен/, 'аахэн'],
 [/абанен(?=[тц])/, 'абанэн'],
@@ -1671,4 +1671,4 @@ export const wordlist = dictFrom.raw([
 [/ яблынь /, ' яблын(ь|яў) '],
 [/ расей /, ' расе(й|яў) '],
 [/\ue0ff/, ''],
-]).concat(gwords);
+]).concat(gwords)

@@ -1,4 +1,4 @@
-import type { ExtendedDict } from '../types';
+import type { ExtendedDict } from './types';
 
 const iaReplacer = ($0: string, $1: string, $2: string) =>
 	$2.match(/[аеёіоуыэюя]/g)?.length === 1 ? $1 + 'я' + $2 : $0;
