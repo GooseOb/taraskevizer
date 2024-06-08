@@ -1,3 +1,5 @@
+[Full API documentation](https://gooseob.github.io/taraskevizer/)
+
 # Install
 
 With npm:
@@ -67,8 +69,6 @@ const latinWithJiCfg = new TaraskConfig({
 tarask('яна і іншыя', abcOnlyPipeline, latinWithJiCfg);
 // "jana j jinšyja"
 ```
-
-# [Full API documentation](https://gooseob.github.io/taraskevizer/)
 
 # HTML tags
 
