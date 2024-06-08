@@ -21,7 +21,7 @@ jobs:
           BUILD_MODE: deployment
       - run: bun run typecheck
       - run: bun run test
-      - name: Archive Production Artifact
+      - name: Upload package artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -40,6 +40,9 @@ jobs:
           version: 7
       - uses: oven-sh/setup-bun@v1
 
+      - run: bun i --frozen-lockfile
+        env:
+          HUSKY: 0
       - run: bun run docs
       - name: Upload docs artifact
         uses: actions/upload-pages-artifact@v3
@@ -61,7 +64,7 @@ jobs:
           version: 7
       - uses: actions/setup-node@v3
 
-      - name: Download Artifact
+      - name: Download package artifact
         uses: actions/download-artifact@v4
         with:
           name: dist
