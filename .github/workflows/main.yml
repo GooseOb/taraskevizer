@@ -5,7 +5,7 @@ on:
       - 'main'
 
 jobs:
-  build-and-publish:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -23,8 +23,8 @@ jobs:
       - run: bun run test
       - run: bun run docs
 
-  trigger-app-build:
-    needs: build-and-publish
+  publish:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,19 +38,16 @@ jobs:
           curl -XPOST -u "${{secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/GooseOb/taraskevizatar/actions/workflows/build.yml/dispatches --data '{"ref": "main"}'
 
   deploy-docs:
-    needs: build-and-publish
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       pages: write
       id-token: write
     environment:
-      name: github-pages
+      name: docs
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            docs
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
