@@ -10,7 +10,6 @@
 	"module": "dist/index.js",
 	"devDependencies": {
 		"@digitak/esrun": "^3.2.26",
-		"@types/diff": "^5.2.0",
 		"@types/node": "^20.12.7",
 		"bun-types": "^1.1.4",
 		"husky": "^9.0.11",
