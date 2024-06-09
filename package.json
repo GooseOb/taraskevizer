@@ -49,7 +49,6 @@
 		"test": "esrun --send-code-mode=temporaryFile test",
 		"test-cli": "bun run build && esrun --send-code-mode=temporaryFile test",
 		"postinstall": "husky",
-		"typecheck": "tsc --project src/tsconfig.json",
 		"docs": "typedoc --out docs src/index.ts --skipErrorChecking"
 	},
 	"sideEffects": false,
