@@ -4,5 +4,6 @@ export * from './replace-g';
 export * from './replace-with-dict';
 export * from './restore-case';
 export * from './wrappers';
+export * from './mutating-step';
 export { dictFrom } from './../dict/lib';
 export type * from './types';

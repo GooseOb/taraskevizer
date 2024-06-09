@@ -1,5 +1,6 @@
-import { TaraskStep, SplittedTextStorage } from './types';
+import { mutatingStep } from '../lib';
+import { SplittedTextStorage } from './types';
 
-export const joinSplittedText: TaraskStep<SplittedTextStorage> = (options) => {
-	options.text = options.storage.textArr.join(' ');
-};
+export const joinSplittedText = mutatingStep<SplittedTextStorage>(
+	({ storage: { textArr } }) => textArr.join(' ')
+);

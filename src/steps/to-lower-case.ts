@@ -1,5 +1,3 @@
-import { TaraskStep } from './types';
+import { mutatingStep } from '../lib';
 
-export const toLowerCase: TaraskStep = (options) => {
-	options.text = options.text.toLowerCase();
-};
+export const toLowerCase = mutatingStep(({ text }) => text.toLowerCase());

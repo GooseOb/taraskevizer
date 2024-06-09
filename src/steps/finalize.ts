@@ -1,3 +1,4 @@
+import { mutatingStep } from '../lib';
 import type { TaraskStep } from './types';
 
 /**
@@ -12,13 +13,12 @@ import type { TaraskStep } from './types';
  *
  * Removes spaces around punctuation marks and digits.
  */
-export const finalize =
-	(newLine: string): TaraskStep =>
-	(options) => {
-		options.text = options.text
+export const finalize = (newLine: string): TaraskStep =>
+	mutatingStep(({ text }) =>
+		text
 			.replace(/&#40/g, '(')
 			.replace(/&nbsp;/g, ' ')
 			.replace(/ (\p{P}|\p{S}|\d+) /gu, '$1')
 			.replace(/\n/g, newLine)
-			.trim();
-	};
+			.trim()
+	);

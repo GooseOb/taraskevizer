@@ -1,5 +1,3 @@
-import { TaraskStep } from './types';
+import { mutatingStep } from '../lib';
 
-export const trim: TaraskStep = (options) => {
-	options.text = ` ${options.text.trim()} `;
-};
+export const trim = mutatingStep(({ text }) => ` ${text.trim()} `);

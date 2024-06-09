@@ -1,12 +1,9 @@
 import { noSoften, softeners, wordlist } from '../dict';
-import { afterTarask, replaceWithDict } from '../lib';
-import type { TaraskStep } from './types';
+import { afterTarask, mutatingStep, replaceWithDict } from '../lib';
 
 const wordlistPlusNoSoften = wordlist.concat(noSoften);
 
-export const taraskevize: TaraskStep = (options) => {
-	let { text } = options;
-	// console.log(text);
+export const taraskevize = mutatingStep(({ text }) => {
 	text = replaceWithDict(text, wordlistPlusNoSoften);
 	softening: do {
 		text = replaceWithDict(text, softeners);
@@ -15,8 +12,8 @@ export const taraskevize: TaraskStep = (options) => {
 		break;
 	} while (true);
 
-	options.text = replaceWithDict(
+	return replaceWithDict(
 		text.replace(/\ue0ff/g, '').replace(/не пра/g, 'не&nbsp;пра'),
 		afterTarask
 	).replace(/не&nbsp;пра/g, 'не пра');
-};
+});

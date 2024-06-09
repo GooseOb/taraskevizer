@@ -1,4 +1,4 @@
-import { ansiColorWrappers } from '../lib';
+import { ansiColorWrappers, mutatingStep } from '../lib';
 import { VARIATION } from '../constants';
 import type { TaraskStep } from './types';
 
@@ -12,13 +12,12 @@ import type { TaraskStep } from './types';
  * @see {@link applyVariationsHtml}
  * @see {@link applyVariationsNonHtml}
  */
-export const applyVariableParts =
-	(callback: (arr: string[]) => string): TaraskStep =>
-	(options) => {
-		options.text = options.text.replace(/\([^)]*?\)/g, ($0) =>
-			callback($0.slice(1, -1).split('|'))
-		);
-	};
+export const applyVariableParts = (
+	callback: (arr: string[]) => string
+): TaraskStep =>
+	mutatingStep(({ text }) =>
+		text.replace(/\([^)]*?\)/g, ($0) => callback($0.slice(1, -1).split('|')))
+	);
 
 /**
  * Uses {@link applyVariableParts}
