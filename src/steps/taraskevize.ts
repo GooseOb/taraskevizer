@@ -6,6 +6,7 @@ const wordlistPlusNoSoften = wordlist.concat(noSoften);
 
 export const taraskevize: TaraskStep = (options) => {
 	let { text } = options;
+	// console.log(text);
 	text = replaceWithDict(text, wordlistPlusNoSoften);
 	softening: do {
 		text = replaceWithDict(text, softeners);
@@ -14,5 +15,8 @@ export const taraskevize: TaraskStep = (options) => {
 		break;
 	} while (true);
 
-	options.text = replaceWithDict(text.replace(/\ue0ff/g, ''), afterTarask);
+	options.text = replaceWithDict(
+		text.replace(/\ue0ff/g, '').replace(/не пра/g, 'не&nbsp;пра'),
+		afterTarask
+	).replace(/не&nbsp;пра/g, 'не пра');
 };

@@ -25,5 +25,6 @@ export * from './store-splitted-text';
 export * from './taraskevize';
 export * from './whitespaces';
 export * from './trim';
-export * from './other';
+export * from './finalize';
+export * from './to-lower-case';
 export type * from './types';

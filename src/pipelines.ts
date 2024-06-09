@@ -29,8 +29,6 @@ import {
 	whitespacesToSpaces,
 	trim,
 	finalize,
-	restoreParentheses,
-	afterJoin,
 	toLowerCase,
 	type TaraskStep,
 } from './steps';
@@ -66,8 +64,6 @@ export const abcOnly = [
 	convertAlphabet,
 	restoreWhitespaces,
 	applyNoFix,
-	restoreParentheses,
-	afterJoin,
 	finalizeWithNewLine,
 	(({ storage, cfg: { general } }) => {
 		general.doEscapeCapitalized = storage.doEscapeCapitalized;
@@ -96,8 +92,6 @@ const createPipeline = (
 		highlightDiffStep,
 		joinSplittedText,
 		restoreWhitespaces,
-		restoreParentheses,
-		afterJoin,
 		applyG,
 		applyVariations,
 		applyNoFix,
