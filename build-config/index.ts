@@ -41,6 +41,7 @@ const define = {
 export default defineConfig({
 	...common,
 	clean: true,
+	treeshake: true,
 	entry: ['src/index.ts'],
 	format: ['cjs', 'esm'],
 	dts: true,
