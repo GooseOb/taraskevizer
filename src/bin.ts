@@ -36,8 +36,7 @@ const cfg = new TaraskConfig({
 	nonHtml: { variations: VARIATION.ALL, ansiColors: true },
 });
 
-type Mode = keyof typeof pipelines;
-let mode: Mode = 'plainText';
+let mode: keyof typeof pipelines = 'plainText';
 
 const toHashTable = (
 	dict: readonly (readonly [readonly string[], () => void])[]
