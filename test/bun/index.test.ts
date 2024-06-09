@@ -1,12 +1,5 @@
 import { getLabel, testOnCases, testOnCasesAsync } from './lib';
-import {
-	tarask,
-	plainTextPipeline,
-	dicts,
-	TaraskConfig,
-	htmlPipeline,
-	abcOnlyPipeline,
-} from '../../src';
+import { tarask, dicts, TaraskConfig, pipelines } from '../../src';
 import * as cases from '../cases';
 import * as path from 'path';
 
@@ -14,25 +7,25 @@ const objectLabel = getLabel('j');
 
 testOnCases(
 	'\x1b[31mTaraskevization',
-	(text) => tarask(text, plainTextPipeline),
+	(text) => tarask(text, pipelines.plainText),
 	cases.taraskevization.change
 );
 
 testOnCases(
 	'\x1b[31mTaraskevization:no-change',
-	(text) => tarask(text, plainTextPipeline),
+	(text) => tarask(text, pipelines.plainText),
 	cases.taraskevization.noChange
 );
 
 testOnCases(
 	'\x1b[31mTaraskevization:g-words',
-	(text) => tarask(text, plainTextPipeline),
+	(text) => tarask(text, pipelines.plainText),
 	cases.taraskevization.gwords
 );
 
 testOnCases(
 	'\x1b[33mHtmlOptions',
-	([text, html]) => tarask(text, htmlPipeline, new TaraskConfig({ html })),
+	([text, html]) => tarask(text, pipelines.html, new TaraskConfig({ html })),
 	cases.htmlOptions,
 	objectLabel
 );
@@ -40,7 +33,7 @@ testOnCases(
 testOnCases(
 	'\x1b[34mNonHtmlOptions',
 	([text, nonHtml]) =>
-		tarask(text, plainTextPipeline, new TaraskConfig({ nonHtml })),
+		tarask(text, pipelines.plainText, new TaraskConfig({ nonHtml })),
 	cases.nonHtmlOptions,
 	objectLabel
 );
@@ -48,21 +41,25 @@ testOnCases(
 testOnCases(
 	'\x1b[36mi -> j',
 	([text, j, abc]) =>
-		tarask(text, plainTextPipeline, new TaraskConfig({ general: { j, abc } })),
+		tarask(
+			text,
+			pipelines.plainText,
+			new TaraskConfig({ general: { j, abc } })
+		),
 	cases.itoj,
 	objectLabel
 );
 
 testOnCases(
 	'\x1b[31mMultiline',
-	(text) => tarask(text, plainTextPipeline),
+	(text) => tarask(text, pipelines.plainText),
 	cases.multiline.nonHtml,
 	objectLabel
 );
 
 testOnCases(
 	'\x1b[31mMultiline:html',
-	(text) => tarask(text, htmlPipeline),
+	(text) => tarask(text, pipelines.html),
 	cases.multiline.html,
 	objectLabel
 );
@@ -96,7 +93,7 @@ const latinCfg = new TaraskConfig({
 });
 testOnCases(
 	'\x1b[33mLatin',
-	(text) => tarask(text, plainTextPipeline, latinCfg),
+	(text) => tarask(text, pipelines.plainText, latinCfg),
 	cases.latin.general
 );
 
@@ -105,7 +102,7 @@ const latinJiCfg = new TaraskConfig({
 });
 testOnCases(
 	'\x1b[33mLatin:ji',
-	(text) => tarask(text, plainTextPipeline, latinJiCfg),
+	(text) => tarask(text, pipelines.plainText, latinJiCfg),
 	cases.latin.ji
 );
 
@@ -115,25 +112,25 @@ const arabicCfg = new TaraskConfig({
 
 testOnCases(
 	'\x1b[33mArabic',
-	(text) => tarask(text, plainTextPipeline, arabicCfg),
+	(text) => tarask(text, pipelines.plainText, arabicCfg),
 	cases.arabic
 );
 
 testOnCases(
 	'\x1b[31mSpecialConstructions',
-	(text) => tarask(text, plainTextPipeline),
+	(text) => tarask(text, pipelines.plainText),
 	cases.specialSyntax.general
 );
 
 testOnCases(
 	'\x1b[31mSpecialConstructions',
-	(text) => tarask(text, plainTextPipeline, latinCfg),
+	(text) => tarask(text, pipelines.plainText, latinCfg),
 	cases.specialSyntax.latin
 );
 
 testOnCases(
 	'\x1b[31mCaseRestoring:escape-caps',
-	(text) => tarask(text, plainTextPipeline),
+	(text) => tarask(text, pipelines.plainText),
 	cases.caseRestoring.escCap
 );
 
@@ -143,25 +140,25 @@ const noEscCapCfg = new TaraskConfig({
 
 testOnCases(
 	'\x1b[31mCaseRestoring:no-escape-caps',
-	(text) => tarask(text, plainTextPipeline, noEscCapCfg),
+	(text) => tarask(text, pipelines.plainText, noEscCapCfg),
 	cases.caseRestoring.noEscCap
 );
 
 testOnCases(
 	'\x1b[31mAlphabetConversion:latin',
-	(text) => tarask(text, abcOnlyPipeline, latinCfg),
+	(text) => tarask(text, pipelines.abcOnly, latinCfg),
 	cases.alphabetConversion.latin
 );
 
 testOnCases(
 	'\x1b[31mAlphabetConversion:latin-ji',
-	(text) => tarask(text, abcOnlyPipeline, latinJiCfg),
+	(text) => tarask(text, pipelines.abcOnly, latinJiCfg),
 	cases.alphabetConversion.latinJi
 );
 
 testOnCases(
 	'\x1b[31mAlphabetConversion:arabic',
-	(text) => tarask(text, abcOnlyPipeline, arabicCfg),
+	(text) => tarask(text, pipelines.abcOnly, arabicCfg),
 	cases.alphabetConversion.arabic
 );
 

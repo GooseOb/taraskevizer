@@ -33,6 +33,7 @@ const watcher = watch(path.resolve(import.meta.dir, '..'), {
 
 for await (const event of watcher)
 	if (
+		event.filename &&
 		cooldown.value &&
 		event.filename.slice(-1) !== '~' &&
 		pattern.test(event.filename)

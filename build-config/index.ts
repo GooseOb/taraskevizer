@@ -26,7 +26,10 @@ const fixCharsIn = (fileName: string) => {
 };
 
 const define = {
-	__VERSION__: `"${JSON.parse(await readFile(path.resolve(root, 'package.json'), 'utf8')).version}"`,
+	__VERSION__: `"${
+		JSON.parse(await readFile(path.resolve(root, 'package.json'), 'utf8'))
+			.version
+	}"`,
 	__CLI_HELP__: JSON.stringify(
 		(await readFile(path.resolve(root, 'cli-help.txt'), 'utf8'))
 			.replace(/<fix>/g, '\x1b[32m')
