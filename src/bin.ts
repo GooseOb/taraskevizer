@@ -129,18 +129,19 @@ const optionDict = toHashTable([
 
 let currOption: string | undefined;
 
-while ((currOption = process.argv.shift())) {
+process.argv.reverse();
+while ((currOption = process.argv.pop())) {
 	if (currOption in optionDict) {
 		optionDict[currOption]();
 	} else {
-		process.argv.unshift(currOption);
+		process.argv.push(currOption);
 		break;
 	}
 }
 
 let text = '';
 if (process.argv.length) {
-	text = process.argv.join(' ');
+	text = process.argv.reverse().join(' ');
 } else {
 	const chunks = [];
 	let length = 0;

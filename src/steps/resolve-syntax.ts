@@ -21,8 +21,10 @@ export type SpecialSyntaxStorage = {
  */
 export const applyNoFix: TaraskStep<SpecialSyntaxStorage> = (options) => {
 	const { noFixArr } = options.storage;
-	if (noFixArr.length)
-		options.text = options.text.replace(NOFIX_REGEX, () => noFixArr.shift()!);
+	if (noFixArr.length) {
+		noFixArr.reverse();
+		options.text = options.text.replace(NOFIX_REGEX, () => noFixArr.pop()!);
+	}
 };
 
 /**
