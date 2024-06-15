@@ -4,6 +4,14 @@
  *
  * You can use pre-made pipelines from this module or create your own.
  *
+ * If you want to create a pipeline based on a pre-made one
+ * and do it more safely, it's recommended to use
+ * `.map` if you need replacing only or
+ * `.flatMap` if you also need to add or remove steps.
+ *
+ * This way you will depend less on the
+ * internal structure of the pre-made pipeline.
+ *
  * @module
  */
 
