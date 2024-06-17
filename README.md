@@ -74,7 +74,7 @@ tarask('яна і іншыя', abcOnlyPipeline, latinWithJiCfg);
 
 ## tarF
 
-Difference between an input and an output word.
+Difference between the input and the output word.
 
 ```html
 <tarF>this_part_of_word_is_fixed</tarF>
@@ -85,8 +85,8 @@ Difference between an input and an output word.
 ## tarL
 
 A part of a word wrapped in this tag is variable,
-variations are mentioned in a `data-l` attribute
-and are separated by commas
+variations are mentioned in a `data-l` attribute,
+separated with commas.
 
 ```html
 <tarL data-l="variation2,variation3">variation1</tarL>
@@ -96,7 +96,8 @@ and are separated by commas
 
 ## tarH
 
-Can be replaced by `ґ`(`g`) letter. appears only if alphabet is cyrillic
+May be toggled between `г`(`h`) and `ґ`(`g`).
+Appears only if alphabet is cyrillic.
 
 ```html
 <tarH>г</tarH>
