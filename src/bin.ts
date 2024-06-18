@@ -122,6 +122,12 @@ const optionDict = toHashTable([
 			mode = 'abcOnly';
 		},
 	],
+	[
+		['--phonetic', '-ph'],
+		() => {
+			mode = 'phonetic';
+		},
+	],
 ]);
 
 let currOption: string | undefined;

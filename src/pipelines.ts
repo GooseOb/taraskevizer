@@ -132,6 +132,7 @@ export const html = createPipeline(
 
 /**
  * Pipeline for phonetizing.
+ * @alpha
  */
 export const phonetic = plainText.flatMap((item) =>
 	item === taraskevize ? [phonetize, iotacizeJi] : item
