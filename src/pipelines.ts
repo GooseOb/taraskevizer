@@ -34,11 +34,13 @@ import {
 	storeSplittedAbcConvertedOrig,
 	storeSplittedText,
 	taraskevize,
+	phonetize,
 	whitespacesToSpaces,
 	trim,
 	finalize,
 	toLowerCase,
 	type TaraskStep,
+	iotacizeJi,
 } from './steps/index';
 import { htmlWrappers } from './lib/wrappers';
 
@@ -131,13 +133,6 @@ export const html = createPipeline(
 /**
  * Pipeline for phonetizing.
  */
-export const phonetic = [
-	trim,
-	resolveSpecialSyntaxWithLAB,
-	prepare,
-	whitespacesToSpaces,
-	convertAlphabet,
-	restoreWhitespaces,
-	applyNoFix,
-	finalizeWithNewLine,
-] satisfies TaraskStep<any>[];
+export const phonetic = plainText.flatMap((item) =>
+	item === taraskevize ? [phonetize, iotacizeJi] : item
+);

@@ -1,11 +1,10 @@
 import { startTestProcess } from './lib';
-import { tarask, pipelines, TaraskConfig, dicts } from '../src';
+import { tarask, pipelines, TaraskConfig, dicts, REPLACE_J } from '../src';
 import * as cases from './cases';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { readFile } from 'node:fs/promises';
-import { pipeline } from 'stream';
 
 const { html, abcOnly, plainText } = pipelines;
 
@@ -136,9 +135,15 @@ test(
 	cases.alphabetConversion.arabic
 );
 
+const phoneticCfg = new TaraskConfig({
+	general: {
+		j: REPLACE_J.ALWAYS,
+	},
+});
+
 test(
 	'Phonetization',
-	(text) => tarask(text, pipelines.phonetic),
+	(text) => tarask(text, pipelines.phonetic, phoneticCfg),
 	cases.phonetization
 );
 
