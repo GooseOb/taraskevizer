@@ -1,4 +1,4 @@
-import { ansiColorWrappers, mutatingStep } from '../lib';
+import { ansiColorWrappers, mutatingStep } from '../lib/index';
 import { VARIATION } from '../constants';
 import type { TaraskStep } from './types';
 

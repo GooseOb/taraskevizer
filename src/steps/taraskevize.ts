@@ -1,5 +1,5 @@
-import { noSoften, softeners, wordlist } from '../dict';
-import { afterTarask, mutatingStep, replaceWithDict } from '../lib';
+import { noSoften, softeners, wordlist } from '../dict/index';
+import { afterTarask, mutatingStep, replaceWithDict } from '../lib/index';
 
 const wordlistPlusNoSoften = wordlist.concat(noSoften);
 

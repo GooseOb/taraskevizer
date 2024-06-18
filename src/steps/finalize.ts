@@ -1,4 +1,4 @@
-import { mutatingStep } from '../lib';
+import { mutatingStep } from '../lib/index';
 import type { TaraskStep } from './types';
 
 /**

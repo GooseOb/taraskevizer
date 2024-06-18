@@ -1,4 +1,4 @@
-import { alphabets } from './dict';
+import { alphabets } from './dict/index';
 import type {
 	PartialReadonly,
 	HtmlOptions,

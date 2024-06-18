@@ -10,7 +10,12 @@ Promise.all(
 		.map((file) => {
 			const fileName = path.resolve(file.parentPath, file.name);
 			return readFile(fileName, 'utf8').then((content) =>
-				writeFile(fileName, content.replace(/\/\*.*?\*\//gs, ''))
+				writeFile(
+					fileName,
+					content
+						.replace(/\/\*.*?\*\//gs, '')
+						.replace(/((?:im|ex)port.+from.+)(?=["'];)/g, '$1.js')
+				)
 			);
 		})
 );

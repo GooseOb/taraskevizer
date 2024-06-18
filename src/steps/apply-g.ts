@@ -1,6 +1,5 @@
-import { replaceG, ansiColorWrappers, htmlWrappers } from '../lib';
-import { alphabets } from '../dict';
-import { gobj } from '../dict';
+import { replaceG, ansiColorWrappers, htmlWrappers } from '../lib/index';
+import { alphabets, gobj } from '../dict/index';
 import type { TaraskStep } from './types';
 
 export const applyGHtml: TaraskStep = (options) => {

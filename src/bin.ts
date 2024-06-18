@@ -6,7 +6,7 @@ import {
 	TaraskConfig,
 	tarask,
 	pipelines,
-} from './index.js';
+} from './index';
 declare const __CLI_HELP__: string;
 declare const __VERSION__: string;
 

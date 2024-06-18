@@ -1,4 +1,4 @@
-import { replaceWithDict } from '../lib';
+import { replaceWithDict } from '../lib/index';
 import type { TaraskStep, SplittedTextStorage } from './types';
 
 export const storeSplittedAbcConvertedOrig: TaraskStep<SplittedTextStorage> = ({

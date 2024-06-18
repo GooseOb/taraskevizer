@@ -39,7 +39,7 @@ import {
 	finalize,
 	toLowerCase,
 	type TaraskStep,
-} from './steps';
+} from './steps/index';
 import { htmlWrappers } from './lib/wrappers';
 
 const resolveSpecialSyntaxWithLAB = resolveSpecialSyntax('<');

@@ -1,5 +1,5 @@
 import { replaceG } from './replace-g';
-import { gobj } from '../dict';
+import { gobj } from '../dict/index';
 
 export const highlightDiff = (
 	text: string[],

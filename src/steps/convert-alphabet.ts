@@ -1,4 +1,4 @@
-import { mutatingStep, replaceWithDict } from '../lib';
+import { mutatingStep, replaceWithDict } from '../lib/index';
 
 export const convertAlphabet = mutatingStep(
 	({

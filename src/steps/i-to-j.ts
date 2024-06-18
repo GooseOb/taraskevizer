@@ -1,4 +1,4 @@
-import { alphabets } from '../dict';
+import { alphabets } from '../dict/index';
 import { REPLACE_J } from '../constants';
 import type { TaraskStep } from './types';
 

@@ -1,4 +1,4 @@
-import { mutatingStep } from '../lib';
+import { mutatingStep } from '../lib/index';
 import { SplittedTextStorage } from './types';
 
 export const joinSplittedText = mutatingStep<SplittedTextStorage>(
