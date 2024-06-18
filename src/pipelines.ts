@@ -108,8 +108,6 @@ const createPipeline = (
 
 /**
  * Pipeline for taraskevizing into plain text.
- *
- * To see the full list of steps, check the source code.
  */
 export const plainText = createPipeline(
 	resolveSpecialSyntaxWithLAB,
@@ -121,8 +119,6 @@ export const plainText = createPipeline(
 
 /**
  * Pipeline for taraskevizing into HTML.
- *
- * To see the full list of steps, check the source code.
  */
 export const html = createPipeline(
 	resolveSpecialSyntax('&lt;'),
@@ -131,3 +127,17 @@ export const html = createPipeline(
 	finalize('<br>'),
 	highlightDiffStep(htmlWrappers.fix)
 );
+
+/**
+ * Pipeline for phonetizing.
+ */
+export const phonetic = [
+	trim,
+	resolveSpecialSyntaxWithLAB,
+	prepare,
+	whitespacesToSpaces,
+	convertAlphabet,
+	restoreWhitespaces,
+	applyNoFix,
+	finalizeWithNewLine,
+] satisfies TaraskStep<any>[];

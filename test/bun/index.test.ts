@@ -162,4 +162,10 @@ testOnCases(
 	cases.alphabetConversion.arabic
 );
 
+testOnCases(
+	'\x1b[31mPhonetization',
+	(text) => tarask(text, pipelines.phonetic),
+	cases.phonetization
+);
+
 // add a new case here

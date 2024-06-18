@@ -36,19 +36,21 @@ const addToFile = (filePath, code) =>
 		)
 	);
 
-await writeFile(filePath, "export default [['', '']] as const;\n");
+await Promise.all([
+	writeFile(filePath, "export default [['', '']] as const;\n"),
 
-await appendFile(
-	casesIndexPath,
-	`export { default as ${varName} } from './${fileNameWithoutExt}';\n`
-);
+	appendFile(
+		casesIndexPath,
+		`export { default as ${varName} } from './${fileNameWithoutExt}';\n`
+	),
 
-await addToFile(
-	indexTestPath,
-	`test('${testName}', (text) => taraskevizer.convert(text), cases.${varName});`
-);
+	addToFile(
+		indexTestPath,
+		`test('${testName}', (text) => tarask(text), cases.${varName});`
+	),
 
-await addToFile(
-	bunIndexTestPath,
-	`testOnCases('\\x1b[31m${testName}', (text) => taraskevizer.convert(text), cases.${varName});`
-);
+	addToFile(
+		bunIndexTestPath,
+		`testOnCases('\\x1b[31m${testName}', (text) => tarask(text), cases.${varName});`
+	),
+]);

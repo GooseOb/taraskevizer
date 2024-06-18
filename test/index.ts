@@ -5,6 +5,7 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { readFile } from 'node:fs/promises';
+import { pipeline } from 'stream';
 
 const { html, abcOnly, plainText } = pipelines;
 
@@ -133,6 +134,12 @@ test(
 	'AlphabetConversion:arabic',
 	(text) => tarask(text, abcOnly, arabicCfg),
 	cases.alphabetConversion.arabic
+);
+
+test(
+	'Phonetization',
+	(text) => tarask(text, pipelines.phonetic),
+	cases.phonetization
 );
 
 // add a new case here

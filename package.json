@@ -1,52 +1,51 @@
 {
-  "name": "taraskevizer",
-  "version": "8.0.9",
-  "author": "GooseOb",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/GooseOb/taraskevizer.git"
-  },
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "devDependencies": {
-    "@digitak/esrun": "^3.2.26",
-    "@types/node": "^20.12.7",
-    "bun-types": "^1.1.4",
-    "husky": "^9.0.11",
-    "prettier": "^3.2.5",
-    "tsup": "^8.0.2",
-    "typedoc": "^0.25.13",
-    "typescript": "^5.4.5"
-  },
-  "bin": {
-    "tarask": "dist/bin.js"
-  },
-  "description": "Канвэртацыя акадэмічнага правапісу ў клясычны",
-  "files": [
-    "dist",
-    "README.md"
-  ],
-  "homepage": "https://gooseob.github.io/taraskevizatar/",
-  "keywords": [
-    "taraskevizatar",
-    "taraskevica",
-    "тарашкевіца",
-    "тарашкевізатар",
-    "belarusian"
-  ],
-  "license": "MIT",
-  "private": false,
-  "scripts": {
-    "build": "tsc --project src/tsconfig.json && bun ./afterbuild.js",
-    "dev": "esrun --watch=src/*,test/*,bin/* --send-code-mode=temporaryFile test",
-    "dev:bun": "bun ./test/bun-watch.ts",
-    "dev-bun": "bun test --watch",
-    "test": "esrun --send-code-mode=temporaryFile test",
-    "test-cli": "bun run build && esrun --send-code-mode=temporaryFile test",
-    "postinstall": "husky",
-    "docs": "typedoc"
-  },
-  "sideEffects": false,
-  "type": "module",
-  "types": "dist/index.d.ts"
+	"name": "taraskevizer",
+	"version": "8.0.10",
+	"author": "GooseOb",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/GooseOb/taraskevizer.git"
+	},
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"devDependencies": {
+		"@digitak/esrun": "^3.2.26",
+		"@types/node": "^20.12.7",
+		"bun-types": "^1.1.4",
+		"husky": "^9.0.11",
+		"prettier": "^3.2.5",
+		"tsup": "^8.0.2",
+		"typedoc": "^0.25.13",
+		"typescript": "^5.4.5"
+	},
+	"bin": {
+		"tarask": "dist/bin.js"
+	},
+	"description": "Канвэртацыя акадэмічнага правапісу ў клясычны",
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"homepage": "https://gooseob.github.io/taraskevizatar/",
+	"keywords": [
+		"taraskevizatar",
+		"taraskevica",
+		"тарашкевіца",
+		"тарашкевізатар",
+		"belarusian"
+	],
+	"license": "MIT",
+	"private": false,
+	"scripts": {
+		"build": "tsc --project src/tsconfig.json && bun ./afterbuild.js",
+		"dev": "esrun --watch=src/*,test/*,bin/* --send-code-mode=temporaryFile test",
+		"dev:bun": "bun ./test/bun-watch.ts",
+		"dev-bun": "bun test --watch",
+		"test": "esrun --send-code-mode=temporaryFile test",
+		"test-cli": "bun run build && esrun --send-code-mode=temporaryFile test",
+		"docs": "typedoc"
+	},
+	"sideEffects": false,
+	"type": "module",
+	"types": "dist/index.d.ts"
 }
