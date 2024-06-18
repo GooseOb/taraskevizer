@@ -1,6 +1,6 @@
 {
 	"name": "taraskevizer",
-	"version": "8.0.8",
+	"version": "8.0.9",
 	"author": "GooseOb",
 	"repository": {
 		"type": "git",
@@ -23,10 +23,7 @@
 	},
 	"description": "Канвэртацыя акадэмічнага правапісу ў клясычны",
 	"files": [
-		"dist/index.js",
-		"dist/index.cjs",
-		"dist/index.d.ts",
-		"dist/bin.js",
+		"dist",
 		"README.md"
 	],
 	"homepage": "https://gooseob.github.io/taraskevizatar/",
@@ -40,8 +37,7 @@
 	"license": "MIT",
 	"private": false,
 	"scripts": {
-		"build": "tsup --config build-config/index.ts",
-		"build:bun_EXPERIMENTAL": "bun ./build-config/bun.ts",
+		"build": "tsc --project src/tsconfig.json && bun ./afterbuild.js",
 		"dev": "esrun --watch=src/*,test/*,bin/* --send-code-mode=temporaryFile test",
 		"dev:bun": "bun ./test/bun-watch.ts",
 		"dev-bun": "bun test --watch",
