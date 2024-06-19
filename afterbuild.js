@@ -14,7 +14,7 @@ Promise.all(
 					fileName,
 					content
 						.replace(/\/\*.*?\*\//gs, '')
-						.replace(/((?:im|ex)port.+from.+)(?=["'];)/g, '$1.js')
+						.replace(/((?:im|ex)port.+from.+)(?<!\.js)(?=["'];)/g, '$1.js')
 				)
 			);
 		})
