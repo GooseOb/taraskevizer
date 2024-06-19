@@ -1,6 +1,5 @@
 import { iwords } from './iwords';
-import { toOneLine } from './lib';
-import type { RawDict } from './types';
+import { dictFrom, toOneLine } from './lib';
 
 const ia = (word: string, words: string): string =>
 	` ${word}(?= \\(?(?:[бвгджзйклмнпстфцчшў]*[оё]|${words.replace(
@@ -8,7 +7,7 @@ const ia = (word: string, words: string): string =>
 		'(?:'
 	)}|i(?:${iwords})))`;
 
-export const iaWords: RawDict = [
+export const iaWords = dictFrom.raw([
 	/* не > ня */
 	[
 		ia(
@@ -107,4 +106,4 @@ export const iaWords: RawDict = [
 		),
 		' бяз',
 	],
-];
+]);

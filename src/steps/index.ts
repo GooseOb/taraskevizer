@@ -24,6 +24,7 @@ export * from './store-splitted-abc-converted-orig';
 export * from './store-splitted-text';
 export * from './taraskevize';
 export * from './phonetize';
+export * from './iotacize-ji';
 export * from './whitespaces';
 export * from './trim';
 export * from './finalize';
