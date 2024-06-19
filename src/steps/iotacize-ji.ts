@@ -1,4 +1,4 @@
-import { iwords } from '../dict';
+import { iwords } from '../dict/index';
 import { dictFrom, mutatingStep, replaceWithDict } from '../lib';
 
 const iDict = dictFrom.raw([
