@@ -25,16 +25,14 @@ bun add taraskevizer
 ```js
 import {
 	tarask,
-	plainTextPipeline,
-	htmlPipeline,
-	abcOnlyPipeline,
+	pipelines,
 	TaraskConfig,
 	alphabets,
 	J,
 	VARIATION,
 } from 'taraskevizer';
 
-tarask('планета', plainTextPipeline);
+tarask('планета', pipelines.plainText);
 // "плянэта"
 
 const cfg = new TaraskConfig({
@@ -48,7 +46,7 @@ const cfg = new TaraskConfig({
 		h: false,
 	},
 });
-tarask('планета і Гродна', plainTextPipeline, cfg);
+tarask('планета і Гродна', pipelines.plainText, cfg);
 // "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
 
 const cfg = new TaraskConfig({
@@ -59,14 +57,14 @@ const cfg = new TaraskConfig({
 		g: false, // ignored, because alphabet is set to latin
 	},
 });
-tarask('энергія планеты', htmlPipeline, cfg);
+tarask('энергія планеты', pipelines.html, cfg);
 // "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
 
 const latinWithJiCfg = new TaraskConfig({
 	general: { abc: alphabets.latinJi },
 });
 
-tarask('яна і іншыя', abcOnlyPipeline, latinWithJiCfg);
+tarask('яна і іншыя', pipelines.abcOnly, latinWithJiCfg);
 // "jana j jinšyja"
 ```
 
