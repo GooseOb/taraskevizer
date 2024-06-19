@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
 		"moduleResolution": "node",
+		"incremental": true,
 		"module": "ESNext",
 		"target": "ESNext",
 		"isolatedModules": true,
