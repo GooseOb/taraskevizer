@@ -2,7 +2,7 @@ import { iwords } from './iwords';
 import { dictFrom, toOneLine } from './lib';
 
 const ia = (word: string, words: string): string =>
-	` ${word}(?= \\(?(?:[бвгджзйклмнпстфцчшў]*[оё]|${words.replace(
+	` ${word}(?= \\(?(?:[бвгджзйклмнпрстфцчшў]*[оё]|${words.replace(
 		/\(/g,
 		'(?:'
 	)}|i(?:${iwords})))`;
@@ -25,6 +25,7 @@ export const iaWords = dictFrom.raw([
 ма(е|ючы|ю(ць|чы)?)
 ме(л|ў|ць)
 мы(ц|л[аі])
+нейк
 пі(са|шу)(цц|чы|ць )?
 ў?пэўн
 ска(ж(а|уць)|за )
@@ -93,6 +94,7 @@ export const iaWords = dictFrom.raw([
 (мен|бол|леп|ш|ей)
 мап\\S{0,4}[ \\)]
 мякк
+нейк
 наш(ую|ых)
 пішучы
 руша
