@@ -41,6 +41,7 @@ import {
 	toLowerCase,
 	type TaraskStep,
 	iotacizeJi,
+	untrim,
 } from './steps/index';
 import { htmlWrappers } from './lib/wrappers';
 
@@ -75,6 +76,7 @@ export const abcOnly = [
 	restoreWhitespaces,
 	applyNoFix,
 	finalizeWithNewLine,
+	untrim,
 	(({ storage, cfg: { general } }) => {
 		general.doEscapeCapitalized = storage.doEscapeCapitalized;
 	}) satisfies TaraskStep<AbcOnlyStorage>,
@@ -106,6 +108,7 @@ const createPipeline = (
 		applyVariations,
 		applyNoFix,
 		finalize,
+		untrim,
 	] satisfies TaraskStep<any>[];
 
 /**

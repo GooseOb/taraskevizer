@@ -48,9 +48,9 @@ export const startTestProcess = ({ long = false } = {}) => {
 						'32'
 					);
 					failed.push(
-						`${name}:\ninput:    ${format(input)}\noutput:   ${format(
+						`${name}:\ninput:    "${format(input)}"\noutput:   "${format(
 							coloredOutput
-						)}\nexpected: ${format(coloredExpected)}`
+						)}"\nexpected: "${format(coloredExpected)}"`
 					);
 					return;
 				} else if (long) {
