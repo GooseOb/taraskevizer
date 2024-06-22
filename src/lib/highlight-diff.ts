@@ -1,13 +1,14 @@
 import { replaceG } from './replace-g';
 import { gobj } from '../dict/index';
 
+const replaceGByOpposite = replaceG(($0) => gobj[$0]);
+
 export const highlightDiff = (
 	text: string[],
 	orig: readonly string[],
 	isCyrillic: boolean,
 	highlight: (content: string) => string
 ): void => {
-	const replaceGByOpposite = replaceG(($0) => gobj[$0]);
 	for (let i = 0; i < text.length; i++) {
 		const word = text[i];
 		const oWord = orig[i];

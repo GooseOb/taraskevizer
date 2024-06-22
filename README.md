@@ -1,4 +1,4 @@
-[Full API documentation](https://gooseob.github.io/taraskevizer/)
+[Go to full API documentation](https://gooseob.github.io/taraskevizer/)
 
 # Install
 

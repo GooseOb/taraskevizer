@@ -6,5 +6,5 @@ export * from './restore-case';
 export * from './wrappers';
 export * from './mutating-step';
 export * from './soften';
-export { dictFrom } from './../dict/lib';
+export { dictFrom, copyDict } from './../dict/lib';
 export type * from './types';

@@ -1,7 +1,22 @@
 import type { Dict, RawDict, WritableDict } from './types';
 
+export const copyDict = (dict: Dict): Dict =>
+	dict.map(([pattern, result]) => [pattern, result]);
+
 /**
- * Collection of functions that help to work with dictionaries.
+ * Collection of MUTATING functions
+ * that help to work with dictionaries.
+ *
+ * Use {@link copyDict} before applying these functions
+ * to avoid mutating the original dictionary.
+ *
+ * @example
+ * const rawDict = [
+ *   ["pattern", "result"],
+ * ];
+ *
+ * const dict = dictFrom.raw(copyDict(rawDict));
+ * // [ [ /pattern/g, "result" ] ]
  */
 export const dictFrom = {
 	raw: (dict: RawDict, additionalFlags = 'g'): Dict => {
