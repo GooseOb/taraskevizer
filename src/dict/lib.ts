@@ -1,7 +1,7 @@
 import type { Dict, RawDict, WritableDict } from './types';
 
-export const copyDict = (dict: Dict): Dict =>
-	dict.map(([pattern, result]) => [pattern, result]);
+export const copyDict = <T extends [any, any][]>(dict: T): T =>
+	dict.map(([pattern, result]) => [pattern, result]) as T;
 
 /**
  * Collection of MUTATING functions
