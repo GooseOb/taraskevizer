@@ -1,7 +1,7 @@
 import type { ExtendedDict } from './types';
 
 const prepositionPattern =
-	/^(?:а[бд]?|б[ея]зь?|да|для|дзеля|зь?|за|ля|над?|пад?|пра|празь?|пры|у|церазь?)$/;
+	/^(?:а[бд]?|б[ея]зь?|[дз]а|д?ля|дзеля|[нп]ад?|пр[аы]|празь?|у|церазь?)$/;
 
 const isSingleVowel = (str: string) => str.match(/[аеёіоуыэюя]/g)?.length === 1;
 
