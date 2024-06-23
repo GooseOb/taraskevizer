@@ -5,12 +5,13 @@ import {
 	replaceWithDict,
 	soften,
 } from '../lib/index';
+import { phonetic } from '../dict';
 
-const noSoftenPlusIa = noSoften.concat(iaWords as any);
+const dict = noSoften.concat(iaWords, phonetic);
 
 export const phonetize = mutatingStep(({ text }) =>
 	replaceWithDict(
-		soften(replaceWithDict(text, noSoftenPlusIa)).replace(/\ue0ff/g, ''),
+		soften(replaceWithDict(text, dict)).replace(/\ue0ff/g, ''),
 		afterTarask
 	)
 );

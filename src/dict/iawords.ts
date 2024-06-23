@@ -2,7 +2,7 @@ import { iwords } from './iwords';
 import { dictFrom, toOneLine } from './lib';
 
 const ia = (word: string, words: string): string =>
-	` ${word}(?= \\(?(?:[бвгджзйклмнпрстфцчшў]*[оё]|${words.replace(
+	` ${word}(?= \\(?(?:[бвгджзйклмнпрстфцчшў]*[оё]|${toOneLine(words).replace(
 		/\(/g,
 		'(?:'
 	)}|i(?:${iwords})))`;
@@ -12,7 +12,7 @@ export const iaWords = dictFrom.raw([
 	[
 		ia(
 			'не',
-			toOneLine(`(вы)?(бач[ауы]
+			`(вы)?(бач[ауы]
 бег[ла]
 блыта[юц]
 брал[аі]
@@ -20,6 +20,7 @@ export const iaWords = dictFrom.raw([
 ваш
 веда(л[аі]|ць|ю(ць|чы)?|ў)
 дума(л[аі]|ць|ю(ць|чы)?|ў)
+дур([ауы]|ай|ань|ня[ўм]?| )
 зна(л[аі]|ць|ю(ць|чы)?)
 кла(д |л|ў)
 ма(е|ючы|ю(ць|чы)?)
@@ -60,7 +61,7 @@ export const iaWords = dictFrom.raw([
 ўвод
 ўс[еёя]
 фарб(а(ў|мі)?|у|ы)? 
-ян `)
+ян `
 		),
 		' ня',
 	],
@@ -68,7 +69,7 @@ export const iaWords = dictFrom.raw([
 	[
 		ia(
 			'без',
-			toOneLine(`(вы)?(клад[ау]
+			`(вы)?(клад[ау]
 мела 
 мытых
 піса[нц]
@@ -104,7 +105,7 @@ export const iaWords = dictFrom.raw([
 ўс[еёя]
 фарб(аў|ы)? 
 цукр[ау] 
-ян`)
+ян`
 		),
 		' бяз',
 	],
