@@ -6,7 +6,7 @@ import * as path from 'path';
 const files = await readdir('dist', { recursive: true, withFileTypes: true });
 const cliHelp = await readFile('cli-help.txt', 'utf8');
 
-Promise.all(
+await Promise.all(
 	files
 		.filter((file) => file.isFile() && file.name.endsWith('.js'))
 		.map((file) => {
@@ -20,14 +20,12 @@ Promise.all(
 				)
 			);
 		})
-		.concat(
-			readFile('dist/bin.js', 'utf8').then((content) =>
-				writeFile(
-					'dist/bin.js',
-					content
-						.replace(/__VERSION__/g, `"${version}"`)
-						.replace(/__CLI_HELP__/g, `\`${cliHelp}\``)
-				)
-			)
-		)
+);
+await readFile('dist/bin.js', 'utf8').then((content) =>
+	writeFile(
+		'dist/bin.js',
+		content
+			.replace(/__VERSION__/g, `"${version}"`)
+			.replace(/__CLI_HELP__/g, `\`${cliHelp}\``)
+	)
 );
