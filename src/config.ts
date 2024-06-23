@@ -15,16 +15,18 @@ export class TaraskConfig {
 			nonHtml: PartialReadonly<NonHtmlOptions>;
 		}>
 	) {
-		if (!options) return;
-		for (const [target, source] of [
-			[this.general, options.general],
-			[this.html, options.html],
-			[this.nonHtml, options.nonHtml],
-		]) {
-			if (source)
-				for (const [key, value] of Object.entries(source)) {
-					if (value !== undefined) (target as any)[key] = value;
+		if (options) {
+			for (const [target, source] of [
+				[this.general, options.general],
+				[this.html, options.html],
+				[this.nonHtml, options.nonHtml],
+			]) {
+				if (source) {
+					for (const [key, value] of Object.entries(source)) {
+						if (value !== undefined) (target as any)[key] = value;
+					}
 				}
+			}
 		}
 	}
 
