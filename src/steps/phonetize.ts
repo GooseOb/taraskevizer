@@ -1,11 +1,10 @@
-import { noSoften, iaWords } from '../dict/index';
+import { noSoften, iaWords, phonetic } from '../dict/index';
 import {
 	afterTarask,
 	mutatingStep,
 	replaceWithDict,
 	soften,
 } from '../lib/index';
-import { phonetic } from '../dict';
 
 const dict = noSoften.concat(iaWords, phonetic);
 
