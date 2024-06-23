@@ -10,9 +10,7 @@ const wordlistPlusNoSoften = wordlist.concat(noSoften);
 
 export const taraskevize = mutatingStep(({ text }) =>
 	replaceWithDict(
-		soften(replaceWithDict(text, wordlistPlusNoSoften))
-			.replace(/\ue0ff/g, '')
-			.replace(/не пра/g, 'не&nbsp;пра'),
+		soften(replaceWithDict(text, wordlistPlusNoSoften)).replace(/\ue0ff/g, ''),
 		afterTarask
-	).replace(/не&nbsp;пра/g, 'не пра')
+	)
 );
