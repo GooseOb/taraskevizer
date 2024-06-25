@@ -4,7 +4,7 @@ const { latin } = dicts.alphabets;
 
 type ItoJCase = [
 	[string, TaraskOptions['j']?, TaraskOptions['abc']?],
-	string,
+	string
 ][];
 
 export default [

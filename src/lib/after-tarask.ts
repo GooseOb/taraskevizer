@@ -5,7 +5,7 @@ const prepositionPattern =
 
 const isSingleVowel = (str: string) => str.match(/[аеёіоуыэюя]/g)?.length === 1;
 
-export const afterTarask: ExtendedDict = [
+export const endZSoftenAndNiaBiaz: ExtendedDict = [
 	[
 		/ бе(зь? \S+)/g,
 		($0: string, $1: string) => (isSingleVowel($1) ? ' бя' + $1 : $0),
@@ -15,8 +15,6 @@ export const afterTarask: ExtendedDict = [
 		($0: string, $1: string) =>
 			isSingleVowel($1) && !prepositionPattern.test($1) ? ' ня ' + $1 : $0,
 	],
-	[
-		/( (?:б[ея]|пра|цера)?з) і(\S*)/g,
-		($0, $1, $2) => (/([ая]ў|ну)$/.test($2) ? $1 + 'ь і' + $2 : $0),
-	],
+	[/ б[ея]з(?= і\S*[ая]ў|ну )/g, 'бязь'],
+	[/( (?:пра|цера)?з)(?= і\S*[ая]ў|ну )/g, ($0, $1) => $1 + 'ь'],
 ];

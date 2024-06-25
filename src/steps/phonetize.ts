@@ -1,16 +1,13 @@
-import { noSoften, iaWords, phonetic } from '../dict/index';
+import { iaWords, phonetic } from '../dict/index';
 import {
-	afterTarask,
+	endZSoftenAndNiaBiaz,
 	mutatingStep,
 	replaceWithDict,
 	soften,
 } from '../lib/index';
 
-const dict = noSoften.concat(iaWords, phonetic);
+const dict = iaWords.concat(phonetic);
 
 export const phonetize = mutatingStep(({ text }) =>
-	replaceWithDict(
-		soften(replaceWithDict(text, dict)).replace(/\ue0ff/g, ''),
-		afterTarask
-	)
+	replaceWithDict(soften(replaceWithDict(text, dict)), endZSoftenAndNiaBiaz)
 );
