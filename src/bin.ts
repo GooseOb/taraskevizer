@@ -6,6 +6,8 @@ import {
 	TaraskConfig,
 	tarask,
 	pipelines,
+	htmlConfigOptions,
+	ansiColorWrappers,
 } from './index';
 declare const __CLI_HELP__: string;
 declare const __VERSION__: string;
@@ -30,13 +32,13 @@ if (checkForOptions(['-h', '--help'])) {
 	process.exit(0);
 }
 
-const cfg = new TaraskConfig({
-	general: {},
-	html: { g: true },
-	nonHtml: { variations: VARIATION.ALL, ansiColors: true },
-});
+let cfg = {
+	g: true,
+	variations: VARIATION.ALL,
+	wrapperDict: ansiColorWrappers,
+} as TaraskConfig;
 
-let mode: keyof typeof pipelines = 'plainText';
+let mode: keyof typeof pipelines = 'tar';
 
 const toHashTable = (
 	dict: readonly (readonly [readonly string[], () => void])[]
@@ -47,79 +49,80 @@ const toHashTable = (
 	return result;
 };
 
+let isHtml = false;
+
 const optionDict = toHashTable([
 	[['--help', '-h'], () => {}],
 	[
 		['--latin', '-l'],
 		() => {
-			cfg.general.abc = dicts.alphabets.latin;
+			cfg.abc = dicts.alphabets.latin;
 		},
 	],
 	[
 		['--latin-ji', '-lj'],
 		() => {
-			cfg.general.abc = dicts.alphabets.latinJi;
+			cfg.abc = dicts.alphabets.latinJi;
 		},
 	],
 	[
 		['--arabic', '-a'],
 		() => {
-			cfg.general.abc = dicts.alphabets.arabic;
+			cfg.abc = dicts.alphabets.arabic;
 		},
 	],
 	[
 		['--jrandom', '-jr'],
 		() => {
-			cfg.general.j = REPLACE_J.RANDOM;
+			cfg.j = REPLACE_J.RANDOM;
 		},
 	],
 	[
 		['--jalways', '-ja'],
 		() => {
-			cfg.general.j = REPLACE_J.ALWAYS;
+			cfg.j = REPLACE_J.ALWAYS;
 		},
 	],
 	[
 		['--no-escape-caps', '-nec'],
 		() => {
-			cfg.general.doEscapeCapitalized = false;
+			cfg.doEscapeCapitalized = false;
 		},
 	],
 	[
 		['--h'],
 		() => {
-			cfg.nonHtml.h = true;
-			cfg.html.g = false;
+			cfg.g = false;
 		},
 	],
 	[
 		['--no-variations', '-nv'],
 		() => {
-			cfg.nonHtml.variations = VARIATION.NO;
+			cfg.variations = VARIATION.NO;
 		},
 	],
 	[
-		['--first-variation-only', '-fvo'],
+		['--first-variation', '-fv'],
 		() => {
-			cfg.nonHtml.variations = VARIATION.FIRST;
+			cfg.variations = VARIATION.FIRST;
 		},
 	],
 	[
 		['--no-color', '-nc'],
 		() => {
-			cfg.nonHtml.ansiColors = false;
+			cfg.wrapperDict = null;
 		},
 	],
 	[
 		['--html', '-html'],
 		() => {
-			mode = 'html';
+			isHtml = true;
 		},
 	],
 	[
 		['--alphabet-only', '-abc'],
 		() => {
-			mode = 'abcOnly';
+			mode = 'abc';
 		},
 	],
 	[
@@ -164,6 +167,14 @@ if (process.argv.length) {
 	}
 
 	text = Buffer.concat(chunks, length).toString();
+}
+
+if (isHtml) {
+	// @ts-expect-error
+	delete cfg.wrapperDict;
+	cfg = new TaraskConfig({ ...htmlConfigOptions, ...cfg });
+} else {
+	cfg = new TaraskConfig(cfg);
 }
 
 if (process.stdout.write(tarask(text, pipelines[mode], cfg) + '\n')) {

@@ -3,9 +3,7 @@ import type { TaraskStep, SplittedTextStorage } from './types';
 
 export const storeSplittedAbcConvertedOrig: TaraskStep<SplittedTextStorage> = ({
 	cfg: {
-		general: {
-			abc: { lower, upper },
-		},
+		abc: { lower, upper },
 	},
 	text,
 	storage,

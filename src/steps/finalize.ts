@@ -1,5 +1,4 @@
 import { mutatingStep } from '../lib/index';
-import type { TaraskStep } from './types';
 
 /**
  * @param newLine - The string to replace new lines with.
@@ -13,12 +12,11 @@ import type { TaraskStep } from './types';
  *
  * Removes spaces around punctuation marks and digits.
  */
-export const finalize = (newLine: string): TaraskStep =>
-	mutatingStep(({ text }) =>
-		text
-			.replace(/&#40/g, '(')
-			.replace(/&nbsp;/g, ' ')
-			.replace(/ (\p{P}|\p{S}|\d+) /gu, '$1')
-			.replace(/\n/g, newLine)
-			.trim()
-	);
+export const finalize = mutatingStep(({ text, cfg: { newLine } }) =>
+	text
+		.replace(/&#40/g, '(')
+		.replace(/&nbsp;/g, ' ')
+		.replace(/ (\p{P}|\p{S}|\d+) /gu, '$1')
+		.replace(/\n/g, newLine)
+		.trim()
+);

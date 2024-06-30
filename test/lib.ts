@@ -37,7 +37,13 @@ export const startTestProcess = ({ long = false } = {}) => {
 		) {
 			const longArr = [];
 			for (const [input, expectedValue] of cases) {
-				const output = fn(input);
+				let output: TOutput;
+				try {
+					output = fn(input);
+				} catch (e) {
+					(e as Error).cause = { name, input };
+					throw e;
+				}
 				if (output !== expectedValue) {
 					let charIndex = 0;
 					while (output[charIndex] === expectedValue[charIndex]) ++charIndex;

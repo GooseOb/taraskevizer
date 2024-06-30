@@ -1,4 +1,4 @@
-import { HtmlOptions } from '../../src';
+import { TaraskConfig } from '../../src';
 
 export default [
 	[
@@ -9,4 +9,4 @@ export default [
 	[['??????', {}], '??????'],
 	[['газета', { g: false }], '<tarH>г</tarH>аз<tarF>э</tarF>та'],
 	[['газета', { g: true }], '<tarH>ґ</tarH>аз<tarF>э</tarF>та'],
-] satisfies [[string, Partial<HtmlOptions>], string][];
+] satisfies [[string, Partial<TaraskConfig>], string][];

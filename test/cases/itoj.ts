@@ -1,11 +1,8 @@
-import { dicts, REPLACE_J, TaraskOptions } from '../../src';
+import { dicts, REPLACE_J, TaraskConfig } from '../../src';
 
 const { latin } = dicts.alphabets;
 
-type ItoJCase = [
-	[string, TaraskOptions['j']?, TaraskOptions['abc']?],
-	string
-][];
+type ItoJCase = [[string, TaraskConfig['j']?, TaraskConfig['abc']?], string][];
 
 export default [
 	[['Яна і ён'], 'Яна і ён'],

@@ -27,41 +27,36 @@ import {
 	tarask,
 	pipelines,
 	TaraskConfig,
+	htmlConfigOptions,
+	ansiColorWrappers,
 	alphabets,
-	J,
+	REPLACE_J,
 	VARIATION,
 } from 'taraskevizer';
 
-tarask('планета', pipelines.plainText);
+tarask('планета', pipelines.tar);
 // "плянэта"
 
 const cfg = new TaraskConfig({
-	general: {
-		abc: alphabets.cyrillic,
-		j: J.ALWAYS,
-	},
-	nonHtml: {
-		ansiColors: true,
-		variations: VARIATION.FIRST,
-		h: false,
-	},
+	abc: alphabets.cyrillic,
+	j: REPLACE_J.ALWAYS,
+	variations: VARIATION.FIRST,
+	wrapperDict: ansiColorWrappers,
+	g: true,
 });
-tarask('планета і Гродна', pipelines.plainText, cfg);
+tarask('планета і Гродна', pipelines.tar, cfg);
 // "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
 
-const cfg = new TaraskConfig({
-	general: {
-		abc: alphabets.latin,
-	},
-	html: {
-		g: false, // ignored, because alphabet is set to latin
-	},
+const htmlCfg = new TaraskConfig({
+	abc: alphabets.latin,
+	g: false,
+	...htmlConfigOptions,
 });
-tarask('энергія планеты', pipelines.html, cfg);
+tarask('энергія планеты', pipelines.tar, htmlCfg);
 // "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
 
 const latinWithJiCfg = new TaraskConfig({
-	general: { abc: alphabets.latinJi },
+	abc: alphabets.latinJi,
 });
 
 tarask('яна і іншыя', pipelines.abcOnly, latinWithJiCfg);

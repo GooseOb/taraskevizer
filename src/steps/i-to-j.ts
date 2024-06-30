@@ -5,7 +5,7 @@ import type { TaraskStep } from './types';
 const toJ = (shortU: '' | 'ў') => 'й ' + (shortU ? 'у' : '');
 
 export const replaceIbyJ: TaraskStep = (options) => {
-	const { abc, j } = options.cfg.general;
+	const { abc, j } = options.cfg;
 	if (j && abc !== alphabets.latinJi)
 		options.text = options.text.replace(
 			/(?<=[аеёіоуыэюя] )і (ў?)/g,

@@ -2,9 +2,7 @@ import { restoreCase } from '../lib/index';
 import type { TaraskStep, SplittedTextStorage } from './types';
 
 export const restoreCaseStep: TaraskStep<SplittedTextStorage> = ({
-	cfg: {
-		general: { abc },
-	},
+	cfg: { abc },
 	storage: { textArr, origArr },
 }) => {
 	if (abc.upper) {

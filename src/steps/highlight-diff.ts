@@ -1,36 +1,19 @@
 import type { TaraskStep, SplittedTextStorage } from './types';
-import { highlightDiff, ansiColorWrappers } from '../lib/index';
+import { highlightDiff } from '../lib/index';
 import { alphabets } from '../dict/index';
 
 /**
  * Uses {@link highlightDiff}
  */
-export const highlightDiffStep =
-	(highlight: (content: string) => string): TaraskStep<SplittedTextStorage> =>
-	({
-		cfg: {
-			general: { abc },
-		},
-		storage: { textArr, origArr },
-	}) => {
-		highlightDiff(textArr, origArr, abc === alphabets.cyrillic, highlight);
-	};
-
-/**
- * Uses {@link highlightDiff}
- */
-export const highlightDiffStepNonHtml: TaraskStep<SplittedTextStorage> = ({
-	cfg: {
-		general: { abc },
-		nonHtml: { ansiColors },
-	},
+export const highlightDiffStep: TaraskStep<SplittedTextStorage> = ({
+	cfg: { abc, wrapperDict },
 	storage: { textArr, origArr },
 }) => {
-	if (ansiColors)
+	if (wrapperDict?.fix)
 		highlightDiff(
 			textArr,
 			origArr,
 			abc === alphabets.cyrillic,
-			ansiColorWrappers.fix
+			wrapperDict.fix
 		);
 };

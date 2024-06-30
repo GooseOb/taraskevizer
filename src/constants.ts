@@ -9,9 +9,3 @@ export const VARIATION = {
 	FIRST: 1,
 	ALL: 2,
 } as const;
-
-type ValueOf<T> = T[keyof T];
-
-export type OptionJ = ValueOf<typeof REPLACE_J>;
-
-export type Variation = ValueOf<typeof VARIATION>;

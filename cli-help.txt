@@ -34,7 +34,7 @@ Replace ґ(g) by г(h) in cyrillic alphabet:
 
 Variations:
   -nv --no-variations
-  -fvo --first-variation-only
+  -fv --first-variation
 
 Mode (only one can be used):
   -html --html

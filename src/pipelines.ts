@@ -16,12 +16,7 @@
  */
 
 import {
-	applyVariationsHtml,
-	applyVariationsNonHtml,
-	applyGHtml,
-	applyGNonHtml,
 	highlightDiffStep,
-	highlightDiffStepNonHtml,
 	applyNoFix,
 	convertAlphabet,
 	convertAlphabetLowerCase,
@@ -42,15 +37,12 @@ import {
 	type TaraskStep,
 	iotacizeJi,
 	untrim,
+	applyG,
+	applyVariations,
 } from './steps/index';
-import { htmlWrappers } from './lib/wrappers';
-
-const resolveSpecialSyntaxWithLAB = resolveSpecialSyntax('<');
-
-const finalizeWithNewLine = finalize('\n');
 
 /**
- * Storage for the pipeline {@link abcOnly}.
+ * Storage for the pipeline {@link abc}.
  */
 type AbcOnlyStorage = {
 	doEscapeCapitalized: boolean;
@@ -63,80 +55,54 @@ type AbcOnlyStorage = {
  *
  * To see the full list of steps, check the source code.
  */
-export const abcOnly = [
-	(({ storage, cfg: { general } }) => {
-		storage.doEscapeCapitalized = general.doEscapeCapitalized;
-		general.doEscapeCapitalized = false;
+export const abc = [
+	(({ storage, cfg }) => {
+		storage.doEscapeCapitalized = cfg.doEscapeCapitalized;
+		cfg.doEscapeCapitalized = false;
 	}) satisfies TaraskStep<AbcOnlyStorage>,
 	trim,
-	resolveSpecialSyntaxWithLAB,
+	resolveSpecialSyntax,
 	prepare,
 	whitespacesToSpaces,
 	convertAlphabet,
 	restoreWhitespaces,
 	applyNoFix,
-	finalizeWithNewLine,
+	finalize,
 	untrim,
-	(({ storage, cfg: { general } }) => {
-		general.doEscapeCapitalized = storage.doEscapeCapitalized;
+	(({ storage, cfg }) => {
+		cfg.doEscapeCapitalized = storage.doEscapeCapitalized;
 	}) satisfies TaraskStep<AbcOnlyStorage>,
 ] satisfies TaraskStep<any>[];
 
-const createPipeline = (
-	resolveSpecialSyntax: TaraskStep<any>,
-	applyG: TaraskStep<any>,
-	applyVariations: TaraskStep<any>,
-	finalize: TaraskStep<any>,
-	highlightDiffStep: TaraskStep<any>
-) =>
-	[
-		trim,
-		resolveSpecialSyntax,
-		prepare,
-		whitespacesToSpaces,
-		storeSplittedAbcConvertedOrig,
-		toLowerCase,
-		taraskevize,
-		replaceIbyJ,
-		convertAlphabetLowerCase,
-		storeSplittedText,
-		restoreCaseStep,
-		highlightDiffStep,
-		joinSplittedText,
-		restoreWhitespaces,
-		applyG,
-		applyVariations,
-		applyNoFix,
-		finalize,
-		untrim,
-	] satisfies TaraskStep<any>[];
-
 /**
- * Pipeline for taraskevizing into plain text.
+ * Pipeline for taraskevizing.
  */
-export const plainText = createPipeline(
-	resolveSpecialSyntaxWithLAB,
-	applyGNonHtml,
-	applyVariationsNonHtml,
-	finalizeWithNewLine,
-	highlightDiffStepNonHtml
-);
-
-/**
- * Pipeline for taraskevizing into HTML.
- */
-export const html = createPipeline(
-	resolveSpecialSyntax('&lt;'),
-	applyGHtml,
-	applyVariationsHtml,
-	finalize('<br>'),
-	highlightDiffStep(htmlWrappers.fix)
-);
+export const tar = [
+	trim,
+	resolveSpecialSyntax,
+	prepare,
+	whitespacesToSpaces,
+	storeSplittedAbcConvertedOrig,
+	toLowerCase,
+	taraskevize,
+	replaceIbyJ,
+	convertAlphabetLowerCase,
+	storeSplittedText,
+	restoreCaseStep,
+	highlightDiffStep,
+	joinSplittedText,
+	restoreWhitespaces,
+	applyG,
+	applyVariations,
+	applyNoFix,
+	finalize,
+	untrim,
+] satisfies TaraskStep<any>[];
 
 /**
  * Pipeline for phonetizing.
  * @alpha
  */
-export const phonetic = plainText.flatMap((item) =>
+export const phonetic = tar.flatMap((item) =>
 	item === taraskevize ? [phonetize, iotacizeJi] : item
 );
