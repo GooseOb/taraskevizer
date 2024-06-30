@@ -8,5 +8,5 @@ const text = await readFile('test/large-text.txt', 'utf8').catch((e) => {
 });
 
 benchmark('Taraskevization', () => {
-	tarask(text, pipelines.plainText);
+	tarask(text, pipelines.tar);
 });

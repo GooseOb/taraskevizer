@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { getLabel, testOnCases, testOnCasesAsync } from './lib';
 import { tarask, dicts, TaraskConfig, pipelines } from '../../src';
 import * as cases from '../cases';

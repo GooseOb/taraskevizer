@@ -10,4 +10,5 @@
 bun run build
 bun run test &
 prettier --write .
+bun run docs
 git add -A .
