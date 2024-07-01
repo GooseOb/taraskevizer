@@ -1496,8 +1496,6 @@ export const wordlist: Dict = dictFrom.raw([
 [/ ([нп]?)адск/, ' $1ад\ue0ffск'],
 [/дс(?=к|тв)/, 'дз'],
 // [/([аеёіоуыэюя])вс/, '$1ўс'],
-[/ (б|кнд|нот)р /, ' $1\ue0ffр '],
-[/(\S\S[дт])р /, '$1ар '],
 [/мль /, 'маль '],
 [/([аеёіоуыэюя]) у/, '$1 ў'],
 /* Ў > У */
@@ -1579,5 +1577,4 @@ export const wordlist: Dict = dictFrom.raw([
 [/ зямель /, ' з(ямель|емляў) '],
 [/ яблынь /, ' яблын(ь|яў) '],
 [/ расей /, ' расе(й|яў) '],
-[/\ue0ff/, ''],
-]).concat(commonPhonetinc, gwords, iaWords);
+]).concat(commonPhonetinc, gwords, iaWords, [[/\ue0ff/, '']]);

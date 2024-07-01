@@ -3,6 +3,8 @@ import type { Dict } from './types';
 export const commonPhonetinc: Dict = [
 	[/шся /g, 'сься '],
 	[/здж/g, 'ждж'],
+	[/ (б|кнд|нот)р /, ' $1\ue0ffр '],
+	[/(\S\S[дт])р /, '$1ар '],
 ];
 
 export const phonetic: Dict = (
