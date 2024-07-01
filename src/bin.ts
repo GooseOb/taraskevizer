@@ -8,7 +8,7 @@ import {
 	pipelines,
 	htmlConfigOptions,
 	ansiColorWrappers,
-} from './index';
+} from '.';
 declare const __CLI_HELP__: string;
 declare const __VERSION__: string;
 
@@ -149,7 +149,7 @@ let text = '';
 if (process.argv.length) {
 	text = process.argv.reverse().join(' ');
 } else {
-	const chunks = [];
+	const chunks: Uint8Array[] = [];
 	let length = 0;
 
 	if (process.stdin.isTTY) {
@@ -169,13 +169,15 @@ if (process.argv.length) {
 	text = Buffer.concat(chunks, length).toString();
 }
 
-if (isHtml) {
-	// @ts-expect-error
-	delete cfg.wrapperDict;
-	cfg = new TaraskConfig({ ...htmlConfigOptions, ...cfg });
-} else {
-	cfg = new TaraskConfig(cfg);
-}
+cfg = new TaraskConfig(
+	isHtml
+		? {
+				...htmlConfigOptions,
+				...cfg,
+				wrapperDict: htmlConfigOptions.wrapperDict,
+			}
+		: cfg
+);
 
 if (process.stdout.write(tarask(text, pipelines[mode], cfg) + '\n')) {
 	process.exit(0);

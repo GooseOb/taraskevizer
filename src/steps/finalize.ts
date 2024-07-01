@@ -1,4 +1,4 @@
-import { mutatingStep } from '../lib/index';
+import { mutatingStep } from '../lib';
 
 /**
  * @param newLine - The string to replace new lines with.

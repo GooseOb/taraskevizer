@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readdir, readFile, writeFile } from 'fs/promises';
+import { lstatSync } from 'fs';
 import { version } from './package.json';
 import * as path from 'path';
 
@@ -16,7 +17,20 @@ await Promise.all(
 					fileName,
 					content
 						.replace(/\/\*.*?\*\//gs, '')
-						.replace(/((?:im|ex)port.+from.+)(?<!\.js)(?=["'];)/g, '$1.js')
+						.replace(
+							/((?:im|ex)port.+from\s+["'])(.+)(?<!\.js)(?=["'];)/g,
+							(_$0, $1, $2) => {
+								try {
+									if (
+										lstatSync(path.resolve(file.parentPath, $2)).isDirectory
+									) {
+										$2 += '/index';
+									}
+								} finally {
+									return $1 + $2 + '.js';
+								}
+							}
+						)
 				)
 			);
 		})

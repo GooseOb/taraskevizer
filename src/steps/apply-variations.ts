@@ -1,4 +1,4 @@
-import { mutatingStep } from '../lib/index';
+import { mutatingStep } from '../lib';
 import { defaultVariationWrappers } from '../wrappers';
 
 export const applyVariations = mutatingStep(

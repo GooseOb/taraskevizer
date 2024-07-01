@@ -1,5 +1,5 @@
 import { TaraskConfig } from './config';
-import type { TaraskStep } from './steps/index';
+import type { TaraskStep } from './steps';
 
 /**
  * @returns converted text

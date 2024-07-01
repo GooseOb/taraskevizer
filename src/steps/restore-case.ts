@@ -1,4 +1,4 @@
-import { restoreCase } from '../lib/index';
+import { restoreCase } from '../lib';
 import type { TaraskStep, SplittedTextStorage } from './types';
 
 export const restoreCaseStep: TaraskStep<SplittedTextStorage> = ({

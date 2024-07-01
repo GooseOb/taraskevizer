@@ -1,10 +1,10 @@
-import { wordlist } from '../dict/index';
+import { wordlist } from '../dict';
 import {
 	endZSoftenAndNiaBiaz,
 	mutatingStep,
 	replaceWithDict,
 	soften,
-} from '../lib/index';
+} from '../lib';
 
 export const taraskevize = mutatingStep(({ text }) =>
 	replaceWithDict(soften(replaceWithDict(text, wordlist)), endZSoftenAndNiaBiaz)

@@ -1,10 +1,10 @@
-import { iaWords, phonetic } from '../dict/index';
+import { iaWords, phonetic } from '../dict';
 import {
 	endZSoftenAndNiaBiaz,
 	mutatingStep,
 	replaceWithDict,
 	soften,
-} from '../lib/index';
+} from '../lib';
 
 const dict = iaWords.concat(phonetic);
 

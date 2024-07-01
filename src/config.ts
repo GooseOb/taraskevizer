@@ -1,4 +1,4 @@
-import { alphabets } from './dict/index';
+import { alphabets } from './dict';
 import type { PartialReadonly, ValueOf } from './types';
 import { REPLACE_J, VARIATION } from './constants';
 import { Alphabet } from './dict/alphabets';

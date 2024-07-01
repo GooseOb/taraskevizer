@@ -1,5 +1,5 @@
-import { iwords } from '../dict/index';
-import { dictFrom, mutatingStep, replaceWithDict } from '../lib/index';
+import { iwords } from '../dict';
+import { dictFrom, mutatingStep, replaceWithDict } from '../lib';
 
 const iDict = dictFrom.raw([
 	[/([аеёіоуыэюя] )і ў/, '$1й у'],

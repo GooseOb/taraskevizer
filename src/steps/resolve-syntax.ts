@@ -1,4 +1,4 @@
-import { restoreCase, replaceWithDict, mutatingStep } from '../lib/index';
+import { restoreCase, replaceWithDict, mutatingStep } from '../lib';
 import type { TaraskStep } from './types';
 import type { Alphabet } from '../dict/alphabets/types';
 
@@ -52,7 +52,7 @@ export const resolveSpecialSyntax = mutatingStep<SpecialSyntaxStorage>(
 							noFixArr.push(convertAlphavet($0, abc));
 							return NOFIX_CHAR;
 						}
-				  )
+					)
 				: text;
 		const parts = text.split(/(?=[<>])/g);
 		if (parts.length === 1) return escapeCapsIfNeeded(text);
@@ -81,7 +81,7 @@ export const resolveSpecialSyntax = mutatingStep<SpecialSyntaxStorage>(
 						char = currentPart[1];
 						currentPart = currentPart.slice(2);
 					}
-					let toAddToResult;
+					let toAddToResult: string;
 					switch (char) {
 						case '.':
 							toAddToResult = NOFIX_CHAR;

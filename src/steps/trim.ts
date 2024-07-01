@@ -1,4 +1,4 @@
-import { mutatingStep } from '../lib/index';
+import { mutatingStep } from '../lib';
 
 /**
  * Created in {@link trim}.

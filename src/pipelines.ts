@@ -39,7 +39,7 @@ import {
 	untrim,
 	applyG,
 	applyVariations,
-} from './steps/index';
+} from './steps';
 
 /**
  * Storage for the pipeline {@link abc}.

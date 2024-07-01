@@ -1,5 +1,5 @@
-import { replaceG } from '../lib/index';
-import { alphabets, gobj } from '../dict/index';
+import { replaceG } from '../lib';
+import { alphabets, gobj } from '../dict';
 import type { TaraskStep } from './types';
 
 export const applyG: TaraskStep = (options) => {
