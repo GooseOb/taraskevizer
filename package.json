@@ -39,10 +39,9 @@
 	"scripts": {
 		"build": "tsc --project src/tsconfig.json && bun ./afterbuild.js",
 		"dev": "esrun --watch=src/*,test/*,bin/* --send-code-mode=temporaryFile test",
-		"dev:bun": "bun ./test/bun-watch.ts",
-		"dev-bun": "bun test --watch",
+		"dev:bun": "bun test --watch",
 		"test": "esrun --send-code-mode=temporaryFile test",
-		"test-cli": "bun run build && esrun --send-code-mode=temporaryFile test",
+		"test-cli": "bun run build && bun run test",
 		"docs": "typedoc"
 	},
 	"sideEffects": false,
