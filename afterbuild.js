@@ -22,13 +22,12 @@ await Promise.all(
 							(_$0, $1, $2) => {
 								try {
 									if (
-										lstatSync(path.resolve(file.parentPath, $2)).isDirectory
+										lstatSync(path.resolve(file.parentPath, $2)).isDirectory()
 									) {
 										$2 += '/index';
 									}
-								} finally {
-									return $1 + $2 + '.js';
-								}
+								} catch {}
+								return $1 + $2 + '.js';
 							}
 						)
 				)
