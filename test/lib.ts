@@ -87,19 +87,23 @@ export const benchmark = (
 ) => {
 	const printBenchmark = getBenchmarkPrinter(name);
 	printBenchmark('running');
+
 	const logs: (string | Uint8Array)[] = [];
 	const unhookStdout = hookStdout((data) => {
 		logs.push(data);
 		return true;
 	});
+
 	const results = Array(repeat);
 	for (let i = 0; i < repeat; i++) {
 		const startTimeStamp = performance.now();
 		fn();
 		results[i] = performance.now() - startTimeStamp;
 	}
+
 	unhookStdout();
 	process.stdout.moveCursor(0, -1);
+
 	let min = results[0];
 	let max = min;
 	let sum = 0;
@@ -108,8 +112,10 @@ export const benchmark = (
 		else if (result < min) min = result;
 		sum += result;
 	}
+
 	printBenchmark(
 		`average result: ${sum / repeat} ms (min: ${min} ms, max: ${max} ms)`
 	);
+
 	if (showLogs && logs.length) process.stdout.write(logs.join(''));
 };
