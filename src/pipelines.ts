@@ -51,7 +51,7 @@ type AbcOnlyStorage = {
 /**
  * Pipeline for changing only the alphabet.
  *
- * The property `cfg.general.doEscapeCapitalized` is set to `false` during the pipeline execution.
+ * The property `cfg.doEscapeCapitalized` is set to `false` during the pipeline execution.
  *
  * To see the full list of steps, check the source code.
  */

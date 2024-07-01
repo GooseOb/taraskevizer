@@ -5,7 +5,7 @@ import type { TaraskStep } from './steps/index';
  * @returns converted text
  *
  * @example
- * tarask("планета", plainTextPipeline);
+ * tarask("планета", pipelines.tar);
  * // "плянэта"
  */
 export const tarask = (
