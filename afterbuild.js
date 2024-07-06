@@ -3,10 +3,10 @@ import { readdir, readFile, writeFile } from 'fs/promises';
 import { lstatSync } from 'fs';
 import * as path from 'path';
 
-const { version } = JSON.parse(await readFile('./package.json'));
-
-const files = await readdir('dist', { recursive: true, withFileTypes: true });
-const cliHelp = await readFile('cli-help.txt', 'utf8');
+const files = await readdir('dist', {
+	recursive: true,
+	withFileTypes: true,
+});
 
 await Promise.all(
 	files
@@ -35,11 +35,16 @@ await Promise.all(
 			);
 		})
 );
-await readFile('dist/bin.js', 'utf8').then((content) =>
+
+await Promise.all([
+	readFile('dist/bin.js', 'utf8'),
+	readFile('./package.json'),
+	readFile('cli-help.txt', 'utf8'),
+]).then(([content, pjson, cliHelp]) =>
 	writeFile(
 		'dist/bin.js',
 		content
-			.replace(/__VERSION__/g, `"${version}"`)
+			.replace(/__VERSION__/g, `"${JSON.parse(pjson).version}"`)
 			.replace(/__CLI_HELP__/g, `\`${cliHelp}\``)
 	)
 );
