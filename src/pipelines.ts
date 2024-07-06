@@ -16,6 +16,7 @@
  */
 
 import {
+	type TaraskStep,
 	highlightDiffStep,
 	applyNoFix,
 	convertAlphabet,
@@ -34,7 +35,6 @@ import {
 	trim,
 	finalize,
 	toLowerCase,
-	type TaraskStep,
 	iotacizeJi,
 	untrim,
 	applyG,
@@ -51,7 +51,7 @@ type AbcOnlyStorage = {
 /**
  * Pipeline for changing only the alphabet.
  *
- * The property `cfg.doEscapeCapitalized` is set to `false` during the pipeline execution.
+ * The property {@link TaraskConfig.doEscapeCapitalized} is set to `false` during the pipeline execution.
  *
  * To see the full list of steps, check the source code.
  */
@@ -75,34 +75,42 @@ export const abc = [
 ] satisfies TaraskStep<any>[];
 
 /**
+ * For better tree-shaking instead of `Array.prototype.flatMap`
+ *
+ * Used by {@link tar} and {@link phonetic}.
+ *
+ * @param steps - Steps used instead of [{@link steps.taraskevize}].
+ */
+export const _createPipeline = (steps: TaraskStep<any>[]) =>
+	[
+		trim,
+		resolveSpecialSyntax,
+		prepare,
+		whitespacesToSpaces,
+		storeSplittedAbcConvertedOrig,
+		toLowerCase,
+		...steps,
+		replaceIbyJ,
+		convertAlphabetLowerCase,
+		storeSplittedText,
+		restoreCaseStep,
+		highlightDiffStep,
+		joinSplittedText,
+		restoreWhitespaces,
+		applyG,
+		applyVariations,
+		applyNoFix,
+		finalize,
+		untrim,
+	] satisfies TaraskStep<any>[];
+
+/**
  * Pipeline for taraskevizing.
  */
-export const tar = [
-	trim,
-	resolveSpecialSyntax,
-	prepare,
-	whitespacesToSpaces,
-	storeSplittedAbcConvertedOrig,
-	toLowerCase,
-	taraskevize,
-	replaceIbyJ,
-	convertAlphabetLowerCase,
-	storeSplittedText,
-	restoreCaseStep,
-	highlightDiffStep,
-	joinSplittedText,
-	restoreWhitespaces,
-	applyG,
-	applyVariations,
-	applyNoFix,
-	finalize,
-	untrim,
-] satisfies TaraskStep<any>[];
+export const tar = _createPipeline([taraskevize]);
 
 /**
  * Pipeline for phonetizing.
  * @alpha
  */
-export const phonetic = tar.flatMap((item) =>
-	item === taraskevize ? [phonetize, iotacizeJi] : item
-);
+export const phonetic = _createPipeline([phonetize, iotacizeJi]);
