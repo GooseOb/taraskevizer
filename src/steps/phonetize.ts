@@ -9,5 +9,5 @@ import {
 const dict = iaWords.concat(phonetic);
 
 export const phonetize = mutatingStep(({ text }) =>
-	replaceWithDict(soften(replaceWithDict(text, dict)), endZSoftenAndNiaBiaz)
+	replaceWithDict(replaceWithDict(soften(text), dict), endZSoftenAndNiaBiaz)
 );
