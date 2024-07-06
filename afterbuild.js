@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import { readdir, readFile, writeFile } from 'fs/promises';
 import { lstatSync } from 'fs';
-import { version } from './package.json';
 import * as path from 'path';
+
+const { version } = JSON.parse(await readFile('./package.json'));
 
 const files = await readdir('dist', { recursive: true, withFileTypes: true });
 const cliHelp = await readFile('cli-help.txt', 'utf8');

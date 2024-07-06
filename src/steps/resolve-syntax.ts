@@ -52,7 +52,7 @@ export const resolveSpecialSyntax = mutatingStep<SpecialSyntaxStorage>(
 							noFixArr.push(convertAlphavet($0, abc));
 							return NOFIX_CHAR;
 						}
-					)
+				  )
 				: text;
 		const parts = text.split(/(?=[<>])/g);
 		if (parts.length === 1) return escapeCapsIfNeeded(text);
