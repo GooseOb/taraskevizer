@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 import {
 	dicts,
-	REPLACE_J,
-	VARIATION,
 	TaraskConfig,
 	tarask,
 	pipelines,
 	htmlConfigOptions,
-	ansiColorWrappers,
+	wrappers,
 } from '.';
 declare const __CLI_HELP__: string;
 declare const __VERSION__: string;
@@ -34,8 +32,8 @@ if (checkForOptions(['-h', '--help'])) {
 
 let cfg = {
 	g: true,
-	variations: VARIATION.ALL,
-	wrapperDict: ansiColorWrappers,
+	variations: 'all',
+	wrapperDict: wrappers.ansiColor,
 } as TaraskConfig;
 
 let mode: keyof typeof pipelines = 'tar';
@@ -74,13 +72,13 @@ const optionDict = toHashTable([
 	[
 		['--jrandom', '-jr'],
 		() => {
-			cfg.j = REPLACE_J.RANDOM;
+			cfg.j = 'random';
 		},
 	],
 	[
 		['--jalways', '-ja'],
 		() => {
-			cfg.j = REPLACE_J.ALWAYS;
+			cfg.j = 'always';
 		},
 	],
 	[
@@ -98,13 +96,13 @@ const optionDict = toHashTable([
 	[
 		['--no-variations', '-nv'],
 		() => {
-			cfg.variations = VARIATION.NO;
+			cfg.variations = 'no';
 		},
 	],
 	[
 		['--first-variation', '-fv'],
 		() => {
-			cfg.variations = VARIATION.FIRST;
+			cfg.variations = 'first';
 		},
 	],
 	[

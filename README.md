@@ -39,8 +39,8 @@ tarask('планета', pipelines.tar);
 
 const cfg = new TaraskConfig({
 	abc: alphabets.cyrillic,
-	j: REPLACE_J.ALWAYS,
-	variations: VARIATION.FIRST,
+	j: 'always',
+	variations: 'first',
 	wrapperDict: ansiColorWrappers,
 	g: true,
 });

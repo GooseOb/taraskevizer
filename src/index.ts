@@ -5,4 +5,4 @@ export * as steps from './steps';
 export * as pipelines from './pipelines';
 export * as lib from './lib';
 export * from './constants';
-export * from './wrappers';
+export * as wrappers from './wrappers';

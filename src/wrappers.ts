@@ -1,52 +1,47 @@
-import { VARIATION } from './constants';
-import { ValueOf } from './types';
+import { Variation } from './config';
 
-type VariationWrappers = {
-	[p in ValueOf<typeof VARIATION>]: (content: string) => string;
+type TransformString = (content: string) => string;
+
+export type VariationWrappers = {
+	[p in Variation]: TransformString;
 };
 
 export type WrapperDict = {
-	fix?: (content: string) => string;
+	fix?: TransformString;
 	variable?: VariationWrappers;
-	letterH?: (content: string) => string;
+	letterH?: TransformString;
 };
 
-export const defaultVariationWrappers = {
-	[VARIATION.ALL]: (content) => content,
-	[VARIATION.FIRST]: (content) => /^[^|]*?\|([^|)]*)/.exec(content)![1],
-	[VARIATION.NO]: (content) => /^\(([^|]*)/.exec(content)![1],
-} satisfies VariationWrappers;
+export const defaultVariation: VariationWrappers = {
+	all: (content) => content,
+	first: (content) => /^[^|]*?\|([^|)]*)/.exec(content)![1],
+	no: (content) => /^\(([^|]*)/.exec(content)![1],
+};
 
-export const htmlWrappers = {
+export const html: Required<WrapperDict> = {
 	fix: (content) => `<tarF>${content}</tarF>`,
 	variable: {
-		[VARIATION.ALL]: (content: string) => {
+		all: (content: string) => {
 			const [main, ...parts] = content.slice(1, -1).split('|');
 			return `<tarL data-l='${parts}'>${main}</tarL>`;
 		},
-		[VARIATION.FIRST]: (content) => {
+		first: (content) => {
 			const [first, main, ...parts] = content.slice(1, -1).split('|');
 			parts.push(first);
 			return `<tarL data-l='${parts}'>${main}</tarL>`;
 		},
-		[VARIATION.NO]: defaultVariationWrappers[VARIATION.NO],
+		no: defaultVariation.no,
 	},
 	letterH: (content) => `<tarH>${content}</tarH>`,
-} satisfies WrapperDict;
+};
 
-export const ansiColorWrappers = {
+export const ansiColor: Required<WrapperDict> = {
 	fix: (content) => `\x1b[32m${content}\x1b[0m`,
-	variable: (() => {
-		const wrappers = {} as VariationWrappers;
-
-		for (const key in defaultVariationWrappers) {
-			type Key = keyof VariationWrappers;
-			const getPart = defaultVariationWrappers[key as any as Key];
-			wrappers[key as any as Key] = (content) =>
-				`\x1b[35m${getPart(content)}\x1b[0m`;
-		}
-
-		return wrappers;
-	})(),
+	variable: (
+		Object.entries(defaultVariation) as [Variation, TransformString][]
+	).reduce((acc, [key, getPart]) => {
+		acc[key] = (content) => `\x1b[35m${getPart(content)}\x1b[0m`;
+		return acc;
+	}, {} as VariationWrappers),
 	letterH: (content) => `\x1b[35m${content}\x1b[0m`,
-} satisfies WrapperDict;
+};

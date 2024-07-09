@@ -4,7 +4,6 @@ import {
 	pipelines,
 	TaraskConfig,
 	dicts,
-	REPLACE_J,
 	htmlConfigOptions,
 } from '../src';
 import * as cases from './cases';
@@ -147,7 +146,7 @@ test(
 );
 
 const phoneticCfg = new TaraskConfig({
-	j: REPLACE_J.ALWAYS,
+	j: 'always',
 });
 
 test(

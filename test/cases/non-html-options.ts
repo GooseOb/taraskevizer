@@ -1,7 +1,7 @@
-import { TaraskConfig, VARIATION } from '../../src';
+import { TaraskConfig } from '../../src';
 
 export default [
-	[['Гродна', { variations: VARIATION.NO }], 'Гродна'],
-	[['Гродна', { variations: VARIATION.FIRST }], 'Горадня'],
-	[['Гродна', { variations: VARIATION.ALL }], '(Гродна|Горадня)'],
+	[['Гродна', { variations: 'no' }], 'Гродна'],
+	[['Гродна', { variations: 'first' }], 'Горадня'],
+	[['Гродна', { variations: 'all' }], '(Гродна|Горадня)'],
 ] as [[string, Partial<TaraskConfig>], string][];

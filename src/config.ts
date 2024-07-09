@@ -1,8 +1,10 @@
 import { alphabets } from './dict';
-import type { PartialReadonly, ValueOf } from './types';
-import { REPLACE_J, VARIATION } from './constants';
+import type { PartialReadonly } from './types';
 import { Alphabet } from './dict/alphabets';
-import { WrapperDict, htmlWrappers } from './wrappers';
+import { WrapperDict, html } from './wrappers';
+
+export type Variation = 'no' | 'first' | 'all';
+export type OptionJ = 'never' | 'random' | 'always';
 
 export class TaraskConfig {
 	constructor(options?: PartialReadonly<TaraskConfig>) {
@@ -22,18 +24,18 @@ export class TaraskConfig {
 	abc = alphabets.cyrillic as Alphabet;
 
 	/**
-	 * | Value | When to replace `і`(`i`) by `й`(`j`) after vowels | Example                  |
-	 * | ----- | ------------------------------------------------- | ------------------------ |
-	 * |       |                                                   | `яна і ён`               |
-	 * | 0     | never                                             | `яна і ён`               |
-	 * | 1     | random                                            | `яна і ён` or `яна й ён` |
-	 * | 2     | always                                            | `яна й ён`               |
+	 * | When to replace `і`(`i`) by `й`(`j`) after vowels | Example                  |
+	 * | ------------------------------------------------- | ------------------------ |
+	 * |                                                   | `яна і ён`               |
+	 * | never                                             | `яна і ён`               |
+	 * | random                                            | `яна і ён` or `яна й ён` |
+	 * | always                                            | `яна й ён`               |
 	 *
 	 * Has no effect with abc set to {@link dicts.alphabets.latinJi}.
 	 *
-	 * @default REPLACE_J.NEVER
+	 * @default "never"
 	 */
-	j = REPLACE_J.NEVER as ValueOf<typeof REPLACE_J>;
+	j = 'never' as OptionJ;
 
 	/**
 	 * If set to false, may cause unwanted changes in acronyms.
@@ -48,10 +50,10 @@ export class TaraskConfig {
 	/**
 	 * Do replace ґ(g) by г(h) in cyrillic alphabet?
 	 *
-	 * | Value | Example     |
-	 * | ----- | ----------- |
-	 * | true  | Ґвалт ґвалт |
-	 * | false | Гвалт гвалт |
+	 * | Value | Example                                 |
+	 * | ----- | --------------------------------------- |
+	 * | true  | Ґвалт ґвалт                             |
+	 * | false | Гвалт гвалт                             |
 	 * | true  | `<tarH>ґ</tarH>валт <tarH>Ґ</tarH>валт` |
 	 * | false | `<tarH>г</tarH>валт <tarH>Г</tarH>валт` |
 	 *
@@ -60,16 +62,16 @@ export class TaraskConfig {
 	g = true as boolean;
 
 	/**
-	 * | Value | Which variation is used if a part of word is variable | Example           |
-	 * | ----- | ----------------------------------------------------- | ----------------- |
-	 * |       |                                                       | Гродна            |
-	 * | 0     | main                                                  | Гродна            |
-	 * | 1     | first                                                 | Горадня           |
-	 * | 2     | all                                                   | (Гродна\|Горадня) |
+	 * | Which variation is used if a part of word is variable | Example           |
+	 * | ----------------------------------------------------- | ----------------- |
+	 * |                                                       | Гродна            |
+	 * | no (main)                                             | Гродна            |
+	 * | first                                                 | Горадня           |
+	 * | all                                                   | (Гродна\|Горадня) |
 	 *
-	 * @default VARIATION.ALL
+	 * @default "all"
 	 */
-	variations = VARIATION.ALL as ValueOf<typeof VARIATION>;
+	variations = 'all' as Variation;
 
 	newLine = '\n' as string;
 
@@ -86,7 +88,7 @@ export class TaraskConfig {
  * });
  */
 export const htmlConfigOptions = {
-	wrapperDict: htmlWrappers,
+	wrapperDict: html,
 	g: false,
 	newLine: '<br>',
 	leftAngleBracket: '&lt',

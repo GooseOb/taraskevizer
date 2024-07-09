@@ -1,4 +1,4 @@
-import { dicts, REPLACE_J, TaraskConfig } from '../../src';
+import { dicts, TaraskConfig } from '../../src';
 
 const { latin } = dicts.alphabets;
 
@@ -6,9 +6,9 @@ type ItoJCase = [[string, TaraskConfig['j']?, TaraskConfig['abc']?], string][];
 
 export default [
 	[['Яна і ён'], 'Яна і ён'],
-	[['Яна і ён', REPLACE_J.NEVER], 'Яна і ён'],
-	[['Яна і ён', REPLACE_J.ALWAYS], 'Яна й ён'],
+	[['Яна і ён', 'never'], 'Яна і ён'],
+	[['Яна і ён', 'always'], 'Яна й ён'],
 	[['Яна і ён', undefined, latin], 'Jana i jon'],
-	[['Яна і ён', REPLACE_J.NEVER, latin], 'Jana i jon'],
-	[['Яна і ён', REPLACE_J.ALWAYS, latin], 'Jana j jon'],
+	[['Яна і ён', 'never', latin], 'Jana i jon'],
+	[['Яна і ён', 'always', latin], 'Jana j jon'],
 ] satisfies ItoJCase as ItoJCase;
