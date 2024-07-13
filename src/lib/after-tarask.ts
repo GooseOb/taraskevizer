@@ -16,5 +16,5 @@ export const endZSoftenAndNiaBiaz: ExtendedDict = [
 			isSingleVowel($1) && !prepositionPattern.test($1) ? ' ня ' + $1 : $0,
 	],
 	[/ б[ея]з(?= і\S*[ая]ў|ну )/g, ' бязь'],
-	[/( (?:пра|цера)?з)(?= і\S*[ая]ў|ну )/g, ($0, $1) => $1 + 'ь'],
+	[/( (?:пра|цера)?з)(?= і\S*[ая]ў|ну )/g, (_$0, $1) => $1 + 'ь'],
 ];

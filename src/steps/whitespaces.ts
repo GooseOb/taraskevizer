@@ -15,8 +15,8 @@ export type WhiteSpaceStorage = { spaces: string[] };
 export const whitespacesToSpaces = mutatingStep<WhiteSpaceStorage>(
 	({ text, storage }) => {
 		storage.spaces = [];
-		return text.replace(/\s+/g, (match) => {
-			storage.spaces.push(match);
+		return text.replace(/\s+/g, ($0) => {
+			storage.spaces.push($0);
 			return ' ';
 		});
 	}
