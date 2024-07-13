@@ -1,6 +1,6 @@
 import type { Dict } from './types';
 
-export const commonPhonetinc: Dict = [
+export const commonPhonetic: Dict = [
 	[/шся /g, 'сься '],
 	[/здж/g, 'ждж'],
 	[/ ([бд]|кнд|нот)р /, ' $1\ue0ffр '],
@@ -14,4 +14,4 @@ export const phonetic: Dict = (
 		[/чц(?![ьіеюя])/g, 'цц'],
 		[/шц(?=ы )/g, 'сц'],
 	] as Dict
-).concat(commonPhonetinc);
+).concat(commonPhonetic);

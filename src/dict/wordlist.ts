@@ -1,7 +1,7 @@
 import type { Dict } from "./types";
 import { iaWords } from './iawords';
 import { dictFrom } from './lib';
-import { commonPhonetinc } from "./phonetic";
+import { commonPhonetic } from "./phonetic";
 
 const chemicalElements1: string[] = [
 	'сканд|ванад|рубід|род|ірыд|рэзэрфорд',
@@ -1577,4 +1577,4 @@ export const wordlist: Dict = dictFrom.raw([
 [/ зямель /, ' з(ямель|емляў) '],
 [/ яблынь /, ' яблын(ь|яў) '],
 [/ расей /, ' расе(й|яў) '],
-]).concat(commonPhonetinc, gwords, iaWords, [[/\ue0ff/, '']]);
+]).concat(commonPhonetic, gwords, iaWords, [[/\ue0ff/, '']]);
