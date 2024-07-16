@@ -1,6 +1,8 @@
 import { restoreCase } from '../lib';
 import type { TaraskStep, SplittedTextStorage } from './types';
 
+const isNotLowerCase = (str: string) => str !== str.toLowerCase();
+
 export const restoreCaseStep: TaraskStep<SplittedTextStorage> = ({
 	cfg: { abc },
 	storage: { textArr, origArr },
@@ -9,7 +11,7 @@ export const restoreCaseStep: TaraskStep<SplittedTextStorage> = ({
 		restoreCase(textArr, origArr);
 	} else {
 		for (let i = 0; i < textArr.length; i++) {
-			if (origArr[i] !== origArr[i].toLowerCase()) textArr[i] = origArr[i];
+			if (isNotLowerCase(origArr[i])) textArr[i] = origArr[i];
 		}
 	}
 };

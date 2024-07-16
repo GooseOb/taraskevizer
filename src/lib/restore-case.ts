@@ -1,13 +1,5 @@
 const isUpperCase = (str: string): boolean => str === str.toUpperCase();
 
-const getLastLetter = (word: string, i: number) => {
-	const result = /\p{L}(?=[^\p{L}]*$)/u.exec(word);
-	if (result) return result[0];
-	throw new Error(
-		`the last letter of the word "${word}" not found. index: ${i}`
-	);
-};
-
 export const restoreCase = (text: string[], orig: readonly string[]) => {
 	for (let i = 0; i < text.length; i++) {
 		const word = text[i];
@@ -18,17 +10,16 @@ export const restoreCase = (text: string[], orig: readonly string[]) => {
 			continue;
 		}
 		if (!oWord[0] || !isUpperCase(oWord[0])) continue;
-		if (word === 'зь') {
-			text[i] = isUpperCase(orig[i + 1]) ? 'ЗЬ' : 'Зь';
-		} else if (isUpperCase(getLastLetter(oWord, i))) {
-			text[i] = word.toUpperCase();
-		} else {
-			text[i] = word.startsWith('(')
-				? word.replace(/[^)]*?(?=\))/, ($0) =>
-						$0.replace(/[(|]./g, ($0) => $0.toUpperCase())
-				  )
+		text[i] =
+			word === 'зь'
+				? isUpperCase(orig[i + 1])
+					? 'ЗЬ' // upper
+					: 'Зь' // initcap
+				: isUpperCase(oWord.at(-1)!)
+				? word.toUpperCase() // upper
+				: word.startsWith('(') // initcap
+				? word.replace(/[(|]./g, ($0) => $0.toUpperCase())
 				: word[0].toUpperCase() + word.slice(1);
-		}
 	}
 
 	return text;
