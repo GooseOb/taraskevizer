@@ -173,7 +173,7 @@ cfg = new TaraskConfig(
 				...htmlConfigOptions,
 				...cfg,
 				wrapperDict: htmlConfigOptions.wrapperDict,
-		  }
+			}
 		: cfg
 );
 

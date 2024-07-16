@@ -16,12 +16,12 @@ export const restoreCase = (text: string[], orig: readonly string[]) => {
 					? 'ЗЬ' // upper
 					: 'Зь' // initcap
 				: isUpperCase(oWord.at(-1)!)
-				? word.toUpperCase() // upper
-				: word.startsWith('(') // initcap
-				? word.replace(/^[^)]+/, ($0) =>
-						$0.replace(/[(|]./g, ($0) => $0.toUpperCase())
-				  )
-				: word[0].toUpperCase() + word.slice(1);
+					? word.toUpperCase() // upper
+					: word.startsWith('(') // initcap
+						? word.replace(/^[^)]+/, ($0) =>
+								$0.replace(/[(|]./g, ($0) => $0.toUpperCase())
+							)
+						: word[0].toUpperCase() + word.slice(1);
 	}
 
 	return text;

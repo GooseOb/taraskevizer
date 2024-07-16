@@ -10,13 +10,13 @@
 	"module": "dist/index.js",
 	"devDependencies": {
 		"@digitak/esrun": "^3.2.26",
-		"@types/node": "^20.12.7",
-		"bun-types": "^1.1.4",
+		"@types/node": "^20.14.11",
+		"bun-types": "^1.1.20",
 		"husky": "^9.0.11",
-		"prettier": "^3.2.5",
-		"tsup": "^8.0.2",
+		"prettier": "^3.3.3",
+		"tsup": "^8.1.1",
 		"typedoc": "^0.25.13",
-		"typescript": "^5.4.5"
+		"typescript": "^5.5.3"
 	},
 	"bin": {
 		"tarask": "dist/bin.js"
@@ -38,6 +38,7 @@
 	"private": false,
 	"scripts": {
 		"build": "tsc --project src/tsconfig.json && bun ./afterbuild.js",
+		"prettier": "prettier --write .",
 		"dev": "esrun --watch=src/*,test/*,bin/* --send-code-mode=temporaryFile test",
 		"dev:bun": "bun test --watch",
 		"test": "esrun --send-code-mode=temporaryFile test",
