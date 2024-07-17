@@ -1,4 +1,7 @@
 const isUpperCase = (str: string): boolean => str === str.toUpperCase();
+const initcap = (word: string) => word[0].toUpperCase() + word.slice(1);
+const initcapVar = (str: string) =>
+	'(' + str.slice(1).replace(/[^|)]*[|)]/g, initcap);
 
 export const restoreCase = (text: string[], orig: readonly string[]) => {
 	for (let i = 0; i < text.length; i++) {
@@ -13,15 +16,13 @@ export const restoreCase = (text: string[], orig: readonly string[]) => {
 		text[i] =
 			word === 'зь'
 				? isUpperCase(orig[i + 1])
-					? 'ЗЬ' // upper
-					: 'Зь' // initcap
+					? 'ЗЬ'
+					: 'Зь'
 				: isUpperCase(oWord.at(-1)!)
-					? word.toUpperCase() // upper
-					: word.startsWith('(') // initcap
-						? word.replace(/^[^)]+/, ($0) =>
-								$0.replace(/[(|]./g, ($0) => $0.toUpperCase())
-							)
-						: word[0].toUpperCase() + word.slice(1);
+					? word.toUpperCase()
+					: word.startsWith('(')
+						? initcapVar(word)
+						: initcap(word);
 	}
 
 	return text;
