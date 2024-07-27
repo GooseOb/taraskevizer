@@ -2,6 +2,7 @@
 	"compilerOptions": {
 		"moduleResolution": "node",
 		"incremental": true,
+		"tsBuildInfoFile": "./tsconfig.tsbuildinfo",
 		"module": "ESNext",
 		"target": "ESNext",
 		"isolatedModules": true,

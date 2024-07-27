@@ -4,3 +4,4 @@ dist-bun
 .idea
 docs
 output.txt
+tsconfig.tsbuildinfo
