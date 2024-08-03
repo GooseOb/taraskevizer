@@ -12,11 +12,13 @@ import { mutatingStep } from '../lib';
  *
  * Removes spaces around punctuation marks and digits.
  */
-export const finalize = mutatingStep(({ text, cfg: { newLine } }) =>
-	text
+export const finalize = mutatingStep(({ text, cfg: { newLine } }) => {
+	text = text
 		.replace(/&#40/g, '(')
 		.replace(/&nbsp;/g, ' ')
-		.replace(/ (\p{P}|\p{S}|\d+) /gu, '$1')
-		.replace(/\n/g, newLine)
-		.trim()
-);
+		.replace(/ (\p{P}|\p{S}|\d+) /gu, '$1');
+
+	if (newLine !== '\n') text = text.replace(/\n/g, newLine);
+
+	return text.trim();
+});

@@ -15,9 +15,7 @@ export class TaraskConfig {
 	}
 
 	/**
-	 * Any object that implements the {@link Alphabet} interface.
-	 *
-	 * The set of defined alphabets can be found in {@link dicts.alphabets}.
+	 * Predefined alphabets are in {@link dicts.alphabets}.
 	 *
 	 * @default alphabets.cyrillic
 	 */
@@ -44,7 +42,14 @@ export class TaraskConfig {
 	 */
 	doEscapeCapitalized = true as boolean;
 
-	/** @default null */
+	/**
+	 * Used for wrapping changed parts.
+	 * Predefined dicts are in {@link wrappers}.
+	 *
+	 * If `null`, wrapping changes will be skipped.
+	 *
+	 * @default null
+	 */
 	wrapperDict = null as null | WrapperDict;
 
 	/**
@@ -73,8 +78,20 @@ export class TaraskConfig {
 	 */
 	variations = 'all' as Variation;
 
+	/**
+	 * String to replace `"\n"` with.
+	 *
+	 * @default "\n"
+	 * @example "<br>"
+	 */
 	newLine = '\n' as string;
 
+	/**
+	 * String to replace `"<"` with.
+	 *
+	 * @default "<"
+	 * @example "&lt;"
+	 */
 	leftAngleBracket = '<' as string;
 }
 
@@ -92,4 +109,4 @@ export const htmlConfigOptions = {
 	g: false,
 	newLine: '<br>',
 	leftAngleBracket: '&lt',
-} satisfies PartialReadonly<TaraskConfig>;
+} as const satisfies PartialReadonly<TaraskConfig>;
