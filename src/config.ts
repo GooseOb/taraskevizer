@@ -1,7 +1,7 @@
 import { alphabets } from './dict';
 import type { PartialReadonly } from './types';
-import { Alphabet } from './dict/alphabets';
-import { WrapperDict, html } from './wrappers';
+import type { Alphabet } from './dict/alphabets';
+import { type WrapperDict, html } from './wrappers';
 
 export type Variation = 'no' | 'first' | 'all';
 export type OptionJ = 'never' | 'random' | 'always';

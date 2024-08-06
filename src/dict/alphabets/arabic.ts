@@ -1,5 +1,5 @@
 import { dictFrom } from '../lib';
-import { Alphabet } from './types';
+import type { Alphabet } from './types';
 
 const soft = '\u0652(?=[еёіюяь])';
 const presoft = '([تزكثࢮбвгджзйклмнпрстфхцчшў])\u0652?(\u0651?)';

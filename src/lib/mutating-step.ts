@@ -1,4 +1,4 @@
-import { TaraskStep } from '../steps/types';
+import type { TaraskStep } from '../steps/types';
 
 /**
  * An abstraction for a step that always changes the text.

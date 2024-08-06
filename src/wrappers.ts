@@ -1,4 +1,4 @@
-import { Variation } from './config';
+import type { Variation } from './config';
 
 type TransformString = (content: string) => string;
 

@@ -1,4 +1,4 @@
-import { TaraskConfig } from '../config';
+import type { TaraskConfig } from '../config';
 
 export type TaraskStep<Storage extends object = {}> = (args: {
 	text: string;

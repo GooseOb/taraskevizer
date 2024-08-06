@@ -1,4 +1,4 @@
-import { Alphabet } from './types';
+import type { Alphabet } from './types';
 
 export const cyrillic = {
 	lower: [],

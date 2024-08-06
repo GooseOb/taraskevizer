@@ -1,4 +1,4 @@
-import { OptionJ, Variation } from './config';
+import type { OptionJ, Variation } from './config';
 
 /**
  * @deprecated since 9.1.0. Will be removed in 10.0.0
