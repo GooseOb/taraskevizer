@@ -3,7 +3,8 @@ import { toOneLine } from './lib';
 /**
  * Words with first `i` letter stressed
  */
-export const iwords = toOneLine(`біс
+export const iwords = toOneLine(`\u0301
+біс
 бсэн
 в[аеоы] 
 верс
