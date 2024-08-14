@@ -1,6 +1,6 @@
 {
 	"name": "taraskevizer",
-	"version": "9.1.11",
+	"version": "9.1.12",
 	"author": "GooseOb",
 	"repository": {
 		"type": "git",
@@ -11,7 +11,7 @@
 	"devDependencies": {
 		"@digitak/esrun": "^3.2.26",
 		"@types/node": "^20.14.15",
-		"bun-types": "^1.1.22",
+		"bun-types": "^1.1.24",
 		"husky": "^9.1.4",
 		"prettier": "^3.3.3",
 		"typedoc": "^0.25.13",
