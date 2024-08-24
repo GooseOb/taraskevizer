@@ -12,6 +12,6 @@ export const phonetic: Dict = (
 		[/сш/g, 'шш'],
 		[/[зс]ч/g, 'шч'],
 		[/чц(?![ьіеюя])/g, 'цц'],
-		[/шц(?=ы )/g, 'сц'],
+		[/[жш]ц(?=ы )/g, 'сц'],
 	] as Dict
 ).concat(commonPhonetic);
