@@ -9,7 +9,7 @@ export type OptionJ = 'never' | 'random' | 'always';
 export class TaraskConfig {
 	constructor(options?: PartialReadonly<TaraskConfig>) {
 		for (const key in options) {
-			const value = (options as any)[key];
+			const value = options[key as keyof TaraskConfig];
 			if (key in this && value !== undefined) (this as any)[key] = value;
 		}
 	}

@@ -1,4 +1,4 @@
-import { dicts, TaraskConfig } from '../../src';
+import { dicts, type TaraskConfig } from '../../src';
 
 const { latin } = dicts.alphabets;
 

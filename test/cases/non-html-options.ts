@@ -1,4 +1,4 @@
-import { TaraskConfig } from '../../src';
+import type { TaraskConfig } from '../../src';
 
 export default [
 	[['Гродна', { variations: 'no' }], 'Гродна'],

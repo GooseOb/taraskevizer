@@ -11,7 +11,7 @@ import type { OptionJ, Variation } from './config';
  *   j: "never"
  * }
  */
-export const REPLACE_J: { [p in Uppercase<OptionJ>]: OptionJ } = {
+export const REPLACE_J: { [P in Uppercase<OptionJ>]: Lowercase<P> } = {
 	NEVER: 'never',
 	RANDOM: 'random',
 	ALWAYS: 'always',
@@ -28,7 +28,7 @@ export const REPLACE_J: { [p in Uppercase<OptionJ>]: OptionJ } = {
  *   variations: "no"
  * }
  */
-export const VARIATION: { [p in Uppercase<Variation>]: Variation } = {
+export const VARIATION: { [P in Uppercase<Variation>]: Lowercase<P> } = {
 	NO: 'no',
 	FIRST: 'first',
 	ALL: 'all',
