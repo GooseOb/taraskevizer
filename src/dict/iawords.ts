@@ -2,7 +2,7 @@ import { iwords } from './iwords';
 import { dictFrom, toOneLine } from './lib';
 
 const ia = (word: string, words: string): string =>
-	` ${word}(?= \\(?(?:[бвгджзйклмнпрстфцчшўьʼ]*[оё]|${toOneLine(words).replace(
+	` ${word}(?= \\(?(?:[бвгджзйклмнпрстфхцчшўьʼ]*[оё]|${toOneLine(words).replace(
 		/\(/g,
 		'(?:'
 	)}|i(?:${iwords})))`;
