@@ -5,7 +5,7 @@ const prepositionPattern =
 
 const isSingleVowel = (str: string) => str.match(/[аеёіоуыэюя]/g)?.length === 1;
 const isFirstSyllabeStressed = (word: string) =>
-	/^[бвгджзйклмнпрстфцчшўьʼ]*.\u0301/.test(word);
+	/^[бвгджзйклмнпхрстфхцчшўьʼ]*.\u0301/.test(word);
 
 export const endZSoftenAndNiaBiaz: ExtendedDict = [
 	[
