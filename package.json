@@ -10,11 +10,11 @@
 	"module": "dist/index.js",
 	"devDependencies": {
 		"@digitak/esrun": "^3.2.26",
-		"@types/node": "^20.16.1",
+		"@types/node": "^20.16.3",
 		"bun-types": "^1.1.26",
 		"husky": "^9.1.5",
 		"prettier": "^3.3.3",
-		"typedoc": "^0.25.13",
+		"typedoc": "^0.26.6",
 		"typescript": "^5.5.4"
 	},
 	"bin": {
@@ -36,7 +36,7 @@
 	"license": "MIT",
 	"private": false,
 	"scripts": {
-		"build": "tsc --project src/tsconfig.json && bun ./afterbuild.js",
+		"build": "bun ./build.ts",
 		"prettier": "prettier --write .",
 		"dev": "esrun --watch=src/*,test/* --send-code-mode=temporaryFile test",
 		"dev:bun": "bun test --watch",
