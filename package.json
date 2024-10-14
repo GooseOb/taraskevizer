@@ -1,6 +1,6 @@
 {
 	"name": "taraskevizer",
-	"version": "9.2.1",
+	"version": "9.2.2",
 	"author": "GooseOb",
 	"repository": {
 		"type": "git",
@@ -10,12 +10,12 @@
 	"module": "dist/index.js",
 	"devDependencies": {
 		"@digitak/esrun": "^3.2.26",
-		"@types/node": "^20.16.5",
-		"bun-types": "^1.1.27",
+		"@types/node": "^20.16.11",
+		"bun-types": "^1.1.30",
 		"husky": "^9.1.6",
 		"prettier": "^3.3.3",
-		"typedoc": "^0.26.7",
-		"typescript": "^5.6.2"
+		"typedoc": "^0.26.9",
+		"typescript": "^5.6.3"
 	},
 	"bin": {
 		"tarask": "dist/bin.js"

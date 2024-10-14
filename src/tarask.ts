@@ -1,5 +1,5 @@
 import { TaraskConfig } from './config';
-import type { TaraskStep } from './steps';
+import type { Pipeline } from './pipelines';
 
 /**
  * @returns converted text
@@ -10,7 +10,7 @@ import type { TaraskStep } from './steps';
  */
 export const tarask = (
 	text: string,
-	pipeline: TaraskStep<any>[],
+	pipeline: Pipeline,
 	cfg: Readonly<TaraskConfig> = new TaraskConfig()
 ): string => {
 	const options = { text, cfg, storage: {} };

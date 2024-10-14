@@ -1,16 +1,16 @@
 /**
- * A pipeline in Taraskevizer is basically
- * an array of steps of type {@link steps.TaraskStep}.
+ * You can use builtin pipelines from this module or create your own.
  *
- * You can use pre-made pipelines from this module or create your own.
- *
- * If you want to create a pipeline based on a pre-made one
+ * If you want to create a pipeline based on a builtin one
  * and do it more safely, it's recommended to use
  * `.map` if you need replacing only or
  * `.flatMap` if you also need to add or remove steps.
  *
  * This way you will depend less on the
- * internal structure of the pre-made pipeline.
+ * internal structure of the builtin pipeline.
+ *
+ * For cases when you need to replace only {@link steps.taraskevize} in {@link tar}
+ * and have better tree-shaking, you can use {@link _createPipeline}.
  *
  * @module
  */
@@ -48,6 +48,8 @@ type AbcOnlyStorage = {
 	doEscapeCapitalized: boolean;
 };
 
+export type Pipeline = TaraskStep<any>[];
+
 /**
  * Pipeline for changing only the alphabet.
  *
@@ -72,16 +74,16 @@ export const abc = [
 	(({ storage, cfg }) => {
 		cfg.doEscapeCapitalized = storage.doEscapeCapitalized;
 	}) satisfies TaraskStep<AbcOnlyStorage>,
-] satisfies TaraskStep<any>[];
+] satisfies Pipeline;
 
 /**
  * For better tree-shaking instead of `Array.prototype.flatMap`
  *
  * Used by {@link tar} and {@link phonetic}.
  *
- * @param steps - Steps used instead of [{@link steps.taraskevize}].
+ * @param subPipeline - Steps used instead of [{@link subPipeline.taraskevize}].
  */
-export const _createPipeline = (steps: TaraskStep<any>[]) =>
+export const _createPipeline = (subPipeline: Pipeline) =>
 	[
 		trim,
 		resolveSpecialSyntax,
@@ -89,7 +91,7 @@ export const _createPipeline = (steps: TaraskStep<any>[]) =>
 		whitespacesToSpaces,
 		storeSplittedAbcConvertedOrig,
 		toLowerCase,
-		...steps,
+		...subPipeline,
 		replaceIbyJ,
 		convertAlphabetLowerCase,
 		storeSplittedText,
@@ -102,7 +104,7 @@ export const _createPipeline = (steps: TaraskStep<any>[]) =>
 		applyNoFix,
 		finalize,
 		untrim,
-	] satisfies TaraskStep<any>[];
+	] satisfies Pipeline;
 
 /**
  * Pipeline for taraskevizing.
