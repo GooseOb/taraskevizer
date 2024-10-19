@@ -5,7 +5,7 @@ EXAMPLES
 
 Convert and latinize a word
 	tarask --latin 'планета'
-Will print "p<fix>l</fix>a<fix>ne</fix>ta"
+Will print "p{\fix l}a{\fix ne}ta"
 
 Read from one file and write converted text to another
 	tarask < ./cyr-text.txt > ./lat-text.txt

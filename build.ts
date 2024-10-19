@@ -5,7 +5,6 @@ import {
 	readConfigFile,
 	parseJsonConfigFileContent,
 	sys,
-	createCompilerHost,
 } from 'typescript';
 import { readdirSync, lstatSync } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
@@ -123,6 +122,17 @@ await Promise.all(
 
 printWithTime('Imports fixed');
 
+const prefix = '[taraskevizer]';
+const coloredPrefix = `\x1b[34m${prefix}\x1b[0m`;
+
+const colorizeText = (text: string) =>
+	text
+		.replace(/\{\\fix ([^}]+)}/g, '\x1b[32m$1\x1b[0m')
+		.replace(/\n([^:\n]+):\n/g, '\n\x1b[33m$1\x1b[0m:\n')
+		.replace(/(\s)tarask(?=\s)/g, '$1\x1b[34mtarask\x1b[0m')
+		.replace(/(\s)(--?\S+)/g, '$1\x1b[35m$2\x1b[0m')
+		.replaceAll(prefix, coloredPrefix);
+
 await Promise.all([
 	readFile('./dist/bin.js', 'utf8'),
 	readFile('./package.json', 'utf8'),
@@ -132,7 +142,8 @@ await Promise.all([
 		'dist/bin.js',
 		content
 			.replace(/__VERSION__/g, `"${JSON.parse(pjson).version}"`)
-			.replace(/__CLI_HELP__/g, `\`${cliHelp}\``)
+			.replace(/__CLI_HELP__/g, `\`${colorizeText(cliHelp)}\``)
+			.replace(/__CLI_PREFIX__/g, `"${coloredPrefix}"`)
 	)
 );
 
