@@ -12,7 +12,7 @@ declare const __CLI_PREFIX__: string;
 declare const __VERSION__: string;
 
 const printWithPrefix = (msg: string) => {
-	process.stdout.write(__CLI_PREFIX__ + msg + '\n');
+	process.stdout.write(__CLI_PREFIX__ + ' ' + msg + '\n');
 };
 
 process.argv.splice(0, 2);
