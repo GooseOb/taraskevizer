@@ -12,7 +12,7 @@ Read from one file and write converted text to another
 
 Enter interactive mode
 	tarask
-Will print "[taraskevizer] Enter the text:" and wait until you press Enter
+Will print "{\PREFIX} Enter the text:" and wait until you press Enter
 
 OPTIONS
 

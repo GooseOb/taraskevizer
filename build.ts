@@ -122,8 +122,7 @@ await Promise.all(
 
 printWithTime('Imports fixed');
 
-const prefix = '[taraskevizer]';
-const coloredPrefix = `\x1b[34m${prefix}\x1b[0m`;
+const CLI_PREFIX = `\x1b[34m[taraskevizer]\x1b[0m`;
 
 const colorizeText = (text: string) =>
 	text
@@ -131,7 +130,7 @@ const colorizeText = (text: string) =>
 		.replace(/\n([^:\n]+):\n/g, '\n\x1b[33m$1\x1b[0m:\n')
 		.replace(/(\s)tarask(?=\s)/g, '$1\x1b[34mtarask\x1b[0m')
 		.replace(/(\s)(--?\S+)/g, '$1\x1b[35m$2\x1b[0m')
-		.replaceAll(prefix, coloredPrefix);
+		.replace(/\{\\PREFIX}/g, CLI_PREFIX);
 
 await Promise.all([
 	readFile('./dist/bin.js', 'utf8'),
@@ -143,7 +142,7 @@ await Promise.all([
 		content
 			.replace(/__VERSION__/g, `"${JSON.parse(pjson).version}"`)
 			.replace(/__CLI_HELP__/g, `\`${colorizeText(cliHelp)}\``)
-			.replace(/__CLI_PREFIX__/g, `"${coloredPrefix}"`)
+			.replace(/__CLI_PREFIX__/g, `"${CLI_PREFIX}"`)
 	)
 );
 
