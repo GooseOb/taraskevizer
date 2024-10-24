@@ -1,6 +1,6 @@
 {
 	"name": "taraskevizer",
-	"version": "9.2.3",
+	"version": "9.2.4",
 	"author": "GooseOb",
 	"repository": {
 		"type": "git",
@@ -10,12 +10,16 @@
 	"module": "dist/index.js",
 	"devDependencies": {
 		"@digitak/esrun": "^3.2.26",
-		"@types/node": "^20.16.11",
-		"bun-types": "^1.1.30",
+		"@eslint/js": "^9.13.0",
+		"@types/node": "^20.16.12",
+		"bun-types": "^1.1.31",
+		"eslint": "^9.13.0",
+		"globals": "^15.11.0",
 		"husky": "^9.1.6",
 		"prettier": "^3.3.3",
-		"typedoc": "^0.26.9",
-		"typescript": "^5.6.3"
+		"typedoc": "^0.26.10",
+		"typescript": "^5.6.3",
+		"typescript-eslint": "^8.11.0"
 	},
 	"bin": {
 		"tarask": "dist/bin.js"
@@ -38,6 +42,7 @@
 	"scripts": {
 		"build": "bun ./build.ts",
 		"prettier": "prettier --write .",
+		"lint": "eslint .",
 		"dev": "esrun --watch=src/*,test/* --send-code-mode=temporaryFile test",
 		"dev:bun": "bun test --watch",
 		"test": "esrun --send-code-mode=temporaryFile test",

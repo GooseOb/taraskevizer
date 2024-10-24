@@ -111,7 +111,9 @@ await Promise.all(
 								if (lstatSync(resolve(parentPath, $2)).isDirectory()) {
 									$2 += '/index';
 								}
-							} catch {}
+							} catch {
+								// ignore errors
+							}
 							return $1 + $2 + '.js';
 						}
 					)

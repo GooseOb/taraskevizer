@@ -9,7 +9,7 @@ export const replaceIbyJ: TaraskStep = (options) => {
 		options.text = options.text.replace(
 			/(?<=[аеёіоуыэюя] )і (ў?)/g,
 			j === 'always'
-				? (_$0, $1) => toJ($1)
-				: ($0, $1) => (Math.random() >= 0.5 ? toJ($1) : $0)
+				? (_$0, $1: '' | 'ў') => toJ($1)
+				: ($0, $1: '' | 'ў') => (Math.random() >= 0.5 ? toJ($1) : $0)
 		);
 };

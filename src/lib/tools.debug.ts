@@ -7,11 +7,7 @@ export const replaceWithDict = (
 ) => {
 	for (const item of dict) {
 		const [pattern, result] = item;
-		text = text.replace(
-			pattern,
-			//@ts-ignore
-			result
-		);
+		text = text.replace(pattern, result);
 		if (regex.test(text)) {
 			log('replaceWithDict:', item);
 			process.exit(1);
@@ -21,7 +17,7 @@ export const replaceWithDict = (
 	return text;
 };
 
-export const log = (...msgs: any[]) => {
+export const log = (...msgs: unknown[]) => {
 	console.log('[debug]', ...msgs);
 	return msgs[0];
 };

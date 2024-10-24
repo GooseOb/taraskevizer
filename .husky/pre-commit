@@ -9,6 +9,7 @@
 
 bun run build
 bun run test &
-bun run prettier
+bun run prettier &
+bun run lint &
 bun run docs
 git add -A .

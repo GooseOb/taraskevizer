@@ -20,7 +20,7 @@ import type { TaraskStep } from '../steps/types';
  * };
  */
 export const mutatingStep =
-	<T extends object = {}>(
+	<T extends object = object>(
 		callback: (...args: Parameters<TaraskStep<T>>) => string
 	): TaraskStep<T> =>
 	(options) => {
