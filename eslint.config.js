@@ -10,7 +10,7 @@ export default [
 	...tseslint.configs.recommended,
 	{
 		rules: {
-			'no-misleading-character-class': 'off',
+			'no-misleading-character-class': ['error', { allowEscape: true }],
 			'@typescript-eslint/no-explicit-any': 'off',
 		},
 	},
