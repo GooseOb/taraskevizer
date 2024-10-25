@@ -13,9 +13,9 @@ import type { TaraskStep } from '../steps/types';
  *   ({ text, storage: { wrapText } }) => wrapText(text.trim())
  * );
  * // is equivalent to
- * const trimStep: TaraskStep<TextWrapperStorage> = (options) => {
- *   options.text = options.storage.wrapText(
- *     options.text.trim()
+ * const trimStep: TaraskStep<TextWrapperStorage> = (ctx) => {
+ *   ctx.text = options.storage.wrapText(
+ *     ctx.text.trim()
  *   );
  * };
  */
@@ -23,6 +23,6 @@ export const mutatingStep =
 	<T extends object = object>(
 		callback: (...args: Parameters<TaraskStep<T>>) => string
 	): TaraskStep<T> =>
-	(options) => {
-		options.text = callback(options);
+	(ctx) => {
+		ctx.text = callback(ctx);
 	};

@@ -13,7 +13,7 @@ export const tarask = (
 	pipeline: Pipeline,
 	cfg: Readonly<TaraskConfig> = new TaraskConfig()
 ): string => {
-	const options = { text, cfg, storage: {} };
-	for (const step of pipeline) step(options);
-	return options.text;
+	const ctx = { text, cfg, storage: {} };
+	for (const step of pipeline) step(ctx);
+	return ctx.text;
 };

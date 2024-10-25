@@ -19,11 +19,11 @@ export type SpecialSyntaxStorage = {
  *
  * Empties {@link SpecialSyntaxStorage.noFixArr}.
  */
-export const applyNoFix: TaraskStep<SpecialSyntaxStorage> = (options) => {
-	const { noFixArr } = options.storage;
+export const applyNoFix: TaraskStep<SpecialSyntaxStorage> = (ctx) => {
+	const { noFixArr } = ctx.storage;
 	if (noFixArr.length) {
 		noFixArr.reverse();
-		options.text = options.text.replace(NOFIX_REGEX, () => noFixArr.pop()!);
+		ctx.text = ctx.text.replace(NOFIX_REGEX, () => noFixArr.pop()!);
 	}
 };
 
