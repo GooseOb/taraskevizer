@@ -1,4 +1,4 @@
-import { mutatingStep, replaceWithDict } from '../lib';
+import { mutatingStep, replaceWithDict, replaceWithDicts } from '../lib';
 
 export const convertAlphabet = mutatingStep(
 	({
@@ -6,7 +6,7 @@ export const convertAlphabet = mutatingStep(
 		cfg: {
 			abc: { upper, lower },
 		},
-	}) => replaceWithDict(replaceWithDict(text, lower), upper)
+	}) => replaceWithDicts(text, [lower, upper])
 );
 
 export const convertAlphabetLowerCase = mutatingStep(

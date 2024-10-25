@@ -5,3 +5,8 @@ export const replaceWithDict = (text: string, dict: ExtendedDict = []) => {
 
 	return text;
 };
+
+export const replaceWithDicts = (
+	text: string,
+	dicts: (ExtendedDict | undefined)[]
+) => dicts.reduce(replaceWithDict, text);
