@@ -91,7 +91,7 @@ for (const diagnostic of allDiagnostics) {
 
 printWithTime('Diagnostics printed');
 
-const distPath = join(process.cwd(), 'dist');
+const distPath = join(__dirname, 'dist');
 
 await Promise.all(
 	srcFiles.map((file) => {
