@@ -1,6 +1,5 @@
-import { iwords } from '../dict';
-import { re } from '../lib';
-import { callableDict, mutatingStep } from '../lib';
+import { iwords } from '@/dict';
+import { callableDict, mutatingStep, re } from '@/lib';
 
 const iDict = callableDict([
 	[/([аеёіоуыэюя\u0301] )і ў/g, '$1й у'],

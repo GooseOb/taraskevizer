@@ -1,5 +1,5 @@
 import { replaceG } from './replace-g';
-import { gobj } from '../dict';
+import { gobj } from '@/dict';
 
 const replaceGByOpposite = replaceG(($0) => gobj[$0]);
 

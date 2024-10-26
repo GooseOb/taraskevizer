@@ -1,6 +1,6 @@
 import type { Dict } from "./types";
 import { iaWords } from './iawords';
-import { callableDict, re } from '../lib';
+import { callableDict, re } from '@/lib';
 import { commonPhonetic } from "./phonetic";
 
 const chemicalElements1: string[] = [

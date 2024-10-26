@@ -1,4 +1,4 @@
-import { restoreCase } from '../lib';
+import { restoreCase } from '@/lib';
 import type { TaraskStep, SplittedTextStorage } from './types';
 
 const isNotLowerCase = (str: string) => str !== str.toLowerCase();

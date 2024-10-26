@@ -1,6 +1,6 @@
 import { iwords } from './iwords';
 import { callableDict, toOneLine } from './lib';
-import { re } from '../lib';
+import { re } from '@/lib';
 
 const ia = (word: string, words: string) =>
 	re.g(

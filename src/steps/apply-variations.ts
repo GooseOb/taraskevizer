@@ -1,5 +1,5 @@
-import { mutatingStep } from '../lib';
-import { defaultVariation } from '../wrappers';
+import { mutatingStep } from '@/lib';
+import { defaultVariation } from '@/wrappers';
 
 export const applyVariations = mutatingStep(
 	({ text, cfg: { wrapperDict, variations } }) =>

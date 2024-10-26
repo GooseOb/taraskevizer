@@ -8,7 +8,7 @@ import {
 } from 'typescript';
 import { readdirSync, lstatSync } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
-import { join, resolve } from 'path';
+import { join, resolve, relative } from 'path';
 import { fileURLToPath } from 'url';
 
 const getPrinter =
@@ -91,19 +91,21 @@ for (const diagnostic of allDiagnostics) {
 
 printWithTime('Diagnostics printed');
 
+const distPath = join(process.cwd(), 'dist');
+
 await Promise.all(
 	srcFiles.map((file) => {
-		const parentPath = file.parentPath.replace(/^src/, 'dist');
-		const fileName = join(
-			__dirname,
-			parentPath,
-			file.name.replace(/ts$/, 'js')
-		);
-		return readFile(fileName, 'utf8').then((content) =>
+		const parentPath = join(__dirname, file.parentPath.replace(/^src/, 'dist'));
+		const filePath = join(parentPath, file.name.replace(/ts$/, 'js'));
+		return readFile(filePath, 'utf8').then((content) =>
 			writeFile(
-				fileName,
+				filePath,
 				content
 					.replace(/\/\*.*?\*\//gs, '')
+					.replace(
+						/((?:im|ex)port.+from\s+["'])@\/(.+)(?=["'];)/g,
+						(_$0, $1, $2) => $1 + relative(parentPath, join(distPath, $2))
+					)
 					.replace(
 						/((?:im|ex)port.+from\s+["'])(.+)(?<!\.js)(?=["'];)/g,
 						(_$0, $1, $2) => {

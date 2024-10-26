@@ -1,4 +1,4 @@
-import { noSoften, softeners } from '../dict/softening';
+import { noSoften, softeners } from '@/dict/softening';
 
 export const soften = (text: string) => {
 	text = noSoften(text);

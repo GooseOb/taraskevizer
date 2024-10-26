@@ -1,4 +1,4 @@
-import { mutatingStep } from '../lib';
+import { mutatingStep } from '@/lib';
 
 /**
  * Reverse the changes made in the {@link prepare} step

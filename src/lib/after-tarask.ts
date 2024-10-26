@@ -1,4 +1,4 @@
-import { callableDict } from '../dict/lib';
+import { callableDict } from '@/dict/lib';
 
 export const endZSoftenAndNiaBiaz = callableDict([
 	// / не (?=

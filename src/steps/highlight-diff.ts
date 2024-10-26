@@ -1,6 +1,6 @@
 import type { TaraskStep, SplittedTextStorage } from './types';
-import { highlightDiff } from '../lib';
-import { alphabets } from '../dict';
+import { highlightDiff } from '@/lib';
+import { alphabets } from '@/dict';
 
 /**
  * Uses {@link highlightDiff}

@@ -2,7 +2,7 @@ import type { Alphabet } from './types';
 import type { Dict } from '../types';
 import { iwords } from '../iwords';
 import { callableDict } from '../lib';
-import { re } from '../../lib';
+import { re } from '@/lib';
 
 const common = {
 	lower: [

@@ -1,5 +1,5 @@
 import { callableDict } from './lib';
-import { re } from '../lib';
+import { re } from '@/lib';
 import { iwords } from './iwords';
 
 export const noSoften = callableDict([

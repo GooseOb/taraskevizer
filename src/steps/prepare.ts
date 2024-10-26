@@ -1,4 +1,4 @@
-import { mutatingStep } from '../lib';
+import { mutatingStep } from '@/lib';
 
 /**
  * Prepares the text for correct processing.

@@ -1,5 +1,4 @@
-import { mutatingStep } from '../lib';
-import * as debug from '../lib/debug';
+import { mutatingStep } from '@/lib';
 
 export const convertAlphabet = mutatingStep(
 	({
@@ -9,7 +8,7 @@ export const convertAlphabet = mutatingStep(
 		},
 	}) => {
 		text = lower(text);
-		return upper ? debug.dict(upper, /K/)(text) : text;
+		return upper ? upper(text) : text;
 	}
 );
 

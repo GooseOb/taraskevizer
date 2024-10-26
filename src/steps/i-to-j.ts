@@ -1,4 +1,4 @@
-import { alphabets } from '../dict';
+import { alphabets } from '@/dict';
 import type { TaraskStep } from './types';
 
 const toJ = (shortU: '' | 'ў') => 'й ' + (shortU ? 'у' : '');

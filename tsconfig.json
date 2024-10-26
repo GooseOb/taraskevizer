@@ -19,6 +19,9 @@
 		"strictNullChecks": true,
 		"strictFunctionTypes": true,
 		"strictPropertyInitialization": true,
-		"types": ["bun-types"]
+		"types": ["bun-types"],
+		"paths": {
+			"@/*": ["./src/*"]
+		}
 	}
 }

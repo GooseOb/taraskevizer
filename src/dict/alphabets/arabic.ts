@@ -1,6 +1,6 @@
-import { callableDict } from '../lib';
 import type { Alphabet } from './types';
-import { re } from '../../lib';
+import { re } from '@/lib';
+import { callableDict } from '../lib';
 
 const soft = '\u0652(?=[еёіюяь])';
 const presoft = '([تزكثࢮбвгджзйклмнпрстфхцчшў])\u0652?(\u0651?)';

@@ -1,6 +1,6 @@
-import { restoreCase, mutatingStep } from '../lib';
+import { restoreCase, mutatingStep } from '@/lib';
 import type { TaraskStep } from './types';
-import type { Alphabet } from '../dict/alphabets/types';
+import type { Alphabet } from '@/dict/alphabets/types';
 
 const NOFIX_CHAR = ' \ue0fe ';
 const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
