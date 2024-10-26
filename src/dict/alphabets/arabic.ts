@@ -1,5 +1,6 @@
-import { callableDict, regexGI } from '../lib';
+import { callableDict } from '../lib';
 import type { Alphabet } from './types';
+import { re } from '../../lib';
 
 const soft = '\u0652(?=[еёіюяь])';
 const presoft = '([تزكثࢮбвгджзйклмнпрстфхцчшў])\u0652?(\u0651?)';
@@ -20,17 +21,17 @@ export const arabic = {
 		[/[Аа]/g, '\u0627а'],
 		// першая галосная, аліф
 		[/ (?=[ЕеЭэЫыУуОо])/g, ' \u0627'],
-		[regexGI('д\u0652з' + soft), 'ࢮ'],
-		[regexGI('з' + soft), 'ز'],
-		[regexGI('к' + soft), 'ك'],
-		[regexGI('с' + soft), 'ث'],
-		[regexGI('т' + soft), 'ت'],
+		[re.gi('д\u0652з' + soft), 'ࢮ'],
+		[re.gi('з' + soft), 'ز'],
+		[re.gi('к' + soft), 'ك'],
+		[re.gi('с' + soft), 'ث'],
+		[re.gi('т' + soft), 'ت'],
 		[/([تزكث])[Іі]/g, 'ы'],
 		// $2 - шадда
-		[regexGI(presoft + '[аяэе]'), '$1$2\u064E'],
-		[regexGI(presoft + '[іы]'), '$1$2\u0650'],
+		[re.gi(presoft + '[аяэе]'), '$1$2\u064E'],
+		[re.gi(presoft + '[іы]'), '$1$2\u0650'],
 		[/ [Iі] /g, ' \u0627\u0650 '],
-		[regexGI(presoft + '[оёую]'), '$1$2\u064F'],
+		[re.gi(presoft + '[оёую]'), '$1$2\u064F'],
 		[/[ʼ]/g, 'ع'],
 		[/[Ьь]/g, ''],
 		// [/[ьʼ]/g, ''],

@@ -1,6 +1,6 @@
 import type { Dict } from "./types";
 import { iaWords } from './iawords';
-import { callableDict, regexG } from './lib';
+import { callableDict, re } from '../lib';
 import { commonPhonetic } from "./phonetic";
 
 const chemicalElements1: string[] = [
@@ -1205,18 +1205,18 @@ export const wordlist = callableDict([
 	[/ гeлі(?=[юя] |е)/g, ' (гэ|г\ue0ffе)л'],
 	[/ гeліі /g, ' (гэ|г\ue0ffе)ле '],
 [/ гелі/g, ' гэлі'],
-[regexG(`(${chemicalElements1[0] + chemicalElements1[1]}|інд|франц|рад)ый `), '$1 '],
-	[regexG(`(${chemicalElements1[3]})ы[ея]`), '$1а'],
-	[regexG(`(${chemicalElements1[3]})ыю`), '$1у'],
-	[regexG(`(${chemicalElements1[3]}|рад)ыі`), '$1зе'],
-	[regexG(`(${chemicalElements1[2]})ыі`), '$1ы'],
-[regexG(`(${chemicalElements2[0]}|герман)ій`), '$1'],
-[regexG(`(${chemicalElements2[1]})і[ея]`), '$1а'],
-[regexG(`(${chemicalElements2[1]})ію`), '$1у'],
-[regexG(`(${chemicalElements3}| тал)ій `), '$1ь '],
+[re.g(`(${chemicalElements1[0] + chemicalElements1[1]}|інд|франц|рад)ый `), '$1 '],
+	[re.g(`(${chemicalElements1[3]})ы[ея]`), '$1а'],
+	[re.g(`(${chemicalElements1[3]})ыю`), '$1у'],
+	[re.g(`(${chemicalElements1[3]}|рад)ыі`), '$1зе'],
+	[re.g(`(${chemicalElements1[2]})ыі`), '$1ы'],
+[re.g(`(${chemicalElements2[0]}|герман)ій`), '$1'],
+[re.g(`(${chemicalElements2[1]})і[ея]`), '$1а'],
+[re.g(`(${chemicalElements2[1]})ію`), '$1у'],
+[re.g(`(${chemicalElements3}| тал)ій `), '$1ь '],
 [/ таліе/g, ' тале'],
-[regexG(`(${chemicalElements3})і(?=[юя] |е)`), '$1'],
-[regexG(`(${chemicalElements3})іі `), '$1е '],
+[re.g(`(${chemicalElements3})і(?=[юя] |е)`), '$1'],
+[re.g(`(${chemicalElements3})іі `), '$1е '],
 /* ер > эр */
 [/(антрэпрэн|бакс|грав|грым|гіпнатыз|паз|партн|плян|прыз|рэжыс|рэзан|сап|сутэн|трас|фантаз)ёр/g, '$1эр'],
 [/(біле|брэ|ман|мушке|(ім|рэ|транс|экс)пар|салі)цёр/g, '$1тэр'],

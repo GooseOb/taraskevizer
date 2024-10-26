@@ -1,4 +1,5 @@
-import { callableDict, regexG } from './lib';
+import { callableDict } from './lib';
+import { re } from '../lib';
 import { iwords } from './iwords';
 
 export const noSoften = callableDict([
@@ -14,7 +15,7 @@ export const softeners = callableDict([
 	[/с(?=[бвлмнпсфц][еёіюяь])/g, 'сь'],
 	[/ц(?=[вм][еёіюяь])/g, 'ць'],
 	[
-		regexG(
+		re.g(
 			`( (?:б[ея]|пра|цера)?з) (?=\\(?)(?=[еёюяь]|([бвзйлмнпстфц]|дз)[еёіюяь]|імі? |іх(?:ні)?|і(?:${iwords}))`
 		),
 		'$1ь ',

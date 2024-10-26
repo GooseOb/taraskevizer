@@ -1,8 +1,9 @@
 import { iwords } from './iwords';
-import { callableDict, regexG, toOneLine } from './lib';
+import { callableDict, toOneLine } from './lib';
+import { re } from '../lib';
 
 const ia = (word: string, words: string) =>
-	regexG(
+	re.g(
 		` ${word}(?= \\(?(?:[бвгджзйклмнпрстфхцчшўьʼ]*[оё]|${toOneLine(
 			words
 		).replace(/\(/g, '(?:')}|i(?:${iwords})))`

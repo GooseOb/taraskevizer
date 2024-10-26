@@ -4,28 +4,19 @@ export const copyDict = <T extends [any, any][]>(dict: T): T =>
 	dict.map(({ 0: pattern, 1: result }) => [pattern, result]) as T;
 
 /**
- * Collection of MUTATING functions
- * that help to work with dictionaries.
+ * @returns function with property `value` that references the dictionary
+ * passed as an argument.
  *
- * Use {@link copyDict} before applying these functions
- * to avoid mutating the original dictionary.
+ * It is possible to change the dictionary after initialization by modifying
+ * the `value` property.
  *
- * @example
- * const rawDict = [
- *   ["pattern", "result"],
- * ];
- *
- * const dict = dict.raw(copyDict(rawDict));
- * // [ [ /pattern/g, "result" ] ]
+ * You can use {@link copyDict} before passing the dictionary to this function
  */
-export const callableDict = (dict: Dict): CallableDict => {
+export const callableDict = (value: Dict): CallableDict => {
 	const fn: CallableDict = (text) =>
 		fn.value.reduce((acc, item) => acc.replace(item[0], item[1]), text);
-	fn.value = dict;
+	fn.value = value;
 	return fn;
 };
 
 export const toOneLine = (str: string): string => str.replace(/\n/g, '|');
-
-export const regexG = (pattern: string) => new RegExp(pattern, 'g');
-export const regexGI = (pattern: string) => new RegExp(pattern, 'gi');

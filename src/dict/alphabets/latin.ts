@@ -1,7 +1,8 @@
 import type { Alphabet } from './types';
 import type { Dict } from '../types';
 import { iwords } from '../iwords';
-import { callableDict, regexG } from '../lib';
+import { callableDict } from '../lib';
+import { re } from '../../lib';
 
 const common = {
 	lower: [
@@ -125,9 +126,9 @@ export const latinJi = {
 		[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )І Ў/g, '$1J U'],
 		[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )І ў/g, '$1J u'],
 		[/([аеёіоуыэюяАЕЁІОУЫЭЮЯ] )І /g, '$1J '],
-		[regexG(` і(?=${iwords})`), ' ji'],
-		[regexG(` І(?=${iwords})`), ' Ji'],
-		[regexG(` І(?=${iwords.toUpperCase()})`), ' JI'],
+		[re.g(` і(?=${iwords})`), ' ji'],
+		[re.g(` І(?=${iwords})`), ' Ji'],
+		[re.g(` І(?=${iwords.toUpperCase()})`), ' JI'],
 		...common.lower[0],
 		[/([eouaаеёіоуыэюяʼАЕЁІОУЫЭЮЯЬ] *)і/g, '$1ji'],
 		...common.lower[1],
