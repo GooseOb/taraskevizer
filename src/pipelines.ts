@@ -41,13 +41,6 @@ import {
 	applyVariations,
 } from './steps';
 
-/**
- * Storage for the pipeline {@link abc}.
- */
-type AbcOnlyStorage = {
-	doEscapeCapitalized: boolean;
-};
-
 export type Pipeline = TaraskStep<any>[];
 
 /**
@@ -58,10 +51,9 @@ export type Pipeline = TaraskStep<any>[];
  * To see the full list of steps, check the source code.
  */
 export const abc = [
-	(({ storage, cfg }) => {
-		storage.doEscapeCapitalized = cfg.doEscapeCapitalized;
-		cfg.doEscapeCapitalized = false;
-	}) satisfies TaraskStep<AbcOnlyStorage>,
+	(ctx) => {
+		ctx.cfg = { ...ctx.cfg, doEscapeCapitalized: false };
+	},
 	trim,
 	resolveSpecialSyntax,
 	prepare,
@@ -71,9 +63,6 @@ export const abc = [
 	applyNoFix,
 	finalize,
 	untrim,
-	(({ storage, cfg }) => {
-		cfg.doEscapeCapitalized = storage.doEscapeCapitalized;
-	}) satisfies TaraskStep<AbcOnlyStorage>,
 ] satisfies Pipeline;
 
 /**
