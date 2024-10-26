@@ -1,4 +1,4 @@
-import { restoreCase, replaceWithDict, mutatingStep } from '../lib';
+import { restoreCase, mutatingStep } from '../lib';
 import type { TaraskStep } from './types';
 import type { Alphabet } from '../dict/alphabets/types';
 
@@ -40,7 +40,7 @@ export const resolveSpecialSyntax = mutatingStep<SpecialSyntaxStorage>(
 		const noFixArr = (storage.noFixArr = [] as string[]);
 		const convertAlphavet = (abcOnlyText: string, abc: Alphabet) =>
 			restoreCase(
-				replaceWithDict(abcOnlyText.toLowerCase(), abc.lower).split(' '),
+				abc.lower(abcOnlyText.toLowerCase()).split(' '),
 				abcOnlyText.split(' ')
 			).join(' ');
 

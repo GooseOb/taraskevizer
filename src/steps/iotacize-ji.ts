@@ -1,13 +1,12 @@
 import { iwords } from '../dict';
-import { dictFrom, mutatingStep, replaceWithDict } from '../lib';
+import { regexG } from '../dict/lib';
+import { dict, mutatingStep } from '../lib';
 
-const iDict = dictFrom.raw([
-	[/([аеёіоуыэюя\u0301] )і ў/, '$1й у'],
-	[/([аеёіоуыэюя\u0301] )і /, '$1й '],
-	[/([аеёіоуыэюя\u0301] ?)і/, '$1йі'],
-	[` і(?=${iwords})`, ' йі'],
+const iDict = dict([
+	[/([аеёіоуыэюя\u0301] )і ў/g, '$1й у'],
+	[/([аеёіоуыэюя\u0301] )і /g, '$1й '],
+	[/([аеёіоуыэюя\u0301] ?)і/g, '$1йі'],
+	[regexG(` і(?=${iwords})`), ' йі'],
 ]);
 
-export const iotacizeJi = mutatingStep(({ text }) =>
-	replaceWithDict(text, iDict)
-);
+export const iotacizeJi = mutatingStep(({ text }) => iDict(text));

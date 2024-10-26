@@ -1,7 +1,7 @@
-import type { Dict, RawDict, WritableDict } from './types';
+import type { CallableDict, Dict } from './types';
 
 export const copyDict = <T extends [any, any][]>(dict: T): T =>
-	dict.map(([pattern, result]) => [pattern, result]) as T;
+	dict.map(({ 0: pattern, 1: result }) => [pattern, result]) as T;
 
 /**
  * Collection of MUTATING functions
@@ -15,27 +15,17 @@ export const copyDict = <T extends [any, any][]>(dict: T): T =>
  *   ["pattern", "result"],
  * ];
  *
- * const dict = dictFrom.raw(copyDict(rawDict));
+ * const dict = dict.raw(copyDict(rawDict));
  * // [ [ /pattern/g, "result" ] ]
  */
-export const dictFrom = {
-	raw: (dict: RawDict, additionalFlags = 'g'): Dict => {
-		for (const item of dict)
-			item[0] = RegExp(
-				item[0],
-				item[0] instanceof RegExp
-					? item[0].flags + additionalFlags
-					: additionalFlags
-			);
-		return dict as Dict;
-	},
-	/**
-	 * Adds the global flag to all patterns in the dictionary.
-	 */
-	nonGlobal: (dict: WritableDict): Dict => {
-		for (const item of dict) item[0] = RegExp(item[0], 'g' + item[0].flags);
-		return dict;
-	},
-} satisfies Record<string, (dictLike: WritableDict) => Dict>;
+export const callableDict = (dict: Dict): CallableDict => {
+	const fn: CallableDict = (text) =>
+		fn.value.reduce((acc, item) => acc.replace(item[0], item[1]), text);
+	fn.value = dict;
+	return fn;
+};
 
 export const toOneLine = (str: string): string => str.replace(/\n/g, '|');
+
+export const regexG = (pattern: string) => new RegExp(pattern, 'g');
+export const regexGI = (pattern: string) => new RegExp(pattern, 'gi');

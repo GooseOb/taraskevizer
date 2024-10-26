@@ -1,6 +1,6 @@
-import type { Dict } from '../dict/types';
+import { callableDict } from '../dict/lib';
 
-export const endZSoftenAndNiaBiaz: Dict = [
+export const endZSoftenAndNiaBiaz = callableDict([
 	// / не (?=
 	//   {зычны}*{сымбаль}{націск}
 	//  |{зычны}*{галосны}{зычны}*{канец слова}
@@ -24,4 +24,4 @@ export const endZSoftenAndNiaBiaz: Dict = [
 	 */
 	[/ б[ея]з(?= і\S*[ая]ў|ну )/g, ' бязь'],
 	[/ (?:пра|цера)?з(?= і\S*[ая]ў|ну )/g, '$&ь'],
-];
+]);

@@ -1,14 +1,14 @@
 import { mutatingStep } from '../lib';
 
 /**
- * @param newLine - The string to replace new lines with.
- *
  * Reverse the changes made in the {@link prepare} step
  * and replace new lines with the passed string.
  *
  * Restores:
  * `(` from `&#40`,
  * ` ` from `&nbsp;`,
+ *
+ * Replaces new lines with the `newLine` config value.
  *
  * Removes spaces around punctuation marks and digits.
  */

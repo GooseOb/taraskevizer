@@ -4,14 +4,10 @@ import type { TaraskStep } from './types';
 
 export const applyG: TaraskStep = (ctx) => {
 	const { abc, g, wrapperDict } = ctx.cfg;
-	const colorize = wrapperDict?.letterH;
+	const wrap = wrapperDict?.letterH;
 
-	if (abc === alphabets.cyrillic && (colorize || !g))
+	if (abc === alphabets.cyrillic && (wrap || !g))
 		ctx.text = replaceG(
-			colorize
-				? g
-					? colorize('$&')
-					: ($0) => colorize(gobj[$0])
-				: ($0) => gobj[$0]
+			wrap ? (g ? wrap('$&') : ($0) => wrap(gobj[$0])) : ($0) => gobj[$0]
 		)(ctx.text);
 };

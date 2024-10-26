@@ -36,7 +36,7 @@ export const startTestProcess = ({ long = false } = {}) => {
 			cases: readonly (readonly [TInput, TOutput])[]
 		) {
 			const longArr = [];
-			for (const [input, expectedValue] of cases) {
+			for (const { 0: input, 1: expectedValue } of cases) {
 				let output: TOutput;
 				try {
 					output = fn(input);

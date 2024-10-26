@@ -1,4 +1,4 @@
-import type { Dict } from '../types';
+import type { CallableDict } from '../types';
 
 /**
  * If {@link Alphabet.upper} in not defined,
@@ -7,6 +7,6 @@ import type { Dict } from '../types';
  * upper and lower case letters.
  */
 export type Alphabet = {
-	lower: Dict;
-	upper?: Dict;
+	lower: CallableDict;
+	upper?: CallableDict;
 };

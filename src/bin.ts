@@ -42,7 +42,7 @@ const toHashTable = (
 	dict: readonly (readonly [readonly string[], () => void])[]
 ) => {
 	const result: Record<string, () => void> = {};
-	for (const [options, callback] of dict)
+	for (const { 0: options, 1: callback } of dict)
 		for (const option of options) result[option] = callback;
 	return result;
 };

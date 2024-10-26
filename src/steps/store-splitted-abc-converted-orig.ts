@@ -1,4 +1,3 @@
-import { replaceWithDicts } from '../lib';
 import type { TaraskStep, SplittedTextStorage } from './types';
 
 export const storeSplittedAbcConvertedOrig: TaraskStep<SplittedTextStorage> = ({
@@ -8,5 +7,6 @@ export const storeSplittedAbcConvertedOrig: TaraskStep<SplittedTextStorage> = ({
 	text,
 	storage,
 }) => {
-	storage.origArr = replaceWithDicts(text, [lower, upper]).split(' ');
+	text = lower(text);
+	storage.origArr = (upper ? upper(text) : text).split(' ');
 };

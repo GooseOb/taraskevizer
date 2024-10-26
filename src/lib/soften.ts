@@ -1,10 +1,9 @@
 import { noSoften, softeners } from '../dict/softening';
-import { replaceWithDict } from './replace-with-dict';
 
 export const soften = (text: string) => {
-	text = replaceWithDict(text, noSoften);
+	text = noSoften(text);
 	do {
-		text = replaceWithDict(text, softeners);
-	} while (softeners.some(([pattern]) => pattern.test(text)));
+		text = softeners(text);
+	} while (softeners.value.some(({ 0: pattern }) => pattern.test(text)));
 	return text.replace(/\ue0ff/g, '');
 };

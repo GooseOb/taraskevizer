@@ -1,13 +1,14 @@
 import { iwords } from './iwords';
-import { dictFrom, toOneLine } from './lib';
+import { callableDict, regexG, toOneLine } from './lib';
 
-const ia = (word: string, words: string): string =>
-	` ${word}(?= \\(?(?:[бвгджзйклмнпрстфхцчшўьʼ]*[оё]|${toOneLine(words).replace(
-		/\(/g,
-		'(?:'
-	)}|i(?:${iwords})))`;
+const ia = (word: string, words: string) =>
+	regexG(
+		` ${word}(?= \\(?(?:[бвгджзйклмнпрстфхцчшўьʼ]*[оё]|${toOneLine(
+			words
+		).replace(/\(/g, '(?:')}|i(?:${iwords})))`
+	);
 
-export const iaWords = dictFrom.raw([
+export const iaWords = callableDict([
 	/* не > ня */
 	[
 		ia(

@@ -81,7 +81,7 @@ export const abc = [
  *
  * Used by {@link tar} and {@link phonetic}.
  *
- * @param subPipeline - Steps used instead of [{@link subPipeline.taraskevize}].
+ * @param subPipeline - Steps used instead of [{@link steps.taraskevize}].
  */
 export const _createPipeline = (subPipeline: Pipeline) =>
 	[
