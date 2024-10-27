@@ -1,8 +1,8 @@
 /**
- * You can use builtin pipelines from this module or create your own.
+ * Builtin pipelines
  *
- * If you want to create a pipeline based on a builtin one
- * and do it more safely, it's recommended to use
+ * If you want to create your own pipeline
+ * based on a builtin one and do it safely, use
  * `.map` if you need replacing only or
  * `.flatMap` if you also need to add or remove steps.
  *
