@@ -4,19 +4,19 @@
 
 With npm:
 
-```bash
+```sh
 npm install taraskevizer
 ```
 
 With yarn:
 
-```bash
+```sh
 yarn add taraskevizer
 ```
 
 With bun:
 
-```bash
+```sh
 bun add taraskevizer
 ```
 
@@ -48,9 +48,9 @@ tarask('планета і Гродна', pipelines.tar, cfg);
 // "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
 
 const htmlCfg = new TaraskConfig({
-	abc: alphabets.latin,
-	g: false,
 	...htmlConfigOptions,
+	abc: alphabets.latin,
+	g: false, // ignored, g matters for cyrillic alphabet only
 });
 tarask('энергія планеты', pipelines.tar, htmlCfg);
 // "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
@@ -111,25 +111,25 @@ Appears only if alphabet is cyrillic.
 
 With npm:
 
-```bash
+```sh
 npm install -g taraskevizer
 ```
 
 With yarn:
 
-```bash
+```sh
 yarn global add taraskevizer
 ```
 
 With bun:
 
-```bash
+```sh
 bun add -g taraskevizer
 ```
 
 ## Usage
 
-```bash
+```sh
 tarask [options] text
 ```
 
@@ -140,13 +140,13 @@ For usage examples and options use `--help` option
 
 With npm:
 
-```bash
+```sh
 npx taraskevizer [options] text
 ```
 
 With bun:
 
-```bash
+```sh
 bunx taraskevizer [options] text
 ```
 
