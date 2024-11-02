@@ -50,7 +50,7 @@ export class TaraskConfig {
 	 *
 	 * @default null
 	 */
-	wrappers = null as null | Wrappers;
+	wrappers = null as null | Partial<Wrappers>;
 
 	/**
 	 * Do replace ґ(g) by г(h) in cyrillic alphabet?

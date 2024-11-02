@@ -7,9 +7,9 @@ export type VariationWrappers = {
 };
 
 export type Wrappers = {
-	fix?: TransformString;
-	variable?: VariationWrappers;
-	letterH?: TransformString;
+	fix: TransformString;
+	variable: VariationWrappers;
+	letterH: TransformString;
 };
 
 export const defaultVariation: VariationWrappers = {
@@ -18,7 +18,7 @@ export const defaultVariation: VariationWrappers = {
 	no: (content) => /^\(([^|]*)/.exec(content)![1],
 };
 
-export const html: Required<Wrappers> = {
+export const html: Wrappers = {
 	fix: (content) => `<tarF>${content}</tarF>`,
 	variable: {
 		all: (content: string) => {
@@ -35,7 +35,7 @@ export const html: Required<Wrappers> = {
 	letterH: (content) => `<tarH>${content}</tarH>`,
 };
 
-export const ansiColor: Required<Wrappers> = {
+export const ansiColor: Wrappers = {
 	fix: (content) => `\x1b[32m${content}\x1b[0m`,
 	variable: (
 		Object.entries(defaultVariation) as [Variation, TransformString][]
