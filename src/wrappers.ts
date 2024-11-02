@@ -6,7 +6,7 @@ export type VariationWrappers = {
 	[p in Variation]: TransformString;
 };
 
-export type WrapperDict = {
+export type Wrappers = {
 	fix?: TransformString;
 	variable?: VariationWrappers;
 	letterH?: TransformString;
@@ -18,7 +18,7 @@ export const defaultVariation: VariationWrappers = {
 	no: (content) => /^\(([^|]*)/.exec(content)![1],
 };
 
-export const html: Required<WrapperDict> = {
+export const html: Required<Wrappers> = {
 	fix: (content) => `<tarF>${content}</tarF>`,
 	variable: {
 		all: (content: string) => {
@@ -35,7 +35,7 @@ export const html: Required<WrapperDict> = {
 	letterH: (content) => `<tarH>${content}</tarH>`,
 };
 
-export const ansiColor: Required<WrapperDict> = {
+export const ansiColor: Required<Wrappers> = {
 	fix: (content) => `\x1b[32m${content}\x1b[0m`,
 	variable: (
 		Object.entries(defaultVariation) as [Variation, TransformString][]

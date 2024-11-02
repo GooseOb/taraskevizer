@@ -1,7 +1,7 @@
 import { alphabets } from './dict';
 import type { PartialReadonly } from './types';
 import type { Alphabet } from './dict/alphabets';
-import { type WrapperDict, html } from './wrappers';
+import { type Wrappers, html } from './wrappers';
 
 export type Variation = 'no' | 'first' | 'all';
 export type OptionJ = 'never' | 'random' | 'always';
@@ -50,7 +50,7 @@ export class TaraskConfig {
 	 *
 	 * @default null
 	 */
-	wrapperDict = null as null | WrapperDict;
+	wrappers = null as null | Wrappers;
 
 	/**
 	 * Do replace ґ(g) by г(h) in cyrillic alphabet?
@@ -105,7 +105,7 @@ export class TaraskConfig {
  * });
  */
 export const htmlConfigOptions = {
-	wrapperDict: html,
+	wrappers: html,
 	g: false,
 	newLine: '<br>',
 	leftAngleBracket: '&lt',

@@ -3,8 +3,8 @@ import { alphabets, gobj } from '@/dict';
 import type { TaraskStep } from './types';
 
 export const applyG: TaraskStep = (ctx) => {
-	const { abc, g, wrapperDict } = ctx.cfg;
-	const wrap = wrapperDict?.letterH;
+	const { abc, g, wrappers } = ctx.cfg;
+	const wrap = wrappers?.letterH;
 
 	if (abc === alphabets.cyrillic && (wrap || !g))
 		ctx.text = replaceG(

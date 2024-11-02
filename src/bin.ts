@@ -26,7 +26,7 @@ if (checkForOptions(['-h', '--help'])) {
 let cfg = {
 	g: true,
 	variations: 'all',
-	wrapperDict: wrappers.ansiColor,
+	wrappers: wrappers.ansiColor,
 } as TaraskConfig;
 
 let mode: keyof typeof pipelines = 'tarask';
@@ -101,7 +101,7 @@ const optionDict = toHashTable([
 	[
 		['--no-color', '-nc'],
 		() => {
-			cfg.wrapperDict = null;
+			cfg.wrappers = null;
 		},
 	],
 	[
@@ -165,7 +165,7 @@ cfg = new TaraskConfig(
 		? {
 				...htmlConfigOptions,
 				...cfg,
-				wrapperDict: htmlConfigOptions.wrapperDict,
+				wrappers: htmlConfigOptions.wrappers,
 			}
 		: cfg
 );

@@ -2,9 +2,9 @@ import { mutatingStep } from '@/lib';
 import { defaultVariation } from '@/wrappers';
 
 export const applyVariations = mutatingStep(
-	({ text, cfg: { wrapperDict, variations } }) =>
+	({ text, cfg: { wrappers, variations } }) =>
 		text.replace(
 			/\([^)]*?\)/g,
-			(wrapperDict?.variable || defaultVariation)[variations]
+			(wrappers?.variable || defaultVariation)[variations]
 		)
 );
