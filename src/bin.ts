@@ -1,12 +1,5 @@
 #!/usr/bin/env node
-import {
-	dicts,
-	TaraskConfig,
-	tarask,
-	pipelines,
-	htmlConfigOptions,
-	wrappers,
-} from '.';
+import { dicts, TaraskConfig, pipelines, htmlConfigOptions, wrappers } from '.';
 declare const __CLI_HELP__: string;
 declare const __CLI_PREFIX__: string;
 declare const __VERSION__: string;
@@ -36,7 +29,7 @@ let cfg = {
 	wrapperDict: wrappers.ansiColor,
 } as TaraskConfig;
 
-let mode: keyof typeof pipelines = 'tar';
+let mode: keyof typeof pipelines = 'tarask';
 
 const toHashTable = (
 	dict: readonly (readonly [readonly string[], () => void])[]
@@ -120,7 +113,7 @@ const optionDict = toHashTable([
 	[
 		['--alphabet-only', '-abc'],
 		() => {
-			mode = 'abc';
+			mode = 'alphabetic';
 		},
 	],
 	[
@@ -177,7 +170,7 @@ cfg = new TaraskConfig(
 		: cfg
 );
 
-if (process.stdout.write(tarask(text, pipelines[mode], cfg) + '\n')) {
+if (process.stdout.write(pipelines[mode](text, cfg) + '\n')) {
 	process.exit(0);
 } else {
 	process.stdout.once('drain', () => {

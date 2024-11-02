@@ -24,7 +24,6 @@ bun add taraskevizer
 
 ```js
 import {
-	tarask,
 	pipelines,
 	TaraskConfig,
 	htmlConfigOptions,
@@ -34,32 +33,32 @@ import {
 	VARIATION,
 } from 'taraskevizer';
 
-tarask('планета', pipelines.tar);
+pipelines.tarask('планета');
 // "плянэта"
 
+// Explicit config declaration is recommended if it's used multiple times
 const cfg = new TaraskConfig({
 	abc: alphabets.cyrillic,
 	j: 'always',
 	variations: 'first',
-	wrapperDict: ansiColorWrappers,
+	wrappers: ansiColorWrappers,
 	g: true,
 });
-tarask('планета і Гродна', pipelines.tar, cfg);
+pipelines.tarask('планета і Гродна', cfg);
 // "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
 
-const htmlCfg = new TaraskConfig({
+pipelines.tarask('энергія планеты', {
 	...htmlConfigOptions,
 	abc: alphabets.latin,
 	g: false, // ignored, g matters for cyrillic alphabet only
 });
-tarask('энергія планеты', pipelines.tar, htmlCfg);
 // "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
 
 const latinWithJiCfg = new TaraskConfig({
 	abc: alphabets.latinJi,
 });
 
-tarask('яна і іншыя', pipelines.abcOnly, latinWithJiCfg);
+pipelines.alphabetic('яна і іншыя', latinWithJiCfg);
 // "jana j jinšyja"
 ```
 
