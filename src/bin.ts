@@ -10,17 +10,18 @@ const printWithPrefix = (msg: string) => {
 
 process.argv.splice(0, 2);
 
-const checkForOptions = (options: readonly string[]) =>
-	process.argv[0] && options.includes(process.argv[0].toLowerCase());
+const firstArg = process.argv[0];
 
-if (checkForOptions(['-v', '--version'])) {
-	printWithPrefix(__VERSION__);
-	process.exit(0);
-}
+if (firstArg) {
+	if (firstArg === '-v' || firstArg === '--version') {
+		printWithPrefix(__VERSION__);
+		process.exit(0);
+	}
 
-if (checkForOptions(['-h', '--help'])) {
-	printWithPrefix(__CLI_HELP__);
-	process.exit(0);
+	if (firstArg === '-h' || firstArg === '--help') {
+		printWithPrefix(__CLI_HELP__);
+		process.exit(0);
+	}
 }
 
 let cfg = {
@@ -43,7 +44,6 @@ const toHashTable = (
 let isHtml = false;
 
 const optionDict = toHashTable([
-	[['--help', '-h'], () => {}],
 	[
 		['--latin', '-l'],
 		() => {
