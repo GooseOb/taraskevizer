@@ -108,6 +108,7 @@ const optionDict = toHashTable([
 		['--html', '-html'],
 		() => {
 			isHtml = true;
+			cfg.wrappers = htmlConfigOptions.wrappers;
 		},
 	],
 	[
@@ -165,7 +166,6 @@ cfg = new TaraskConfig(
 		? {
 				...htmlConfigOptions,
 				...cfg,
-				wrappers: htmlConfigOptions.wrappers,
 			}
 		: cfg
 );

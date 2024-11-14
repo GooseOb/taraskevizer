@@ -42,10 +42,7 @@ const parseConfig = (dir: string, file = 'tsconfig.json') => {
 	).options;
 };
 
-const compilerOptions = {
-	...parseConfig('.'),
-	...parseConfig('src'),
-};
+const compilerOptions = parseConfig('src');
 
 printWithTime('Compiler options parsed');
 
