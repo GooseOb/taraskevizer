@@ -24,11 +24,11 @@ if (firstArg) {
 	}
 }
 
-let cfg = {
+let cfg: Partial<TaraskConfig> = {
 	g: true,
 	variations: 'all',
 	wrappers: wrappers.ansiColor,
-} as TaraskConfig;
+};
 
 let mode: keyof typeof pipelines = 'tarask';
 
