@@ -9,10 +9,9 @@ import {
 import { readdirSync, lstatSync } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
 import { join, resolve, relative } from 'path';
-import { fileURLToPath } from 'url';
 
 const getPrinter =
-	<T extends { write: (s: string) => void }>(writer: T, clr = '33') =>
+	(writer: { write: (s: string) => void }, clr = '33') =>
 	(msg: string) =>
 		writer.write(`\x1b[${clr}m[build]\x1b[0m ${msg}\n`);
 const printErr = getPrinter(process.stderr, '31');
@@ -31,10 +30,8 @@ const startTime = performance.now();
 let lastTime = startTime;
 let exitCode = 0;
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-
 const parseConfig = (dir: string, file = 'tsconfig.json') => {
-	const absoluteDir = join(__dirname, dir);
+	const absoluteDir = resolve(dir);
 	return parseJsonConfigFileContent(
 		readConfigFile(join(absoluteDir, file), sys.readFile).config,
 		sys,
@@ -88,11 +85,11 @@ for (const diagnostic of allDiagnostics) {
 
 printWithTime('Diagnostics printed');
 
-const distPath = join(__dirname, 'dist');
+const distPath = resolve('dist');
 
 await Promise.all(
 	srcFiles.map((file) => {
-		const parentPath = join(__dirname, file.parentPath.replace(/^src/, 'dist'));
+		const parentPath = resolve(file.parentPath.replace(/^src/, 'dist'));
 		const filePath = join(parentPath, file.name.replace(/ts$/, 'js'));
 		return readFile(filePath, 'utf8').then((content) =>
 			writeFile(
