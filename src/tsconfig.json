@@ -1,5 +1,4 @@
 {
-	"include": ["index.ts", "bin.ts"],
 	"compilerOptions": {
 		"noEmit": false,
 		"outDir": "../dist",
