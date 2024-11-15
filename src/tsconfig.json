@@ -2,8 +2,7 @@
 	"compilerOptions": {
 		"noEmit": false,
 		"outDir": "../dist",
-		"declaration": true,
-		"esModuleInterop": true
+		"declaration": true
 	},
 	"extends": "../tsconfig.json",
 	"files": ["bin.ts", "index.ts"]
