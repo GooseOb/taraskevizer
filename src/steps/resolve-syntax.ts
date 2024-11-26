@@ -2,9 +2,6 @@ import { restoreCase, mutatingStep } from '@/lib';
 import type { TaraskStep } from './types';
 import type { Alphabet } from '@/dict/alphabets/types';
 
-const NOFIX_CHAR = ' \ue0fe ';
-const NOFIX_REGEX = new RegExp(NOFIX_CHAR, 'g');
-
 /**
  * Created in {@link resolveSpecialSyntax}.
  *
@@ -23,20 +20,27 @@ export const applyNoFix: TaraskStep<SpecialSyntaxStorage> = (ctx) => {
 	const { noFixArr } = ctx.storage;
 	if (noFixArr.length) {
 		noFixArr.reverse();
-		ctx.text = ctx.text.replace(NOFIX_REGEX, () => noFixArr.pop()!);
+		ctx.text = ctx.text.replaceAll(
+			ctx.cfg.noFixPlaceholder,
+			() => noFixArr.pop()!
+		);
 	}
 };
 
 /**
  * Captures noFix parts and stores them in {@link SpecialSyntaxStorage.noFixArr}.
- * Places a special character `" \ue0fe "` in their place.
+ * Places a {@link TaraskConfig.noFixPlaceholder} in their place.
  *
  * Use {@link applyNoFix} to bring the parts back to the text.
  *
  * Creates storage: {@link SpecialSyntaxStorage}.
  */
 export const resolveSpecialSyntax = mutatingStep<SpecialSyntaxStorage>(
-	({ text, storage, cfg: { doEscapeCapitalized, abc, leftAngleBracket } }) => {
+	({
+		text,
+		storage,
+		cfg: { doEscapeCapitalized, abc, leftAngleBracket, noFixPlaceholder },
+	}) => {
 		const noFixArr = (storage.noFixArr = [] as string[]);
 		const convertAlphavet = (abcOnlyText: string, abc: Alphabet) =>
 			restoreCase(
@@ -50,7 +54,7 @@ export const resolveSpecialSyntax = mutatingStep<SpecialSyntaxStorage>(
 						/(?!<=\p{Lu} )\p{Lu}{2}[\p{Lu} ]*(?!= \p{Lu})/gu,
 						($0) => {
 							noFixArr.push(convertAlphavet($0, abc));
-							return NOFIX_CHAR;
+							return noFixPlaceholder;
 						}
 					)
 				: text;
@@ -84,14 +88,14 @@ export const resolveSpecialSyntax = mutatingStep<SpecialSyntaxStorage>(
 					let toAddToResult: string;
 					switch (char) {
 						case '.':
-							toAddToResult = NOFIX_CHAR;
+							toAddToResult = noFixPlaceholder;
 							noFixArr.push(currentPart);
 							break;
 						case ',':
 							toAddToResult = leftAngleBracket + currentPart + '>';
 							break;
 						default:
-							toAddToResult = leftAngleBracket + NOFIX_CHAR;
+							toAddToResult = leftAngleBracket + noFixPlaceholder;
 							noFixArr.push((isAbc ? '' : char) + currentPart + '>');
 					}
 					result += toAddToResult + escapeCapsIfNeeded(part.slice(1));

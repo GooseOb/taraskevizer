@@ -93,6 +93,15 @@ export class TaraskConfig {
 	 * @example "&lt;"
 	 */
 	leftAngleBracket = '<' as string;
+
+	/**
+	 * Placeholder for parts that should not be fixed like those enclosed in `< >`.
+	 *
+	 * > Not recommended to change.
+	 *
+	 * @default " \ue0fe "
+	 */
+	noFixPlaceholder = ' \ue0fe ' as string;
 }
 
 /**
