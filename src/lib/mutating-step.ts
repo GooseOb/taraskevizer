@@ -4,7 +4,7 @@ import type { TaraskStep } from '@/steps/types';
  * Utility function for a step that always modifies the text
  *
  * > Not recommended to use if
- * a step doesn't ALWAYS change the text.
+ * a step doesn't ALWAYS modify the text.
  *
  * @example
  * type TextWrapperStorage = { wrapText: (text: string) => string };
