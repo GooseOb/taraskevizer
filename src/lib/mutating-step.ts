@@ -1,7 +1,7 @@
 import type { TaraskStep } from '@/steps/types';
 
 /**
- * An abstraction for a step that always changes the text.
+ * Utility function for a step that always modifies the text
  *
  * > Not recommended to use if
  * a step doesn't ALWAYS change the text.
