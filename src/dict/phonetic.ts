@@ -14,7 +14,7 @@ export const phonetic = callableDict(
 			[/сш/g, 'шш'],
 			[/[зс]ч/g, 'шч'],
 			[/чц(?![ьіеюя])/g, 'цц'],
-			[/[жш]ц(?=ы )/g, 'сц'],
+			[/[жш]ц(?=[ауы] |а[хўйм] |амі )/g, 'сц'],
 		] as Dict
 	).concat(commonPhonetic)
 );
