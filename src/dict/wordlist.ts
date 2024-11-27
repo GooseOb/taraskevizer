@@ -102,7 +102,7 @@ const gwords: Dict = [
 ' уґанд',
 ' цуґл',
 ' джґір',
-].reverse().map(word => [RegExp(word.replace(/ґ/g, 'г'), 'g'), word]) as Dict;
+].reverse().map(word => [re.g(word.replace(/ґ/g, 'г')), word]) as Dict;
 
 export const wordlist = callableDict([
 /* А */
