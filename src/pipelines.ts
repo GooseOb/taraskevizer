@@ -43,9 +43,10 @@ import {
 	applyG,
 	applyVariations,
 } from './steps';
+import type { DeepPartialReadonly } from './types';
 
 export type Pipeline = {
-	(text: string, cfg?: Partial<TaraskConfig>): string;
+	(text: string, cfg?: DeepPartialReadonly<TaraskConfig>): string;
 	steps: TaraskStep<any>[];
 };
 

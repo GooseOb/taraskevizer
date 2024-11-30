@@ -1,9 +1,10 @@
 import type { TaraskConfig } from '@/config';
+import type { DeepReadonly } from '@/types';
 
 export type TaraskStep<Storage extends object = object> = (context: {
 	text: string;
 	storage: Storage;
-	cfg: TaraskConfig;
+	cfg: DeepReadonly<TaraskConfig>;
 }) => void;
 
 export type SplittedTextStorage = {
