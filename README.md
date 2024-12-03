@@ -36,7 +36,6 @@ import {
 pipelines.tarask('планета');
 // "плянэта"
 
-// Explicit config declaration is recommended if it's used multiple times
 const cfg = new TaraskConfig({
 	abc: alphabets.cyrillic,
 	j: 'always',
@@ -61,6 +60,14 @@ const latinWithJiCfg = new TaraskConfig({
 pipelines.alphabetic('яна і іншыя', latinWithJiCfg);
 // "jana j jinšyja"
 ```
+
+# Builtin Pipelines
+
+| Pipeline         | Taraskevization | Alphabet | Phonetization | Special syntax |
+| ---------------- | --------------- | -------- | ------------- | -------------- |
+| tarask           | ✅              | ✅       | ❌            | ✅             |
+| alphabetic       | ❌              | ✅       | ❌            | ✅             |
+| phonetic (alpha) | ❌              | ✅       | ✅            | ✅             |
 
 # HTML tags
 
