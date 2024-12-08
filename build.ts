@@ -85,7 +85,7 @@ for (const diagnostic of allDiagnostics) {
 
 printWithTime('Diagnostics printed');
 
-const distPath = resolve('dist');
+const DIST_PATH = resolve('dist');
 
 await Promise.all(
 	srcFiles.map((file) => {
@@ -98,7 +98,7 @@ await Promise.all(
 					.replace(/\/\*.*?\*\//gs, '')
 					.replace(
 						/((?:im|ex)port.+from\s+["'])@\/(.+)(?=["'];)/g,
-						(_$0, $1, $2) => $1 + relative(parentPath, join(distPath, $2))
+						(_$0, $1, $2) => $1 + relative(parentPath, join(DIST_PATH, $2))
 					)
 					.replace(
 						/((?:im|ex)port.+from\s+["'])(.+)(?<!\.js)(?=["'];)/g,
@@ -130,13 +130,15 @@ const colorizeText = (text: string) =>
 		.replace(/(\s)(--?\S+)/g, '$1\x1b[35m$2\x1b[0m')
 		.replace(/\{\\PREFIX}/g, CLI_PREFIX);
 
+const BIN_PATH = resolve('dist', 'bin.js');
+
 await Promise.all([
-	readFile('./dist/bin.js', 'utf8'),
-	readFile('./package.json', 'utf8'),
-	readFile('./cli-help.txt', 'utf8'),
+	readFile(BIN_PATH, 'utf8'),
+	readFile('package.json', 'utf8'),
+	readFile('cli-help.txt', 'utf8'),
 ]).then(([content, pjson, cliHelp]) =>
 	writeFile(
-		'dist/bin.js',
+		BIN_PATH,
 		content
 			.replace(/__VERSION__/g, `"${JSON.parse(pjson).version}"`)
 			.replace(/__CLI_HELP__/g, `\`${colorizeText(cliHelp)}\``)
