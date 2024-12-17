@@ -63,11 +63,11 @@ pipelines.alphabetic('яна і іншыя', latinWithJiCfg);
 
 # Builtin Pipelines
 
-| Pipeline         | Taraskevization | Alphabet | Phonetization | Special syntax |
-| ---------------- | --------------- | -------- | ------------- | -------------- |
-| tarask           | ✅              | ✅       | ❌            | ✅             |
-| alphabetic       | ❌              | ✅       | ❌            | ✅             |
-| phonetic (alpha) | ❌              | ✅       | ✅            | ✅             |
+| Pipeline   | Taraskevization | Phonetization | Alphabet | Special syntax |
+| ---------- | --------------- | ------------- | -------- | -------------- |
+| tarask     | ✅              | ❌            | ✅       | ✅             |
+| alphabetic | ❌              | ❌            | ✅       | ✅             |
+| phonetic   | ❌              | ✅ (alpha)    | ✅       | ✅             |
 
 # HTML tags
 
