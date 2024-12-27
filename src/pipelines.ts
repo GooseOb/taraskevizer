@@ -6,18 +6,18 @@
  * `pipeline.steps.map` if you need replacing only or
  * `pipeline.steps.flatMap` if you also need to add or remove steps.
  *
- * Then pass the result to {@link createPipeline}.
+ * Then pass the result to {@link pipe}.
  *
  * This way you will depend less on the
  * internal order of the builtin pipeline steps.
  *
  * For cases when you need to replace only {@link steps.taraskevize} in {@link tarask}
- * and have better tree-shaking, you can use {@link _createPipeline}.
+ * and have better tree-shaking, you can use {@link _pipe}.
  *
  * @module
  */
 
-import { TaraskConfig } from './config';
+import { pipe } from './lib';
 import {
 	type TaraskStep,
 	highlightDiffStep,
@@ -43,29 +43,6 @@ import {
 	applyG,
 	applyVariations,
 } from './steps';
-import type { DeepPartialReadonly } from './types';
-
-export type Pipeline = {
-	(text: string, cfg?: DeepPartialReadonly<TaraskConfig>): string;
-	steps: TaraskStep<any>[];
-};
-
-/**
- * Create a callable pipeline from steps.
- */
-export const createPipeline = (steps: TaraskStep<any>[]) => {
-	const fn: Pipeline = (text, cfg = new TaraskConfig()) => {
-		const ctx = {
-			text,
-			cfg: cfg instanceof TaraskConfig ? cfg : new TaraskConfig(cfg),
-			storage: {},
-		};
-		for (const step of fn.steps) step(ctx);
-		return ctx.text;
-	};
-	fn.steps = steps;
-	return fn;
-};
 
 /**
  * Pipeline for changing only the alphabet.
@@ -74,7 +51,7 @@ export const createPipeline = (steps: TaraskStep<any>[]) => {
  *
  * To see the full list of steps, check the source code.
  */
-export const alphabetic = createPipeline([
+export const alphabetic = pipe([
 	(ctx) => {
 		ctx.cfg = { ...ctx.cfg, doEscapeCapitalized: false };
 	},
@@ -96,8 +73,8 @@ export const alphabetic = createPipeline([
  *
  * @param subPipeline - Steps used instead of [{@link steps.taraskevize}].
  */
-export const _createPipeline = (subPipeline: TaraskStep<any>[]) =>
-	createPipeline([
+export const _pipe = (subPipeline: TaraskStep<any>[]) =>
+	pipe([
 		trim,
 		resolveSpecialSyntax,
 		prepare,
@@ -122,10 +99,10 @@ export const _createPipeline = (subPipeline: TaraskStep<any>[]) =>
 /**
  * Pipeline for taraskevizing.
  */
-export const tarask = _createPipeline([taraskevize]);
+export const tarask = _pipe([taraskevize]);
 
 /**
  * Pipeline for phonetizing.
  * @alpha
  */
-export const phonetic = _createPipeline([phonetize, iotacizeJi]);
+export const phonetic = _pipe([phonetize, iotacizeJi]);

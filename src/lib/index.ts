@@ -7,3 +7,4 @@ export * from './mutating-step';
 export * from './soften';
 export { callableDict, copyDict } from '@/dict/lib';
 export type * from './types';
+export * from './pipe';
