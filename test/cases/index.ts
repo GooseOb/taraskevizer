@@ -10,3 +10,4 @@ export * as specialSyntax from './special-syntax';
 export * as caseRestoring from './case-restoring';
 export * as alphabetConversion from './alphabet-conversion';
 export { default as phonetization } from './phonetization';
+export { default as highlighting } from './highlighting';

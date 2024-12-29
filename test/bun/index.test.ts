@@ -161,4 +161,15 @@ testOnCases(
 	cases.phonetization
 );
 
+testOnCases(
+	'\x1b[31mHighlighting',
+	(text) =>
+		tarask(text, {
+			wrappers: {
+				fix: (word) => `[${word}]`,
+			},
+		}),
+	cases.highlighting
+);
+
 // add a new case here

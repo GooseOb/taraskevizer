@@ -143,6 +143,17 @@ test(
 	cases.phonetization
 );
 
+test(
+	'Highlighting',
+	(text) =>
+		tarask(text, {
+			wrappers: {
+				fix: (word) => `[${word}]`,
+			},
+		}),
+	cases.highlighting
+);
+
 // add a new case here
 
 process.exit(endTestProcess());
