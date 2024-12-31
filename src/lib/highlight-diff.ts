@@ -9,19 +9,29 @@ export const highlightDiff = (
 	isCyrillic: boolean,
 	highlight: (content: string) => string
 ): void => {
-	for (let i = 0; i < text.length; i++) {
+	highlighting: for (let i = 0; i < text.length; i++) {
 		const word = text[i];
 		const oWord = orig[i];
 		if (oWord === word) continue;
 		const wordH = isCyrillic ? replaceGByOpposite(word) : word;
 		if (oWord === wordH) continue;
-		if (!/\(/.test(word)) {
+		const noVariableParts = !/\(/.test(word);
+		if (noVariableParts) {
 			if (word.length === oWord.length) {
-				const wordLetters = word.split('');
-				for (let j = 0; j < wordLetters.length; j++) {
-					if (wordH[j] !== oWord[j]) wordLetters[j] = highlight(wordLetters[j]);
+				text[i] = '';
+				let j = 0;
+				while (j < word.length) {
+					while (wordH[j] === oWord[j]) {
+						text[i] += word[j];
+						++j;
+						if (j === word.length) continue highlighting;
+					}
+					const first = j;
+					while (wordH[j] !== oWord[j] && j < word.length) {
+						++j;
+					}
+					text[i] += highlight(word.slice(first, j));
 				}
-				text[i] = wordLetters.join('');
 				continue;
 			}
 			if (isCyrillic) {
@@ -38,32 +48,42 @@ export const highlightDiff = (
 		}
 
 		const oWordEnd = oWord.length - 1;
-		let fromStart = 0;
-		let fromWordEnd = word.length - 1;
-		let fromOWordEnd = oWordEnd;
 
-		while (wordH[fromStart] === oWord[fromStart]) ++fromStart;
-		while (wordH[fromWordEnd] === oWord[fromOWordEnd]) {
-			--fromWordEnd;
-			--fromOWordEnd;
+		let lastI = word.length - 1;
+		let lastOI = oWordEnd;
+		while (wordH[lastI] === oWord[lastOI]) {
+			--lastI;
+			--lastOI;
 		}
 
-		if (oWord.length < word.length) {
-			if (fromOWordEnd === oWordEnd) {
-				text[i] = highlight(word);
-				continue;
-			}
-			if (fromWordEnd < 0) fromWordEnd = 0;
+		if (lastI < 1) {
+			// beginning removed -> first letter
+			text[i] = highlight(word[0]) + word.slice(1);
+			continue;
 		}
 
-		if (fromStart === fromWordEnd + 1) {
-			--fromStart;
-			++fromWordEnd;
+		let firstI = 0;
+		while (wordH[firstI] === oWord[firstI]) ++firstI;
+
+		if (firstI === word.length) {
+			// ending removed -> last letter
+			text[i] = word.slice(0, lastI) + highlight(word[lastI]);
+		} else if (firstI === 0 && lastOI === oWordEnd) {
+			// first and last letters changed -> whole word
+			text[i] = highlight(word);
+			continue;
+		}
+		++lastI;
+
+		if (firstI === lastI) {
+			// part removed -> surrounding letters
+			--firstI;
+			++lastI;
 		}
 
 		text[i] =
-			word.slice(0, fromStart) +
-			highlight(word.slice(fromStart, fromWordEnd + 1)) +
-			word.slice(fromWordEnd + 1);
+			word.slice(0, firstI) +
+			highlight(word.slice(firstI, lastI)) +
+			word.slice(lastI);
 	}
 };

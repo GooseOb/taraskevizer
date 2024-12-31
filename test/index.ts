@@ -5,6 +5,7 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { readFile } from 'node:fs/promises';
+import { highlightDiff } from '@/lib';
 
 const { tarask, alphabetic, phonetic } = pipelines;
 
@@ -145,12 +146,11 @@ test(
 
 test(
 	'Highlighting',
-	(text) =>
-		tarask(text, {
-			wrappers: {
-				fix: (word) => `[${word}]`,
-			},
-		}),
+	(input) => {
+		const text = [input[1] || tarask(input[0])];
+		highlightDiff(text, [input[0]], true, (text) => `[${text}]`);
+		return text[0];
+	},
 	cases.highlighting
 );
 
