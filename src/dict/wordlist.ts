@@ -105,7 +105,7 @@ const gwords: Dict = [
 ' джґір',
 ].reverse().map(word => [re.g(word.replace(/ґ/g, 'г')), word]) as Dict;
 
-export const wordlist = callableDict([
+export const wordlist = callableDict(([
 /* А */
 [/аахен/g, 'аахэн'],
 [/абанен(?=[тц])/g, 'абанэн'],
@@ -1591,6 +1591,4 @@ export const wordlist = callableDict([
 [/ зямель /g, ' з(ямель|емляў) '],
 [/ яблынь /g, ' яблын(ь|яў) '],
 [/ расей /g, ' расе(й|яў) '],
-])
-
-wordlist.value = wordlist.value.concat(commonPhonetic, gwords, iaWords.value, [[/\ue0ff/g, '']]);
+] as Dict).concat(commonPhonetic, gwords, iaWords.value, [[/\ue0ff/g, '']]))
