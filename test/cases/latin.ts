@@ -11,6 +11,10 @@ export const general = [
 	],
 	['грошы', 'hrošy'],
 	['еёёююяя', 'jejojojujujaja'],
+	['łiłia; UVAŁIŁASIA ŁIŁIA', 'łiłia; UVAŁIŁASIA ŁIŁIA'], // no change
 ] as const;
 
-export const ji = [['БЕЛАЯ ІКРА', 'BIEŁAJA JIKRA']] as const;
+export const ji = [
+	['БЕЛАЯ ІКРА', 'BIEŁAJA JIKRA'],
+	['łiłia; UVAŁIŁASIA ŁIŁIA', 'łiłia; UVAŁIŁASIA ŁIŁIA'], // no change
+] as const;
