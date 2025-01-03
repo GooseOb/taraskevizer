@@ -15,8 +15,7 @@ export const highlightDiff = (
 		if (oWord === word) continue;
 		const wordH = isCyrillic ? replaceGByOpposite(word) : word;
 		if (oWord === wordH) continue;
-		const noVariableParts = !/\(/.test(word);
-		if (noVariableParts) {
+		if (!word.includes('(')) {
 			if (word.length === oWord.length) {
 				text[i] = '';
 				let j = 0;
