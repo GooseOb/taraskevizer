@@ -2,12 +2,59 @@ import { format } from 'util';
 
 const colorize = (str: string, colorCode: `${number}`) =>
 	`\x1b[${colorCode}m${str}\x1b[0m`;
-export const print = (
-	label: string,
-	msg: string,
-	colorCode: `${number}` = '0'
-) => {
+
+const print = (label: string, msg: string, colorCode: `${number}` = '0') => {
 	process.stdout.write(colorize(`[${label}] `, colorCode) + msg + '\n');
+};
+print.start = () => {
+	print('test', 'start', '35');
+};
+print.final = (passed: number, failed: number) => {
+	print('test', `${passed} passed, ${failed} failed`, '35');
+};
+print.passed = (msg: string) => {
+	print('passed', msg, '32');
+};
+print.failed = (msg: string) => {
+	print('failed', msg, '31');
+};
+print.inProgress = (name: string) => {
+	print('      ', name, '36');
+};
+print.benchmark = (msg: string) => {
+	print('benchmark', msg, '36');
+};
+
+const initFailed = () => {
+	const arr: string[] = [];
+	return {
+		print: () => {
+			arr.forEach(print.failed);
+		},
+		add: ({
+			name,
+			input,
+			output,
+			expectedValue,
+		}: {
+			name: string;
+			input: any;
+			output: string;
+			expectedValue: string;
+		}) => {
+			let charIndex = 0;
+			while (output[charIndex] === expectedValue[charIndex]) ++charIndex;
+
+			const coloredOutput = colorizeCharInStr(output, charIndex, '31');
+			const coloredExpected = colorizeCharInStr(expectedValue, charIndex, '32');
+			arr.push(
+				`${name}:\ninput:    "${format(input)}"\noutput:   "${format(
+					coloredOutput
+				)}"\nexpected: "${format(coloredExpected)}"`
+			);
+		},
+		count: () => arr.length,
+	};
 };
 
 const colorizeCharInStr = (
@@ -20,22 +67,25 @@ const colorizeCharInStr = (
 	str.slice(charIndex + 1);
 
 export const startTestProcess = ({ long = false } = {}) => {
-	print('test', 'start', '35');
-	const passed: string[] = [];
-	const failed: string[] = [];
+	print.start();
+	let passedCount = 0;
+	const failed = initFailed();
 	return {
 		endTestProcess() {
-			for (const output of passed) print('passed', output, '32');
-			for (const output of failed) print('failed', output, '31');
-			print('test', `${passed.length} passed, ${failed.length} failed`, '35');
-			return failed.length ? 1 : 0;
+			failed.print();
+			print.final(passedCount, failed.count());
+			return failed.count() ? 1 : 0;
 		},
 		test<TInput, TOutput extends string>(
 			name: string,
 			fn: (arg: TInput) => TOutput,
 			cases: readonly (readonly [TInput, TOutput])[]
 		) {
-			const longArr = [];
+			if (process.stdout.moveCursor) {
+				print.inProgress(name);
+				process.stdout.moveCursor(0, -1);
+			}
+			let longStr = '';
 			for (const { 0: input, 1: expectedValue } of cases) {
 				let output: TOutput;
 				try {
@@ -45,31 +95,24 @@ export const startTestProcess = ({ long = false } = {}) => {
 					throw e;
 				}
 				if (output !== expectedValue) {
-					let charIndex = 0;
-					while (output[charIndex] === expectedValue[charIndex]) ++charIndex;
-					const coloredOutput = colorizeCharInStr(output, charIndex, '31');
-					const coloredExpected = colorizeCharInStr(
-						expectedValue,
-						charIndex,
-						'32'
-					);
-					failed.push(
-						`${name}:\ninput:    "${format(input)}"\noutput:   "${format(
-							coloredOutput
-						)}"\nexpected: "${format(coloredExpected)}"`
-					);
+					if (long) {
+						longStr += `\n${input} \x1b[31m->\x1b[0m ${output}`;
+					}
+					print.failed(name + longStr);
+					failed.add({ name, input, output, expectedValue });
 					return;
 				} else if (long) {
-					longArr.push(`${input} \x1b[36m->\x1b[0m ${output}`);
+					longStr += `\n${input} \x1b[36m->\x1b[0m ${output}`;
 				}
 			}
-			passed.push(name + (long ? '\n' + longArr.join('\n') : ''));
+			++passedCount;
+			print.passed(name + longStr);
 		},
 	};
 };
 
 const getBenchmarkPrinter = (name: string) => (msg: string) => {
-	print('benchmark', name + ', ' + msg, '36');
+	print.benchmark(name + ', ' + msg);
 };
 
 const hookStdout = (callback: typeof process.stdout.write) => {
