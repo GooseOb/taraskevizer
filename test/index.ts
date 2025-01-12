@@ -50,7 +50,8 @@ test(
 );
 
 if (process.env.CLI !== '0') {
-	const root = path.resolve(fileURLToPath(import.meta.url), '..', '..', '..');
+	let root = path.resolve(fileURLToPath(import.meta.url), '..', '..');
+	if (!process.argv[0].endsWith('bun')) root = path.join(root, '..');
 	const pathToBin = path.resolve(
 		root,
 		JSON.parse(await readFile(path.resolve(root, 'package.json'), 'utf-8')).bin
@@ -147,7 +148,8 @@ test(
 test(
 	'Highlighting',
 	(input) => {
-		const text = [input[1] || tarask(input[0])];
+		// @ts-expect-error fdnsj jnfsdn
+		const text: [string] = [input[1] || tarask(input[0])];
 		highlightDiff(text, [input[0]], true, (text) => `[${text}]`);
 		return text[0];
 	},

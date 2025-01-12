@@ -2,6 +2,7 @@ import { getLabel, testOnCases, testOnCasesAsync } from './lib';
 import { dicts, TaraskConfig, pipelines, htmlConfigOptions } from '../../src';
 import * as cases from '../cases';
 import * as path from 'path';
+import { highlightDiff } from '@/lib';
 
 const { tarask, alphabetic, phonetic } = pipelines;
 
@@ -163,13 +164,13 @@ testOnCases(
 
 testOnCases(
 	'\x1b[31mHighlighting',
-	(text) =>
-		tarask(text, {
-			wrappers: {
-				fix: (word) => `[${word}]`,
-			},
-		}),
-	cases.highlighting
+	(input) => {
+		const text = [input[1] || tarask(input[0])];
+		highlightDiff(text, [input[0]], true, (text) => `[${text}]`);
+		return text[0];
+	},
+	cases.highlighting,
+	objectLabel
 );
 
 // add a new case here
