@@ -27,7 +27,7 @@ import {
 	pipelines,
 	TaraskConfig,
 	htmlConfigOptions,
-	ansiColorWrappers,
+	wrappers,
 	alphabets,
 	REPLACE_J,
 	VARIATION,
@@ -40,7 +40,7 @@ const cfg = new TaraskConfig({
 	abc: alphabets.cyrillic,
 	j: 'always',
 	variations: 'first',
-	wrappers: ansiColorWrappers,
+	wrappers: wrappers.ansiColor,
 	g: true,
 });
 pipelines.tarask('планета і Гродна', cfg);
