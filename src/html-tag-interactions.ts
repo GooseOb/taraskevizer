@@ -9,11 +9,15 @@ const applyG = (el: Element) => {
 
 type NodeList<T extends Node> = T[] | NodeListOf<T>;
 
-export const createInteractiveTags = ({
-	variable,
-	letterH,
-}: Omit<Record<keyof Wrappers, string>, 'fix'>) => {
+export const createInteractiveTags = (
+	{ variable, letterH }: Omit<Record<keyof Wrappers, string>, 'fix'> = {
+		variable: 'tarL',
+		letterH: 'tarH',
+	}
+) => {
 	const changeList: number[] = [];
+	variable = variable.toUpperCase();
+	letterH = letterH.toUpperCase();
 
 	return {
 		update: (root: Element) => {
