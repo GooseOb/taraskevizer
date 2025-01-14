@@ -5,4 +5,4 @@ export * as pipelines from './pipelines';
 export * as lib from './lib';
 export * as wrappers from './wrappers';
 export * as interactiveTags from './html-tag-interactions';
-export { initInteractiveTags } from './html-tag-interactions';
+export { createInteractiveTags } from './html-tag-interactions';

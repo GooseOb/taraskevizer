@@ -9,10 +9,10 @@ const applyG = (el: Element) => {
 
 type NodeList<T extends Node> = T[] | NodeListOf<T>;
 
-export const initInteractiveTags = ({
+export const createInteractiveTags = ({
 	variable,
 	letterH,
-}: Record<keyof Wrappers, string>) => {
+}: Omit<Record<keyof Wrappers, string>, 'fix'>) => {
 	const changeList: number[] = [];
 
 	return {
