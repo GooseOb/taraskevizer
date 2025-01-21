@@ -2,9 +2,11 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 [ -f '.git/commit-pkg' ] || {
-	echo '[ERROR] Please, use the following command for committing:'
-	echo '$ npx git-commit-pkg'
-	exit 1
+	[ $(git rev-parse --abbrev-ref HEAD) = main ] && {
+		echo '[ERROR] Please, use the following command for committing:'
+		echo '$ npx git-commit-pkg'
+		exit 1
+	}
 }
 
 bun run build
