@@ -6,8 +6,7 @@ import {
 	parseJsonConfigFileContent,
 	sys,
 } from 'typescript';
-import { readdirSync, lstatSync } from 'fs';
-import { readFile, writeFile } from 'fs/promises';
+import { lstat, readFile, writeFile, readdir } from 'fs/promises';
 import { join, resolve, relative } from 'path';
 
 const getPrinter =
@@ -43,10 +42,12 @@ const compilerOptions = parseConfig('src');
 
 printWithTime('Compiler options parsed');
 
-const srcFiles = readdirSync('src', {
-	recursive: true,
-	withFileTypes: true,
-}).filter((file) => file.isFile() && file.name.endsWith('.ts'));
+const srcFiles = (
+	await readdir('src', {
+		recursive: true,
+		withFileTypes: true,
+	})
+).filter((file) => file.isFile() && file.name.endsWith('.ts'));
 
 printWithTime('Source file paths read');
 
@@ -87,34 +88,46 @@ printWithTime('Diagnostics printed');
 
 const DIST_PATH = resolve('dist');
 
+const replaceAsync = (
+	str: string,
+	regex: RegExp,
+	replacer: (...args: string[]) => Promise<string>
+) => {
+	const promises: Promise<string>[] = [];
+	str.replace(regex, (...args: string[]) => {
+		promises.push(replacer(...args));
+		return '';
+	});
+	return Promise.all(promises).then((data) => {
+		let i = 0;
+		return str.replace(regex, () => data[i++]);
+	});
+};
+
 await Promise.all(
 	srcFiles.map((file) => {
 		const parentPath = resolve(file.parentPath.replace(/^src/, 'dist'));
 		const filePath = join(parentPath, file.name.replace(/ts$/, 'js'));
-		return readFile(filePath, 'utf8').then((content) =>
-			writeFile(
-				filePath,
-				content
-					.replace(/\/\*.*?\*\//gs, '')
-					.replace(
-						/((?:im|ex)port.+from\s+["'])@\/(.+)(?=["'];)/g,
-						(_$0, $1, $2) => $1 + relative(parentPath, join(DIST_PATH, $2))
-					)
-					.replace(
-						/((?:im|ex)port.+from\s+["'])(.+)(?<!\.js)(?=["'];)/g,
-						(_$0, $1, $2) => {
-							try {
-								if (lstatSync(resolve(parentPath, $2)).isDirectory()) {
-									$2 += '/index';
-								}
-							} catch {
-								// ignore errors
-							}
-							return $1 + $2 + '.js';
-						}
-					)
+		return readFile(filePath, 'utf8')
+			.then((content) =>
+				replaceAsync(
+					content
+						.replace(/\/\*.*?\*\//gs, '')
+						.replace(
+							/((?:im|ex)port.+from\s+["'])@\/(.+)(?=["'];)/g,
+							(_$0, $1, $2) => $1 + relative(parentPath, join(DIST_PATH, $2))
+						),
+					/((?:im|ex)port.+from\s+["'])(.+)(?<!\.js)(?=["'];)/g,
+					(_$0, $1, $2) =>
+						lstat(resolve(parentPath, $2))
+							.then(
+								(stat) => stat.isDirectory(),
+								() => false
+							)
+							.then((isDir) => $1 + $2 + (isDir ? '/index.js' : '.js'))
+				)
 			)
-		);
+			.then((content) => writeFile(filePath, content));
 	})
 );
 
