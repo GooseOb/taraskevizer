@@ -34,12 +34,12 @@ export const highlightDiff = (
 				continue;
 			}
 			if (isCyrillic) {
-				const word1 = word.replace(/ь/g, '');
+				const noSoftWord = word.replace(/ь/g, '');
 				switch (oWord) {
-					case word1:
+					case noSoftWord:
 						text[i] = word.replace(/ь/g, highlight('ь'));
 						continue;
-					case word1 + 'ь':
+					case noSoftWord + 'ь':
 						text[i] = word.replace(/ь(?!$)/g, highlight('ь'));
 						continue;
 				}
