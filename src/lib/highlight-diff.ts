@@ -40,7 +40,7 @@ export const highlightDiff = (
 						text[i] = word.replace(/ь/g, highlight('ь'));
 						continue;
 					case word1 + 'ь':
-						text[i] = word.slice(0, -1).replace(/ь/g, highlight('ь')) + 'ь';
+						text[i] = word.replace(/ь(?!$)/g, highlight('ь'));
 						continue;
 				}
 			}
