@@ -39,7 +39,7 @@
 	"license": "MIT",
 	"private": false,
 	"scripts": {
-		"build": "node --experimental-strip-types ./build.ts",
+		"build": "bun ./build.ts",
 		"prettier": "prettier --write .",
 		"lint": "eslint .",
 		"dev": "esrun --watch=src/*,test/* --send-code-mode=temporaryFile test",
