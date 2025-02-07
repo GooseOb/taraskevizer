@@ -32,6 +32,9 @@ jobs:
   json:
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      packages: write
+      contents: write
     steps:
       - uses: actions/checkout@v3
         with:
