@@ -46,7 +46,7 @@ jobs:
       - run: echo "SCRIPT_VERSION=$(jq -r .version package.json)" >> $GITHUB_ENV
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: json
+          artifacts: 'json/'
           tag: v${{ env.SCRIPT_VERSION }}
 
   deploy_docs:
