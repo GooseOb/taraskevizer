@@ -92,10 +92,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dist
-          path: dist
+          path: .
 
       - run: npm publish
-        working-directory: ./dist
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
