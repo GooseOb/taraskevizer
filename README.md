@@ -1,4 +1,5 @@
 If you're looking for JSON dictionaries, check out the github releases.
+
 [Go to full API documentation](https://gooseob.github.io/taraskevizer/)
 
 # Install
