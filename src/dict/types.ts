@@ -1,8 +1,8 @@
-export type Dict<T = RegExp> = readonly (readonly [T, string])[];
+export type Dict<Pattern = RegExp> = readonly (readonly [Pattern, string])[];
 
-export type CallableDict<T = RegExp> = {
+export type CallableDict<Pattern = RegExp> = {
 	(value: string): string;
-	value: Dict<T>;
+	value: Dict<Pattern>;
 };
 
 /**
@@ -11,4 +11,4 @@ export type CallableDict<T = RegExp> = {
  * Consider converting it to the type {@link Dict} or {@link CallableDict}
  * if you no longer need to modify it.
  */
-export type WritableDict<T = RegExp> = [T, string][];
+export type WritableDict<Pattern = RegExp> = [Pattern, string][];

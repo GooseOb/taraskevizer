@@ -6,7 +6,7 @@ import type { CallableDict } from '../types';
  * so {@link Alphabet.lower} should replace both
  * upper and lower case letters.
  */
-export type Alphabet = {
-	lower: CallableDict;
-	upper?: CallableDict;
+export type Alphabet<LowerPattern = RegExp, UpperPattern = LowerPattern> = {
+	lower: CallableDict<LowerPattern>;
+	upper?: CallableDict<UpperPattern>;
 };
