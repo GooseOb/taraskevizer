@@ -67,7 +67,7 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: 'json/*,dist/bundle.js'
+          artifacts: 'json/*'
           tag: v${{ needs.build.outputs.version }}
 
   docs:

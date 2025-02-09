@@ -10,10 +10,9 @@ If you're looking for JSON dictionaries, check out the github releases.
 
 ```html
 <head>
-	<script src="https://cdn.jsdelivr.net/gh/GooseOb/taraskevizer@latest/bundle.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/taraskevizer@latest/dist/bundle.js"></script>
 	<script>
-		const { pipelines } = window.taraskevizer;
-		document.write(pipelines.tarask('планета'));
+		document.write(taraskevizer.pipelines.tarask('планета'));
 	</script>
 </head>
 ```
