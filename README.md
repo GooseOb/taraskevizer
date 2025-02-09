@@ -2,6 +2,22 @@ If you're looking for JSON dictionaries, check out the github releases.
 
 [Go to full API documentation](https://gooseob.github.io/taraskevizer/)
 
+# Using \<script> tag
+
+> [!WARNING]
+> In production, replace `latest` with a specific version number to avoid breaking changes due to major updates.
+> Using `latest` could potentially break your website if a new version introduces breaking changes.
+
+```html
+<head>
+	<script src="https://cdn.jsdelivr.net/gh/GooseOb/taraskevizer@latest/bundle.js"></script>
+	<script>
+		const { pipelines } = window.taraskevizer;
+		document.write(pipelines.tarask('планета'));
+	</script>
+</head>
+```
+
 # Install
 
 With npm:
