@@ -67,7 +67,11 @@ jobs:
 
       - name: Compare json files
         run: |
-          echo "JSON_CHANGED=$(( ! $(diff -rq json/ latest_json/ > /dev/null; echo $?) ))" >> $GITHUB_ENV
+          echo "JSON_CHANGED=$((      
+            find json/ -type f | while read file; do
+            diff -q "$file" "latest_json/${file#json/}" > /dev/null || echo "1"
+            done | grep -q "1" && echo 1 || echo 0 
+          ))" >> $GITHUB_ENV
 
       - name: Create Release
         if: env.JSON_CHANGED == '1'
