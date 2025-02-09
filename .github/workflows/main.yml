@@ -31,6 +31,8 @@ jobs:
             package.json
       - name: set output - version
         id: set_version
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           PKG_VERSION=$(jq -r .version package.json)
           echo "SCRIPT_VERSION=$PKG_VERSION" >> $GITHUB_ENV
@@ -64,6 +66,8 @@ jobs:
         run: |
           mkdir -p latest_json
           gh release download --pattern "json/*" --dir latest_json || echo "No previous release found"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Compare json files
         run: |
