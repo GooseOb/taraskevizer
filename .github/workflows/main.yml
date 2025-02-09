@@ -6,11 +6,12 @@ on:
 
 jobs:
   build:
+    outputs:
+      version_changed: ${{ steps.set_version.outputs.has_changed }}
+      version: ${{ steps.set_version.outputs.value }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          version: 7
       - uses: oven-sh/setup-bun@v1
 
       - run: bun i --frozen-lockfile
@@ -28,10 +29,21 @@ jobs:
             dist
             README.md
             package.json
+      - name: set output - version
+        id: set_version
+        run: |
+          PKG_VERSION=$(jq -r .version package.json)
+          echo "SCRIPT_VERSION=$PKG_VERSION" >> $GITHUB_ENV
+          LATEST_VERSION=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' || echo "none")
+          echo "LATEST_VERSION=$LATEST_VERSION"
+
+          echo "version_changed=$(( "v$PKG_VERSION" != "$LATEST_VERSION" ))" >> $GITHUB_OUTPUT
+          echo "value=$PKG_VERSION" >> $GITHUB_OUTPUT
 
   json:
     runs-on: ubuntu-latest
     needs: build
+    if: needs.build.outputs.version_changed == '1'
     permissions:
       packages: write
       contents: write
@@ -48,13 +60,23 @@ jobs:
 
       - run: npm run json
 
-      - run: echo "SCRIPT_VERSION=$(jq -r .version package.json)" >> $GITHUB_ENV
-      - uses: ncipollo/release-action@v1
+      - name: Download latest release json files
+        run: |
+          mkdir -p latest_json
+          gh release download --pattern "json/*" --dir latest_json || echo "No previous release found"
+
+      - name: Compare json files
+        run: |
+          echo "JSON_CHANGED=$(( ! $(diff -rq json/ latest_json/ > /dev/null; echo $?) ))" >> $GITHUB_ENV
+
+      - name: Create Release
+        if: env.JSON_CHANGED == '1'
+        uses: ncipollo/release-action@v1
         with:
           artifacts: 'json/*'
-          tag: v${{ env.SCRIPT_VERSION }}
+          tag: v${{ needs.build.outputs.version }}
 
-  deploy_docs:
+  docs:
     runs-on: ubuntu-latest
     needs: build
     permissions:
@@ -63,8 +85,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v3
-        with:
-          version: 7
       - uses: oven-sh/setup-bun@v1
 
       - run: bun i --frozen-lockfile
@@ -83,6 +103,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: build
+    if: needs.build.outputs.version_changed == '1'
     steps:
       - uses: actions/setup-node@v3
         with:
