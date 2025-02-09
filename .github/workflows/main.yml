@@ -35,12 +35,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           PKG_VERSION=$(jq -r .version package.json)
-          echo "SCRIPT_VERSION=$PKG_VERSION" >> $GITHUB_ENV
           LATEST_VERSION=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' || echo "none")
-          echo "LATEST_VERSION=$LATEST_VERSION"
-
-          echo "v$PKG_VERSION"
-          echo "$LATEST_VERSION"
 
           if [[ "v$PKG_VERSION" != "$LATEST_VERSION" ]]; then
             echo "changed=true" >> $GITHUB_OUTPUT
@@ -70,11 +65,11 @@ jobs:
       - run: npm run json
 
       - name: Download latest release json files
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p latest_json
           gh release download --pattern "json/*" --dir latest_json || echo "No previous release found"
-        env:
-          GH_TOKEN: ${{ github.token }}
 
       - name: Compare json files
         run: |
