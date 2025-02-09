@@ -44,7 +44,7 @@ jobs:
           fi
           echo "value=$PKG_VERSION" >> $GITHUB_OUTPUT
 
-  release:
+  json:
     runs-on: ubuntu-latest
     needs: build
     if: needs.build.outputs.version_changed == 'true'
@@ -64,7 +64,22 @@ jobs:
 
       - run: npm run json
 
+      - name: Download latest release json files
+        run: |
+          mkdir -p latest_json
+          gh release download --pattern "json/*" --dir latest_json || echo "No previous release found"
+
+      - name: Compare json files
+        run: |
+          json_changed=$(
+            find json/ -type f | while read file; do
+              diff -q "$file" "latest_json/${file#json/}" > /dev/null || echo "1"
+            done | grep -q "1" && echo "true" || echo "false"
+          )
+          echo "JSON_CHANGED=$json_changed" >> $GITHUB_ENV
+
       - name: Create Release
+        if: env.JSON_CHANGED == 'true'
         uses: ncipollo/release-action@v1
         with:
           artifacts: 'json/*'

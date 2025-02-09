@@ -166,6 +166,7 @@ await esbuild.build({
 	entryPoints: [resolve(DIST_PATH, 'index.js')],
 	bundle: true,
 	outfile: resolve(DIST_PATH, 'bundle.js'),
+	charset: 'utf8',
 	globalName: 'taraskevizer',
 	minify: true,
 	sourcemap: false,
