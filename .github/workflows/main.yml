@@ -39,13 +39,17 @@ jobs:
           LATEST_VERSION=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' || echo "none")
           echo "LATEST_VERSION=$LATEST_VERSION"
 
-          echo "version_changed=$(( "v$PKG_VERSION" != "$LATEST_VERSION" ))" >> $GITHUB_OUTPUT
+          if [[ "v$PKG_VERSION" != "$LATEST_VERSION" ]]; then
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "version_changed=false" >> $GITHUB_OUTPUT
+          fi
           echo "value=$PKG_VERSION" >> $GITHUB_OUTPUT
 
   json:
     runs-on: ubuntu-latest
     needs: build
-    if: needs.build.outputs.version_changed == '1'
+    if: needs.build.outputs.version_changed == 'true'
     permissions:
       packages: write
       contents: write
@@ -71,14 +75,15 @@ jobs:
 
       - name: Compare json files
         run: |
-          echo "JSON_CHANGED=$((      
+          json_changed=$(
             find json/ -type f | while read file; do
-            diff -q "$file" "latest_json/${file#json/}" > /dev/null || echo "1"
-            done | grep -q "1" && echo 1 || echo 0 
-          ))" >> $GITHUB_ENV
+              diff -q "$file" "latest_json/${file#json/}" > /dev/null || echo "1"
+            done | grep -q "1" && echo "true" || echo "false"
+          )
+          echo "JSON_CHANGED=$json_changed" >> $GITHUB_ENV
 
       - name: Create Release
-        if: env.JSON_CHANGED == '1'
+        if: env.JSON_CHANGED == 'true'
         uses: ncipollo/release-action@v1
         with:
           artifacts: 'json/*'
@@ -111,7 +116,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: build
-    if: needs.build.outputs.version_changed == '1'
+    if: needs.build.outputs.version_changed == 'true'
     steps:
       - uses: actions/setup-node@v3
         with:
