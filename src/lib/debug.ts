@@ -5,8 +5,8 @@ const prefix = '[debug]';
 export const dict = (dict: CallableDict, regex: RegExp): CallableDict => {
 	const fn: CallableDict = (text) =>
 		fn.value.reduce((acc, item) => {
-			if (regex.test(text)) {
-				console.log(prefix, 'replaceWithDict:', item);
+			if (regex.test(acc)) {
+				console.log(prefix, 'replaceWithDict:', item, acc);
 				process.exit(1);
 			}
 			return acc.replace(item[0], item[1]);
@@ -15,7 +15,7 @@ export const dict = (dict: CallableDict, regex: RegExp): CallableDict => {
 	return fn;
 };
 
-export const log = (...msgs: unknown[]) => {
+export const trace = <T>(...msgs: [T, ...unknown[]]) => {
 	console.log(prefix, ...msgs);
-	return msgs[0];
+	return msgs[0] as T;
 };
