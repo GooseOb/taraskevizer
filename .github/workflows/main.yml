@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     outputs:
-      version_changed: ${{ steps.set_version.outputs.has_changed }}
+      version_changed: ${{ steps.set_version.outputs.changed }}
       version: ${{ steps.set_version.outputs.value }}
     runs-on: ubuntu-latest
     steps:
@@ -39,10 +39,13 @@ jobs:
           LATEST_VERSION=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' || echo "none")
           echo "LATEST_VERSION=$LATEST_VERSION"
 
+          echo "v$PKG_VERSION"
+          echo "$LATEST_VERSION"
+
           if [[ "v$PKG_VERSION" != "$LATEST_VERSION" ]]; then
-            echo "version_changed=true" >> $GITHUB_OUTPUT
+            echo "changed=true" >> $GITHUB_OUTPUT
           else
-            echo "version_changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> $GITHUB_OUTPUT
           fi
           echo "value=$PKG_VERSION" >> $GITHUB_OUTPUT
 
