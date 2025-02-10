@@ -70,6 +70,8 @@ jobs:
           gh release download --pattern "json/*" --dir latest_json || echo "No previous release found"
 
       - name: Compare json files
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           json_changed=$(
             find json/ -type f | while read file; do
