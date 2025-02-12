@@ -2,14 +2,14 @@ import { startTestProcess } from './lib';
 import { pipelines, TaraskConfig, dicts, htmlConfigOptions } from '../src';
 import * as cases from './cases';
 import * as path from 'path';
-import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { readFile } from 'node:fs/promises';
 import { highlightDiff } from '@/lib';
+import { spawn } from 'node:child_process';
 
 const { tarask, alphabetic, phonetic } = pipelines;
 
-const { endTestProcess, test } = startTestProcess({ long: false });
+const { endTestProcess, test, testAsync } = startTestProcess({ long: false });
 
 test('Taraskevization', (text) => tarask(text), cases.taraskevization.change);
 
@@ -57,17 +57,37 @@ if (process.env.CLI !== '0') {
 		JSON.parse(await readFile(path.resolve(root, 'package.json'), 'utf-8')).bin
 			.tarask
 	);
-	test(
+	await testAsync(
 		'CLI',
-		(options) => {
-			const { stdout, stderr } = spawnSync('bun', [pathToBin, ...options], {
-				encoding: 'utf-8',
-			});
+		(options) =>
+			new Promise((resolve, reject) => {
+				const child = spawn('bun', [pathToBin, ...options]);
 
-			if (stderr) process.stderr.write(stderr);
+				let stdout = '';
+				let stderr = '';
 
-			return stdout.trim();
-		},
+				child.stdout.on('data', (data) => {
+					stdout += data.toString();
+				});
+
+				child.stderr.on('data', (data) => {
+					stderr += data.toString();
+				});
+
+				child.on('close', (code) => {
+					if (code === 0) {
+						resolve(stdout.trim());
+					} else {
+						reject(
+							new Error(`Process exited with code ${code}: ${stderr.trim()}`)
+						);
+					}
+				});
+
+				child.on('error', (err) => {
+					reject(err);
+				});
+			}),
 		cases.cli
 	);
 }

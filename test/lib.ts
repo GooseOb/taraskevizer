@@ -70,45 +70,60 @@ export const startTestProcess = ({ long = false } = {}) => {
 	print.start();
 	let passedCount = 0;
 	const failed = initFailed();
-	return {
-		endTestProcess() {
-			failed.print();
-			print.final(passedCount, failed.count());
-			return failed.count() ? 1 : 0;
-		},
-		test<TInput, TOutput extends string>(
-			name: string,
-			fn: (arg: TInput) => TOutput,
-			cases: readonly (readonly [TInput, TOutput])[]
-		) {
-			if (process.stdout.moveCursor) {
-				print.inProgress(name);
-				process.stdout.moveCursor(0, -1);
-			}
-			let longStr = '';
-			for (const { 0: input, 1: expectedValue } of cases) {
-				let output: TOutput;
-				try {
-					output = fn(input);
-				} catch (e) {
-					(e as Error).cause = { name, input };
-					throw e;
-				}
-				if (output !== expectedValue) {
-					if (long) {
-						longStr += `\n${input} \x1b[31m->\x1b[0m ${output}`;
-					}
-					print.failed(name + longStr);
-					failed.add({ name, input, output, expectedValue });
-					return;
-				} else if (long) {
-					longStr += `\n${input} \x1b[36m->\x1b[0m ${output}`;
-				}
-			}
-			++passedCount;
-			print.passed(name + longStr);
-		},
+
+	const endTestProcess = () => {
+		failed.print();
+		print.final(passedCount, failed.count());
+		return failed.count() ? 1 : 0;
 	};
+
+	const test = <TInput, TOutput extends string>(
+		name: string,
+		fn: (arg: TInput) => TOutput,
+		cases: readonly (readonly [TInput, TOutput])[]
+	) => {
+		if (process.stdout.moveCursor) {
+			print.inProgress(name);
+			process.stdout.moveCursor(0, -1);
+		}
+		let longStr = '';
+		for (const { 0: input, 1: expectedValue } of cases) {
+			let output: TOutput;
+			try {
+				output = fn(input);
+			} catch (e) {
+				(e as Error).cause = { name, input };
+				throw e;
+			}
+			if (output !== expectedValue) {
+				if (long) {
+					longStr += `\n${input} \x1b[31m->\x1b[0m ${output}`;
+				}
+				print.failed(name + longStr);
+				failed.add({ name, input, output, expectedValue });
+				return;
+			} else if (long) {
+				longStr += `\n${input} \x1b[36m->\x1b[0m ${output}`;
+			}
+		}
+		++passedCount;
+		print.passed(name + longStr);
+	};
+
+	const testAsync = <TInput, TOutput extends string>(
+		name: string,
+		fn: (arg: TInput) => Promise<TOutput>,
+		cases: readonly (readonly [TInput, TOutput])[]
+	) =>
+		Promise.all(cases.map(([input]) => fn(input))).then((outputs) =>
+			test(
+				name,
+				(a: TOutput) => a,
+				cases.map(({ 1: expected }, i) => [outputs[i], expected])
+			)
+		);
+
+	return { endTestProcess, test, testAsync };
 };
 
 const getBenchmarkPrinter = (name: string) => (msg: string) => {
