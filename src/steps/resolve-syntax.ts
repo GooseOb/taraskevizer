@@ -36,11 +36,7 @@ export const applyNoFix: TaraskStep<SpecialSyntaxStorage> = (ctx) => {
  * Creates storage: {@link SpecialSyntaxStorage}.
  */
 export const resolveSpecialSyntax = mutatingStep<SpecialSyntaxStorage>(
-	({
-		text,
-		storage,
-		cfg: { doEscapeCapitalized, abc, leftAngleBracket, noFixPlaceholder },
-	}) => {
+	({ text, storage, cfg: { doEscapeCapitalized, abc, noFixPlaceholder } }) => {
 		const noFixArr = (storage.noFixArr = [] as string[]);
 		const convertAlphavet = (abcOnlyText: string, abc: Alphabet) =>
 			restoreCase(
@@ -72,6 +68,9 @@ export const resolveSpecialSyntax = mutatingStep<SpecialSyntaxStorage>(
 				--depth;
 				if (depth) {
 					currentPart += part;
+				} else if (currentPart === '<') {
+					result += '<' + escapeCapsIfNeeded(part);
+					currentPart = '';
 				} else {
 					let char = '';
 					const isAbc = currentPart[1] === '*';
@@ -92,10 +91,10 @@ export const resolveSpecialSyntax = mutatingStep<SpecialSyntaxStorage>(
 							noFixArr.push(currentPart);
 							break;
 						case ',':
-							toAddToResult = leftAngleBracket + currentPart + '>';
+							toAddToResult = '<' + currentPart + '>';
 							break;
 						default:
-							toAddToResult = leftAngleBracket + noFixPlaceholder;
+							toAddToResult = '<' + noFixPlaceholder;
 							noFixArr.push((isAbc ? '' : char) + currentPart + '>');
 					}
 					result += toAddToResult + escapeCapsIfNeeded(part.slice(1));

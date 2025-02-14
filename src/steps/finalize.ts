@@ -1,4 +1,4 @@
-import { mutatingStep } from '@/lib';
+import { mutatingStep, re } from '@/lib';
 
 /**
  * Reverse the changes made in the {@link prepare} step
@@ -12,13 +12,16 @@ import { mutatingStep } from '@/lib';
  *
  * Removes spaces around punctuation marks and digits.
  */
-export const finalize = mutatingStep(({ text, cfg: { newLine } }) => {
-	text = text
-		.replace(/&#40/g, '(')
-		.replace(/&nbsp;/g, ' ')
-		.replace(/ (\p{P}|\p{S}|\d+) /gu, '$1');
+export const finalize = mutatingStep(
+	({ text, cfg: { newLine, leftAngleBracket } }) => {
+		text = text
+			.replace(/&#40/g, '(')
+			.replace(/&nbsp;/g, ' ')
+			.replace(/ (\p{P}|\p{S}|\d+) /gu, '$1')
+			.replace(re.g(` ${leftAngleBracket} `), leftAngleBracket);
 
-	if (newLine !== '\n') text = text.replace(/\n/g, newLine);
+		if (newLine !== '\n') text = text.replace(/\n/g, newLine);
 
-	return text.trim();
-});
+		return text.trim();
+	}
+);

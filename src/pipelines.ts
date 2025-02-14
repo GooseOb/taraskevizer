@@ -43,6 +43,7 @@ import {
 	applyG,
 	applyVariations,
 } from './steps';
+import { escapeLeftAngleBracket } from './steps/escape-left-angle-bracket';
 
 /**
  * Pipeline for changing only the alphabet.
@@ -87,6 +88,7 @@ export const _pipe = (subPipeline: TaraskStep<any>[]) =>
 		storeSplittedText,
 		restoreCaseStep,
 		highlightDiffStep,
+		escapeLeftAngleBracket,
 		joinSplittedText,
 		restoreWhitespaces,
 		applyG,
