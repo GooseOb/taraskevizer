@@ -13,7 +13,7 @@ const requireGlobalFlag = {
 			{
 				type: 'object',
 				properties: {
-					pattern: {
+					pathTest: {
 						type: 'regexp',
 					},
 				},
@@ -22,14 +22,12 @@ const requireGlobalFlag = {
 		],
 	},
 
-	create: (context) => {
-		const { pattern } = context.options[0] || {};
-
-		return pattern && pattern.test(context.getFilename())
+	create: (ctx) => {
+		return ctx.options[0]?.pathTest?.test(ctx.getFilename())
 			? {
 					Literal(node) {
 						if (node.regex && !node.regex.flags.includes('g')) {
-							context.report({
+							ctx.report({
 								node,
 								messageId: 'missingGlobalFlag',
 							});
@@ -44,7 +42,7 @@ const requireGlobalFlag = {
 							typeof node.arguments[1].value === 'string' &&
 							!node.arguments[1].value.includes('g')
 						) {
-							context.report({
+							ctx.report({
 								node,
 								messageId: 'missingGlobalFlag',
 							});

@@ -21,7 +21,7 @@ export default [
 			'regex-global/regex-global': [
 				'error',
 				{
-					pattern: /\/dict\/.+?\.ts$/,
+					pathTest: /\/dict\/.+?\.ts$/,
 				},
 			],
 		},
