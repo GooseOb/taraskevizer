@@ -67,18 +67,15 @@ jobs:
       - name: Download latest release json files
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p latest_json
-          gh release download --pattern "json/*" --dir latest_json || echo "No previous release found"
+        run: gh release download --pattern "*.json" --dir latest_json
 
       - name: Compare json files
         run: |
-          json_changed=$(
-            find json/ -type f | while read file; do
-              diff -q "$file" "latest_json/${file#json/}" > /dev/null || echo "1"
-            done | grep -q "1" && echo "true" || echo "false"
-          )
-          echo "JSON_CHANGED=$json_changed" >> $GITHUB_ENV
+          if diff -Zq json/ latest_json/; then
+              echo "JSON_CHANGED=false" >> $GITHUB_ENV
+          else
+              echo "JSON_CHANGED=true" >> $GITHUB_ENV
+          fi
 
       - name: Create Release
         if: env.JSON_CHANGED == 'true'
