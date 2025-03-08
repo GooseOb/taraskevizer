@@ -1,4 +1,4 @@
-// <*. is not specified by documentation, so may be changed in the future
+// <*, is not specified by documentation, so may be changed in the future
 
 export const general = [
 	['Планета', 'Плянэта'],
@@ -14,6 +14,15 @@ export const general = [
 	['<Медык> > медык >', '<Медык> > мэдык >'],
 	['<Медык> > МЕДЫК >', '<Медык> > МЕДЫК >'],
 	['<>', '<>'],
+	['<.>', ''],
+	['<.<.>>', '<.>'],
+	['<*.>', ''],
+	['<,>', '<>'],
+	['<*,>', '<>'],
+	['<\\>Планета>', '<>Планета>'],
+	['<<Планета>>', '<<Планета>>'],
+	['<<Планета> планета', '<<Планета> плянэта'],
+	['<Планета <<= Планета>', '<Планета <<= Планета>'],
 ] as const;
 
 export const latin = [
@@ -24,5 +33,5 @@ export const latin = [
 	['<*.Планета>', 'Płanieta'],
 	['<*.Планета гарбузоў АААА>', 'Płanieta harbuzoŭ AAAA'],
 	['<,Планета>', '<Planeta>'],
-	['<*,Планета>', '<Płanieta>'],
+	['<*,Планета>', '<Planeta>'],
 ] as const;

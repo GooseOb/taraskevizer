@@ -44,66 +44,30 @@ export const resolveSpecialSyntax = mutatingStep<SpecialSyntaxStorage>(
 				abcOnlyText.split(' ')
 			).join(' ');
 
-		const escapeCapsIfNeeded = (text: string) =>
-			doEscapeCapitalized
-				? text.replace(
-						/(?!<=\p{Lu} )\p{Lu}{2}[\p{Lu} ]*(?!= \p{Lu})/gu,
-						($0) => {
-							noFixArr.push(convertAlphavet($0, abc));
-							return noFixPlaceholder;
-						}
-					)
-				: text;
-		const parts = text.split(/(?=[<>])/g);
-		if (parts.length === 1) return escapeCapsIfNeeded(text);
-
-		let result = text.startsWith('<') ? '' : escapeCapsIfNeeded(parts.shift()!);
-		let depth = 0;
-		let currentPart = '';
-		for (const part of parts) {
-			if (part.startsWith('<')) {
-				++depth;
-				currentPart += part;
-			} else if (depth) {
-				--depth;
-				if (depth) {
-					currentPart += part;
-				} else if (currentPart === '<') {
-					result += '<' + escapeCapsIfNeeded(part);
-					currentPart = '';
-				} else {
-					let char = '';
-					const isAbc = currentPart[1] === '*';
-					if (isAbc) {
-						char = currentPart[2];
-						currentPart = convertAlphavet(
-							currentPart.slice(char === ',' || char === '.' ? 3 : 2),
-							abc
-						);
-					} else {
-						char = currentPart[1];
-						currentPart = currentPart.slice(2);
-					}
-					let toAddToResult: string;
-					switch (char) {
-						case '.':
-							toAddToResult = noFixPlaceholder;
-							noFixArr.push(currentPart);
-							break;
-						case ',':
-							toAddToResult = '<' + currentPart + '>';
-							break;
-						default:
-							toAddToResult = '<' + noFixPlaceholder;
-							noFixArr.push((isAbc ? '' : char) + currentPart + '>');
-					}
-					result += toAddToResult + escapeCapsIfNeeded(part.slice(1));
-					currentPart = '';
-				}
+		text = text.replace(/<(.*?[^\\])>/g, (_$0, $1) => {
+			const isAbc = +$1.startsWith('*');
+			const char = isAbc ? $1[1] : $1[0];
+			const doRemoveBrackets = +(char === '.');
+			const doTarask = +(char === ',');
+			$1 = $1.slice(isAbc + doRemoveBrackets + doTarask).replace(/\\>/g, '>');
+			if (doTarask) {
+				$1 = `<${$1}>`;
 			} else {
-				result += escapeCapsIfNeeded(part);
+				noFixArr.push(isAbc ? convertAlphavet($1, abc) : $1);
+				$1 = doRemoveBrackets ? noFixPlaceholder : `<${noFixPlaceholder}>`;
 			}
+			return $1;
+		});
+
+		if (doEscapeCapitalized) {
+			text = text.replace(
+				/(?!<=\p{Lu} )\p{Lu}{2}[\p{Lu} ]*(?!= \p{Lu})/gu,
+				($0) => {
+					noFixArr.push(convertAlphavet($0, abc));
+					return noFixPlaceholder;
+				}
+			);
 		}
-		return result + escapeCapsIfNeeded(currentPart);
+		return text;
 	}
 );
