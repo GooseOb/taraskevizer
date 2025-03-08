@@ -19,9 +19,12 @@ print.passed = (msg: string) => {
 print.failed = (msg: string) => {
 	print('failed', msg, '31');
 };
-print.inProgress = (name: string) => {
-	print('      ', name, '36');
-};
+print.inProgress = process.stdout.moveCursor
+	? (name: string) => {
+			print('      ', name, '36');
+			process.stdout.moveCursor(0, -1);
+		}
+	: () => {};
 print.benchmark = (msg: string) => {
 	print('benchmark', msg, '36');
 };
@@ -78,15 +81,11 @@ export const startTestProcess = ({ long = false } = {}) => {
 		return failed.count() ? 1 : 0;
 	};
 
-	const test = <TInput, TOutput extends string>(
+	const _test = <TInput, TOutput extends string>(
 		name: string,
 		fn: (arg: TInput) => TOutput,
 		cases: readonly (readonly [TInput, TOutput])[]
 	) => {
-		if (process.stdout.moveCursor) {
-			print.inProgress(name);
-			process.stdout.moveCursor(0, -1);
-		}
 		let longStr = '';
 		for (const { 0: input, 1: expectedValue } of cases) {
 			let output: TOutput;
@@ -111,18 +110,29 @@ export const startTestProcess = ({ long = false } = {}) => {
 		print.passed(name + longStr);
 	};
 
+	const test = <TInput, TOutput extends string>(
+		name: string,
+		fn: (arg: TInput) => TOutput,
+		cases: readonly (readonly [TInput, TOutput])[]
+	) => {
+		print.inProgress(name);
+		_test(name, fn, cases);
+	};
+
 	const testAsync = <TInput, TOutput extends string>(
 		name: string,
 		fn: (arg: TInput) => Promise<TOutput>,
 		cases: readonly (readonly [TInput, TOutput])[]
-	) =>
-		Promise.all(cases.map(([input]) => fn(input))).then((outputs) =>
-			test(
+	) => {
+		print.inProgress(name);
+		return Promise.all(cases.map(([input]) => fn(input))).then((outputs) =>
+			_test(
 				name,
 				(a: TOutput) => a,
 				cases.map(({ 1: expected }, i) => [outputs[i], expected])
 			)
 		);
+	};
 
 	return { endTestProcess, test, testAsync };
 };
