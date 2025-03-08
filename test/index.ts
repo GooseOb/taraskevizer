@@ -1,4 +1,4 @@
-import { startTestProcess } from './lib';
+import { promisifyChildProcess, startTestProcess } from './lib';
 import { pipelines, TaraskConfig, dicts, htmlConfigOptions } from '../src';
 import * as cases from './cases';
 import * as path from 'path';
@@ -59,35 +59,7 @@ if (process.env.CLI !== '0') {
 	);
 	await testAsync(
 		'CLI',
-		(options) =>
-			new Promise((resolve, reject) => {
-				const child = spawn('bun', [pathToBin, ...options]);
-
-				let stdout = '';
-				let stderr = '';
-
-				child.stdout.on('data', (data) => {
-					stdout += data.toString();
-				});
-
-				child.stderr.on('data', (data) => {
-					stderr += data.toString();
-				});
-
-				child.on('close', (code) => {
-					if (code === 0) {
-						resolve(stdout.trim());
-					} else {
-						reject(
-							new Error(`Process exited with code ${code}: ${stderr.trim()}`)
-						);
-					}
-				});
-
-				child.on('error', (err) => {
-					reject(err);
-				});
-			}),
+		promisifyChildProcess((options) => spawn('bun', [pathToBin, ...options])),
 		cases.cli
 	);
 }
@@ -168,7 +140,6 @@ test(
 test(
 	'Highlighting',
 	(input) => {
-		// @ts-expect-error fdnsj jnfsdn
 		const text: [string] = [input[1] || tarask(input[0])];
 		highlightDiff(text, [input[0]], true, (text) => `[${text}]`);
 		return text[0];

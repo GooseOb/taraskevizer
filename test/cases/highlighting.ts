@@ -21,4 +21,4 @@ export default [
 	// letters in the middle are removed -> letters surrounding the removed ones
 	[['казахскі'], 'каз[ас]кі'],
 	[['płanieta', 'planeta'], 'p[lan]eta'],
-] as const;
+] as [[string] | [string, string], string][];

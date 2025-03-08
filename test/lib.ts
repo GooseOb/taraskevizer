@@ -1,3 +1,4 @@
+import type { ChildProcessWithoutNullStreams } from 'child_process';
 import { format } from 'util';
 
 const colorize = (str: string, colorCode: `${number}`) =>
@@ -125,6 +126,40 @@ export const startTestProcess = ({ long = false } = {}) => {
 
 	return { endTestProcess, test, testAsync };
 };
+
+export const promisifyChildProcess =
+	<TOptions extends any[]>(
+		createProcess: (options: TOptions) => ChildProcessWithoutNullStreams
+	) =>
+	(options: TOptions) =>
+		new Promise<string>((resolve, reject) => {
+			const child = createProcess(options);
+
+			let stdout = '';
+			let stderr = '';
+
+			child.stdout.on('data', (data) => {
+				stdout += data.toString();
+			});
+
+			child.stderr.on('data', (data) => {
+				stderr += data.toString();
+			});
+
+			child.on('close', (code) => {
+				if (code === 0) {
+					resolve(stdout.trim());
+				} else {
+					reject(
+						new Error(`Process exited with code ${code}: ${stderr.trim()}`)
+					);
+				}
+			});
+
+			child.on('error', (err) => {
+				reject(err);
+			});
+		});
 
 const getBenchmarkPrinter = (name: string) => (msg: string) => {
 	print.benchmark(name + ', ' + msg);
