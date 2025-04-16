@@ -5,8 +5,8 @@ import {
 	softeners,
 	noSoften,
 } from './dist/dict/index.js';
-import { resolve } from 'path';
-import { writeFile, mkdir } from 'fs/promises';
+import { resolve } from 'node:path';
+import { writeFile, mkdir } from 'node:fs/promises';
 
 const extractDict = (dict) =>
 	dict.value.map(({ 0: pattern, 1: result }) => [pattern.source, result]);

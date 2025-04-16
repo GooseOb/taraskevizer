@@ -1,6 +1,6 @@
-import { appendFile, readFile, writeFile, exists } from 'fs/promises';
-import { fileURLToPath } from 'url';
-import path from 'path';
+import { appendFile, readFile, writeFile, exists } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
 if (process.argv.length < 3) {
 	process.stderr.write(

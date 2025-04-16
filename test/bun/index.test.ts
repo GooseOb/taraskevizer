@@ -1,7 +1,7 @@
 import { getLabel, testOnCases, testOnCasesAsync } from './lib';
 import { dicts, TaraskConfig, pipelines, htmlConfigOptions } from '../../src';
 import * as cases from '../cases';
-import * as path from 'path';
+import * as path from 'node:path';
 import { highlightDiff } from '@/lib';
 
 const { tarask, alphabetic, phonetic } = pipelines;

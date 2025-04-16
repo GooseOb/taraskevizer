@@ -6,8 +6,8 @@ import {
 	parseJsonConfigFileContent,
 	sys,
 } from 'typescript';
-import { lstat, readFile, writeFile, readdir } from 'fs/promises';
-import { join, resolve, relative } from 'path';
+import { lstat, readFile, writeFile, readdir } from 'node:fs/promises';
+import { join, resolve, relative } from 'node:path';
 import { build } from 'esbuild';
 
 const getPrinter =
@@ -134,7 +134,7 @@ await Promise.all(
 
 printWithTime('Imports fixed');
 
-const CLI_PREFIX = `\x1b[34m[taraskevizer]\x1b[0m`;
+const CLI_PREFIX = '\x1b[34m[taraskevizer]\x1b[0m';
 
 const colorizeText = (text: string) =>
 	text

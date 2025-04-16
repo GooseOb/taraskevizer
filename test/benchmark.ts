@@ -1,4 +1,4 @@
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
 import { benchmark } from './lib';
 import { pipelines } from '../src';
 

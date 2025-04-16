@@ -1,8 +1,8 @@
 import { promisifyChildProcess, startTestProcess } from './lib';
 import { pipelines, TaraskConfig, dicts, htmlConfigOptions } from '../src';
 import * as cases from './cases';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import { highlightDiff } from '@/lib';
 import { spawn } from 'node:child_process';

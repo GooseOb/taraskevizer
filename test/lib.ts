@@ -1,5 +1,5 @@
-import type { ChildProcessWithoutNullStreams } from 'child_process';
-import { format } from 'util';
+import type { ChildProcessWithoutNullStreams } from 'node:child_process';
+import { format } from 'node:util';
 
 const colorize = (str: string, colorCode: `${number}`) =>
 	`\x1b[${colorCode}m${str}\x1b[0m`;
@@ -102,7 +102,8 @@ export const startTestProcess = ({ long = false } = {}) => {
 				print.failed(name + longStr);
 				failed.add({ name, input, output, expectedValue });
 				return;
-			} else if (long) {
+			}
+			if (long) {
 				longStr += `\n${input} \x1b[36m->\x1b[0m ${output}`;
 			}
 		}
