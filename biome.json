@@ -34,6 +34,6 @@
 		}
 	},
 	"files": {
-		"ignore": ["src/dict/wordlist.ts", "json/*", "dist/*"]
+		"ignore": ["src/dict/wordlist.ts", "json/*", "dist/*", "docs/*"]
 	}
 }
