@@ -2,7 +2,7 @@ name: Publish
 on:
   push:
     branches:
-      - 'main'
+      - "main"
 
 jobs:
   build:
@@ -81,7 +81,7 @@ jobs:
         if: env.JSON_CHANGED == 'true'
         uses: ncipollo/release-action@v1
         with:
-          artifacts: 'json/*'
+          artifacts: "json/*"
           tag: v${{ needs.build.outputs.version }}
 
   docs:
@@ -102,8 +102,8 @@ jobs:
       - name: Upload docs artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          name: 'github-pages'
-          path: 'docs'
+          name: "github-pages"
+          path: "docs"
       - name: Deploy docs to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
@@ -115,7 +115,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
 
       - name: Download package artifact
         uses: actions/download-artifact@v4

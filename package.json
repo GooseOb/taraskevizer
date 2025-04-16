@@ -9,26 +9,23 @@
 	"main": "dist/index.js",
 	"module": "dist/index.js",
 	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
 		"@digitak/esrun": "^3.2.26",
-		"@eslint/js": "^9.19.0",
-		"@types/node": "^20.17.17",
-		"bun-types": "^1.2.2",
-		"esbuild": "^0.25.0",
-		"eslint": "^9.19.0",
+		"@eslint/js": "^9.24.0",
+		"@types/node": "^20.17.30",
+		"bun-types": "^1.2.9",
+		"esbuild": "^0.25.2",
+		"eslint": "^9.24.0",
 		"husky": "^9.1.7",
-		"prettier": "^3.4.2",
 		"typedoc": "^0.26.11",
-		"typescript": "^5.7.3",
-		"typescript-eslint": "^8.23.0"
+		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.30.1"
 	},
 	"bin": {
 		"tarask": "dist/bin.js"
 	},
 	"description": "Канвэртацыя акадэмічнага правапісу ў клясычны",
-	"files": [
-		"dist",
-		"README.md"
-	],
+	"files": ["dist", "README.md"],
 	"homepage": "https://gooseob.github.io/taraskevizatar/",
 	"keywords": [
 		"taraskevizatar",
@@ -41,7 +38,7 @@
 	"private": false,
 	"scripts": {
 		"build": "bun ./build.ts",
-		"prettier": "prettier --write .",
+		"format": "biome format --write",
 		"lint": "eslint .",
 		"dev": "esrun --watch=src/*,test/* --send-code-mode=temporaryFile test",
 		"dev:bun": "bun test --watch",

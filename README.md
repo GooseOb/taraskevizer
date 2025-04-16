@@ -10,10 +10,10 @@ If you're looking for JSON dictionaries, check out the github releases.
 
 ```html
 <head>
-	<script src="https://cdn.jsdelivr.net/npm/taraskevizer@latest/dist/bundle.js"></script>
-	<script>
-		document.write(taraskevizer.pipelines.tarask('планета'));
-	</script>
+  <script src="https://cdn.jsdelivr.net/npm/taraskevizer@latest/dist/bundle.js"></script>
+  <script>
+    document.write(taraskevizer.pipelines.tarask("планета"));
+  </script>
 </head>
 ```
 
@@ -41,40 +41,40 @@ bun add taraskevizer
 
 ```js
 import {
-	pipelines,
-	TaraskConfig,
-	htmlConfigOptions,
-	wrappers,
-	alphabets,
-	REPLACE_J,
-	VARIATION,
-} from 'taraskevizer';
+  pipelines,
+  TaraskConfig,
+  htmlConfigOptions,
+  wrappers,
+  alphabets,
+  REPLACE_J,
+  VARIATION,
+} from "taraskevizer";
 
-pipelines.tarask('планета');
+pipelines.tarask("планета");
 // "плянэта"
 
 const cfg = new TaraskConfig({
-	abc: alphabets.cyrillic,
-	j: 'always',
-	variations: 'first',
-	wrappers: wrappers.ansiColor,
-	g: true,
+  abc: alphabets.cyrillic,
+  j: "always",
+  variations: "first",
+  wrappers: wrappers.ansiColor,
+  g: true,
 });
-pipelines.tarask('планета і Гродна', cfg);
+pipelines.tarask("планета і Гродна", cfg);
 // "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
 
-pipelines.tarask('энергія планеты', {
-	...htmlConfigOptions,
-	abc: alphabets.latin,
-	g: false, // ignored, g matters for cyrillic alphabet only
+pipelines.tarask("энергія планеты", {
+  ...htmlConfigOptions,
+  abc: alphabets.latin,
+  g: false, // ignored, g matters for cyrillic alphabet only
 });
 // "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
 
 const latinWithJiCfg = new TaraskConfig({
-	abc: alphabets.latinJi,
+  abc: alphabets.latinJi,
 });
 
-pipelines.alphabetic('яна і іншыя', latinWithJiCfg);
+pipelines.alphabetic("яна і іншыя", latinWithJiCfg);
 // "jana j jinšyja"
 ```
 

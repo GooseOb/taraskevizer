@@ -8,7 +8,7 @@ import {
 } from 'typescript';
 import { lstat, readFile, writeFile, readdir } from 'fs/promises';
 import { join, resolve, relative } from 'path';
-import * as esbuild from 'esbuild';
+import { build } from 'esbuild';
 
 const getPrinter =
 	(writer: { write: (s: string) => void }, clr = '33') =>
@@ -162,7 +162,7 @@ await Promise.all([
 
 printWithTime('Version and help text injected');
 
-await esbuild.build({
+await build({
 	entryPoints: [resolve(DIST_PATH, 'index.js')],
 	bundle: true,
 	outfile: resolve(DIST_PATH, 'bundle.js'),
