@@ -80,11 +80,11 @@ pipelines.alphabetic("яна і іншыя", latinWithJiCfg);
 
 # Builtin Pipelines
 
-| Pipeline   | Taraskevization | Phonetization | Alphabet | Special syntax |
-| ---------- | --------------- | ------------- | -------- | -------------- |
-| tarask     | ✅              | ❌            | ✅       | ✅             |
-| alphabetic | ❌              | ❌            | ✅       | ✅             |
-| phonetic   | ❌              | ✅ (alpha)    | ✅       | ✅             |
+| Pipeline   | Taraskevization | Phonetization     | Alphabet | Special syntax |
+| ---------- | --------------- | ----------------- | -------- | -------------- |
+| tarask     | ✅              | ❌                | ✅       | ✅             |
+| alphabetic | ❌              | ❌                | ✅       | ✅             |
+| phonetic   | ❌              | ✅ (experimental) | ✅       | ✅             |
 
 # HTML tags
 

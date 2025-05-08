@@ -105,6 +105,6 @@ export const tarask = _pipe([taraskevize]);
 
 /**
  * Pipeline for phonetizing.
- * @alpha
+ * @experimental
  */
 export const phonetic = _pipe([phonetize, iotacizeJi]);
