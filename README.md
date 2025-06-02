@@ -46,8 +46,6 @@ import {
   htmlConfigOptions,
   wrappers,
   alphabets,
-  REPLACE_J,
-  VARIATION,
 } from "taraskevizer";
 
 pipelines.tarask("планета");

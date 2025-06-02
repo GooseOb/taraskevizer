@@ -11,15 +11,15 @@
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
 		"@digitak/esrun": "^3.2.26",
-		"@eslint/js": "^9.24.0",
-		"@types/node": "^20.17.30",
-		"bun-types": "^1.2.9",
-		"esbuild": "^0.25.2",
-		"eslint": "^9.24.0",
+		"@eslint/js": "^9.28.0",
+		"@types/node": "^20.17.57",
+		"bun-types": "^1.2.15",
+		"esbuild": "^0.25.5",
+		"eslint": "^9.28.0",
 		"husky": "^9.1.7",
 		"typedoc": "^0.26.11",
 		"typescript": "^5.8.3",
-		"typescript-eslint": "^8.30.1"
+		"typescript-eslint": "^8.33.0"
 	},
 	"bin": {
 		"tarask": "dist/bin.js"
