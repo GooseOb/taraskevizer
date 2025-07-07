@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.0.6/schema.json",
 	"formatter": {
 		"enabled": true
 	},
@@ -14,13 +14,20 @@
 			"style": {
 				"useTemplate": "off",
 				"noNonNullAssertion": "off",
-				"noParameterAssign": "off"
+				"noParameterAssign": "off",
+				"useAsConstAssertion": "error",
+				"useDefaultParameterLast": "error",
+				"useEnumInitializers": "error",
+				"useSelfClosingElements": "error",
+				"useSingleVarDeclarator": "error",
+				"noUnusedTemplateLiteral": "error",
+				"useNumberNamespace": "error",
+				"noInferrableTypes": "error",
+				"noUselessElse": "error"
 			}
 		}
 	},
-	"organizeImports": {
-		"enabled": true
-	},
+	"assist": { "actions": { "source": { "organizeImports": "on" } } },
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "single",
@@ -34,6 +41,12 @@
 		}
 	},
 	"files": {
-		"ignore": ["src/dict/wordlist.ts", "json/*", "dist/*", "docs/*"]
+		"includes": [
+			"**",
+			"!**/src/dict/wordlist.ts",
+			"!**/json/**/*",
+			"!**/dist/**/*",
+			"!**/docs/**/*"
+		]
 	}
 }
