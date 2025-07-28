@@ -97,7 +97,7 @@ export class TaraskConfig {
 	/**
 	 * Placeholder for parts that should not be fixed like those enclosed in `< >`.
 	 *
-	 * > Not recommended to change.
+	 * > Change only if the default value interferes with your text.
 	 *
 	 * @default " \ue0fe "
 	 */

@@ -105,19 +105,29 @@ const replaceAsync = (
 	});
 };
 
+type MaybePromise<T> = T | Promise<T>;
+
+const transformFile = (
+	filePath: string,
+	cb: (content: string) => MaybePromise<string>
+) =>
+	readFile(filePath, 'utf8')
+		.then(cb)
+		.then((content) => writeFile(filePath, content));
+
+const resolveAt = (code: string, parentPath: string) =>
+	code.replace(
+		/((?:im|ex)port.+from\s+["'])@\/(.+)(?=["'];)/g,
+		(_$0, $1, $2) => $1 + relative(parentPath, join(DIST_PATH, $2))
+	);
+
 await Promise.all(
 	srcFiles.map((file) => {
 		const parentPath = resolve(file.parentPath.replace(/^src/, 'dist'));
-		const filePath = join(parentPath, file.name.replace(/ts$/, 'js'));
-		return readFile(filePath, 'utf8')
-			.then((content) =>
+		return Promise.all([
+			transformFile(join(parentPath, file.name.replace(/ts$/, 'js')), (code) =>
 				replaceAsync(
-					content
-						.replace(/\/\*.*?\*\//gs, '')
-						.replace(
-							/((?:im|ex)port.+from\s+["'])@\/(.+)(?=["'];)/g,
-							(_$0, $1, $2) => $1 + relative(parentPath, join(DIST_PATH, $2))
-						),
+					resolveAt(code.replace(/\/\*.*?\*\//gs, ''), parentPath),
 					/((?:im|ex)port.+from\s+["'])(.+)(?<!\.js)(?=["'];)/g,
 					(_$0, $1, $2) =>
 						lstat(resolve(parentPath, $2))
@@ -127,8 +137,12 @@ await Promise.all(
 							)
 							.then((isDir) => $1 + $2 + (isDir ? '/index.js' : '.js'))
 				)
-			)
-			.then((content) => writeFile(filePath, content));
+			),
+			transformFile(
+				join(parentPath, file.name.replace(/ts$/, 'd.ts')),
+				(code) => resolveAt(code, parentPath)
+			),
+		]);
 	})
 );
 
