@@ -99,21 +99,19 @@ jobs:
         env:
           HUSKY: 0
       - run: bun run docs
-      - name: Upload docs artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          name: "github-pages"
-          path: "docs"
-
-      # ---- Generate dependency graph ----
-      - name: Install Graphviz
-        run: sudo apt-get install graphviz -y
 
       - name: Generate dependency graph
         run: |
           chmod +x tools/dep-graph.sh
           ./tools/dep-graph.sh | dot -Tsvg -o docs/graph.svg
           ./tools/dep-graph.sh | dot -Tpng -o docs/graph.png
+        uses: ts-graphviz/setup-graphviz@v2
+
+      - name: Upload docs artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: "github-pages"
+          path: "docs"
 
       - name: Deploy docs to GitHub Pages
         id: deployment
