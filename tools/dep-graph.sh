@@ -94,7 +94,7 @@ done
 # Generate DOT graph
 echo "digraph G {"
 echo "  rankdir=LR;"
-echo "  node [style=filled];"
+echo "  node [shape=box, style=filled];"
 
 # Nodes
 for file in "${!imports[@]}"; do
