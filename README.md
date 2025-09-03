@@ -181,5 +181,4 @@ Algorithm makes some heuristics, but that's not enough to cover all cases.
 
 # Dependency graph of the project files
 
-![Dependency graph](https://gooseob.github.io/taraskevizer/graph.svg)
 ![Dependency graph](https://gooseob.github.io/taraskevizer/graph.png)

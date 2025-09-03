@@ -104,7 +104,6 @@ jobs:
       - name: Generate dependency graph
         run: |
           chmod +x tools/dep-graph.sh
-          ./tools/dep-graph.sh | dot -Tsvg -o docs/graph.svg
           ./tools/dep-graph.sh | dot -Tpng -o docs/graph.png
 
       - name: Upload docs artifact
