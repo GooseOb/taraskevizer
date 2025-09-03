@@ -42,8 +42,8 @@ import {
 	untrim,
 	applyG,
 	applyVariations,
+	escapeLeftAngleBracket,
 } from './steps';
-import { escapeLeftAngleBracket } from './steps/escape-left-angle-bracket';
 
 /**
  * Pipeline for changing only the alphabet.

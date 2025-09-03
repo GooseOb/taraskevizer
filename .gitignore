@@ -6,3 +6,5 @@ dist-bun
 docs
 output.txt
 tsconfig.tsbuildinfo
+graph.png
+graph.svg

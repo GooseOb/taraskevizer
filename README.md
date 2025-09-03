@@ -178,3 +178,8 @@ bunx taraskevizer [options] text
 `Ня` should appear before a word where the first syllabe is stressed.
 At the moment, there is no way to check exactly if it is stressed.
 Algorithm makes some heuristics, but that's not enough to cover all cases.
+
+# Dependency graph of the project files
+
+![Dependency graph](https://gooseob.github.io/taraskevizer/dependency-graph.svg)
+![Dependency graph](https://gooseob.github.io/taraskevizer/dependency-graph.png)

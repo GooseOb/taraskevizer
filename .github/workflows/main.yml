@@ -104,6 +104,17 @@ jobs:
         with:
           name: "github-pages"
           path: "docs"
+
+      # ---- Generate dependency graph ----
+      - name: Install Graphviz
+        run: sudo apt-get install graphviz -y
+
+      - name: Generate dependency graph
+        run: |
+          chmod +x tools/dep-graph.sh
+          ./tools/dep-graph.sh | dot -Tsvg -o docs/graph.svg
+          ./tools/dep-graph.sh | dot -Tpng -o docs/graph.png
+
       - name: Deploy docs to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

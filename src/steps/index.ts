@@ -29,4 +29,5 @@ export * from './whitespaces';
 export * from './trim';
 export * from './finalize';
 export * from './to-lower-case';
+export * from './escape-left-angle-bracket';
 export type * from './types';
