@@ -115,7 +115,7 @@ const transformFile = (
 		.then(cb)
 		.then((content) => writeFile(filePath, content));
 
-const resolveAt = (code: string, parentPath: string) =>
+const getResolveAt = (parentPath: string) => (code: string) =>
 	code.replace(
 		/((?:im|ex)port.+from\s+["'])@\/(.+)(?=["'];)/g,
 		(_$0, $1, $2) => $1 + relative(parentPath, join(DIST_PATH, $2))
@@ -124,10 +124,11 @@ const resolveAt = (code: string, parentPath: string) =>
 await Promise.all(
 	srcFiles.map((file) => {
 		const parentPath = resolve(file.parentPath.replace(/^src/, 'dist'));
+		const resolveAt = getResolveAt(parentPath);
 		return Promise.all([
 			transformFile(join(parentPath, file.name.replace(/ts$/, 'js')), (code) =>
 				replaceAsync(
-					resolveAt(code.replace(/\/\*.*?\*\//gs, ''), parentPath),
+					resolveAt(code.replace(/\/\*.*?\*\//gs, '')),
 					/((?:im|ex)port.+from\s+["'])(.+)(?<!\.js)(?=["'];)/g,
 					(_$0, $1, $2) =>
 						lstat(resolve(parentPath, $2))
@@ -140,7 +141,7 @@ await Promise.all(
 			),
 			transformFile(
 				join(parentPath, file.name.replace(/ts$/, 'd.ts')),
-				(code) => resolveAt(code, parentPath)
+				resolveAt
 			),
 		]);
 	})

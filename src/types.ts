@@ -13,12 +13,3 @@ export type DeepReadonly<T> = T extends (infer R)[]
 					readonly [P in keyof T]: DeepReadonly<T[P]>;
 				}
 			: T;
-export type DeepPartialReadonly<T> = T extends (infer R)[]
-	? ReadonlyArray<DeepPartialReadonly<R>>
-	: T extends AnyFn
-		? T
-		: T extends object
-			? {
-					readonly [P in keyof T]?: DeepPartialReadonly<T[P]>;
-				}
-			: T;

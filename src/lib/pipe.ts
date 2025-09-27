@@ -1,9 +1,9 @@
-import type { DeepPartialReadonly } from '../types';
+import type { DeepReadonly } from '../types';
 import type { TaraskStep } from '../steps';
 import { TaraskConfig } from '../config';
 
 export type Pipeline = {
-	(text: string, cfg?: DeepPartialReadonly<TaraskConfig>): string;
+	(text: string, cfg?: DeepReadonly<Partial<TaraskConfig>>): string;
 	steps: TaraskStep<any>[];
 };
 

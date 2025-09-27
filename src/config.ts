@@ -1,5 +1,5 @@
 import { alphabets } from './dict';
-import type { DeepPartialReadonly } from './types';
+import type { DeepReadonly } from './types';
 import type { Alphabet } from './dict/alphabets';
 import { type Wrappers, html } from './wrappers';
 
@@ -7,7 +7,7 @@ export type Variation = 'no' | 'first' | 'all';
 export type OptionJ = 'never' | 'random' | 'always';
 
 export class TaraskConfig {
-	constructor(options?: DeepPartialReadonly<TaraskConfig>) {
+	constructor(options?: Partial<DeepReadonly<TaraskConfig>>) {
 		for (const key in options) {
 			const value = options[key as keyof TaraskConfig];
 			if (key in this && value !== undefined) (this as any)[key] = value;
