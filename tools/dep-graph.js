@@ -23,13 +23,13 @@ const shouldIgnore = (file) => IGNORE_PATTERNS.some((pat) => pat.test(file));
 const findTsFiles = (dir) =>
 	readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
 		const fullPath = path.join(dir, entry.name);
-		return !shouldIgnore(fullPath)
-			? entry.isDirectory()
+		return shouldIgnore(fullPath)
+			? []
+			: entry.isDirectory()
 				? findTsFiles(fullPath)
 				: entry.isFile() && fullPath.endsWith('.ts')
 					? [path.relative(process.cwd(), fullPath)]
-					: []
-			: [];
+					: [];
 	});
 
 const files = findTsFiles('.');

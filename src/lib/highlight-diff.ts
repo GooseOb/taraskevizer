@@ -55,7 +55,7 @@ export const highlightDiff = (
 			--lastOI;
 		}
 
-		if (lastI < 1) {
+		if (lastI < 0) {
 			// beginning removed -> first letter
 			text[i] = highlight(word[0]) + word.slice(1);
 			continue;

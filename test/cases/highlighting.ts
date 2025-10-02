@@ -21,4 +21,8 @@ export default [
 	// letters in the middle are removed -> letters surrounding the removed ones
 	[['казахскі'], 'каз[ас]кі'],
 	[['płanieta', 'planeta'], 'p[lan]eta'],
+	[['Piersanalny', 'Persanalny'], '[Pe]rsanalny'],
+	[['абвба', 'абба'], 'а[бб]а'],
+	[['бвбаа', 'ббаа'], '[бб]аа'],
+	[['аабвб', 'аабб'], 'аа[бб]'],
 ] as [[string] | [string, string], string][];
