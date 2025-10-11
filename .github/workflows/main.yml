@@ -11,8 +11,8 @@ jobs:
       version: ${{ steps.set_version.outputs.value }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v1
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
 
       - run: bun i --frozen-lockfile
         env:
@@ -50,12 +50,9 @@ jobs:
       packages: write
       contents: write
     steps:
-      - uses: actions/checkout@v3
-        with:
-          version: 7
-
+      - uses: actions/checkout@v5
       - name: Download package artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: dist
           path: .
@@ -90,8 +87,8 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v1
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
       - uses: ts-graphviz/setup-graphviz@v2
 
       - run: bun i --frozen-lockfile
@@ -118,19 +115,19 @@ jobs:
     needs: build
     if: needs.build.outputs.version_changed == 'true'
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-bun@v2
         with:
-          registry-url: "https://registry.npmjs.org"
+          registries: https://registry.npmjs.org/
 
       - name: Download package artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: dist
           path: .
 
-      - run: npm publish
+      - run: bun publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - run: |
           curl -XPOST -u "${{secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/GooseOb/taraskevizatar/actions/workflows/build.yml/dispatches --data '{"ref": "main"}'
