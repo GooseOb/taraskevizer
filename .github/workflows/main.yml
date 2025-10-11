@@ -115,7 +115,7 @@ jobs:
     needs: build
     if: needs.build.outputs.version_changed == 'true'
     steps:
-      - uses: actions/setup-bun@v2
+      - uses: oven-sh/setup-bun@v2
         with:
           registries: https://registry.npmjs.org/
 
