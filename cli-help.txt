@@ -1,18 +1,18 @@
 Usage: tarask [options] text
-If text is not passed, interactive mode will be enabled
+If text is not passed, interactive mode is enabled
 
 EXAMPLES
 
 Convert and latinize a word
 	tarask --latin 'планета'
-Will print "p{\fix l}a{\fix ne}ta"
+Prints "p{\fix l}a{\fix ne}ta"
 
 Read from one file and write converted text to another
 	tarask < ./cyr-text.txt > ./lat-text.txt
 
 Enter interactive mode
 	tarask
-Will print "{\PREFIX} Enter the text:" and wait until you press Enter
+Prints "{\PREFIX} Enter the text:" and waits until you enter a new line
 
 OPTIONS
 
@@ -21,9 +21,9 @@ General:
   -v --version
 
 Alphabet:
-  -l --latin
+  -l  --latin
   -lj --latin-ji
-  -a --arabic
+  -a  --arabic
 
 When to replace і(i) by й(j) after vowels:
   -jr --jrandom
@@ -38,8 +38,9 @@ Variations:
 
 Mode (only one can be used):
   -html --html
-  -abc --alphabet-only
+  -abc  --alphabet-only
 
 Other:
   -nec --not-escape-caps
-  -nc --no-color
+  -nc  --no-color
+  -st  --single-thread

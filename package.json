@@ -1,6 +1,6 @@
 {
 	"name": "taraskevizer",
-	"version": "10.4.8",
+	"version": "10.4.9",
 	"author": "GooseOb",
 	"repository": {
 		"type": "git",
@@ -22,7 +22,7 @@
 		"typescript-eslint": "^8.42.0"
 	},
 	"bin": {
-		"tarask": "dist/bin.js"
+		"tarask": "dist/bin/index.js"
 	},
 	"description": "Канвэртацыя акадэмічнага правапісу ў клясычны",
 	"files": [

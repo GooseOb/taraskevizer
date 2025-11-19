@@ -1,14 +1,14 @@
+import { lstat, readdir, readFile, writeFile } from 'node:fs/promises';
+import { join, relative, resolve } from 'node:path';
+import { build } from 'esbuild';
 import {
 	createProgram,
-	getPreEmitDiagnostics,
 	flattenDiagnosticMessageText,
-	readConfigFile,
+	getPreEmitDiagnostics,
 	parseJsonConfigFileContent,
+	readConfigFile,
 	sys,
 } from 'typescript';
-import { lstat, readFile, writeFile, readdir } from 'node:fs/promises';
-import { join, resolve, relative } from 'node:path';
-import { build } from 'esbuild';
 
 const getPrinter =
 	(writer: { write: (s: string) => void }, clr = '33') =>
@@ -131,12 +131,14 @@ await Promise.all(
 					resolveAt(code.replace(/\/\*.*?\*\//gs, '')),
 					/((?:im|ex)port.+from\s+["'])(.+)(?<!\.js)(?=["'];)/g,
 					(_$0, $1, $2) =>
-						lstat(resolve(parentPath, $2))
-							.then(
-								(stat) => stat.isDirectory(),
-								() => false
-							)
-							.then((isDir) => $1 + $2 + (isDir ? '/index.js' : '.js'))
+						$2.startsWith('node:')
+							? Promise.resolve($1 + $2)
+							: lstat(resolve(parentPath, $2))
+									.then(
+										(stat) => stat.isDirectory(),
+										() => false
+									)
+									.then((isDir) => $1 + $2 + (isDir ? '/index.js' : '.js'))
 				)
 			),
 			transformFile(
@@ -159,7 +161,7 @@ const colorizeText = (text: string) =>
 		.replace(/(\s)(--?\S+)/g, '$1\x1b[35m$2\x1b[0m')
 		.replace(/\{\\PREFIX}/g, CLI_PREFIX);
 
-const BIN_PATH = resolve('dist', 'bin.js');
+const BIN_PATH = resolve('dist', 'bin/index.js');
 
 await Promise.all([
 	readFile(BIN_PATH, 'utf8'),
