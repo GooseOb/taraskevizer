@@ -167,13 +167,20 @@ await Promise.all([
 	readFile(BIN_PATH, 'utf8'),
 	readFile('package.json', 'utf8'),
 	readFile('cli-help.txt', 'utf8'),
-]).then(([content, pjson, cliHelp]) =>
+	readFile('src/bin/worker.js', 'utf8'),
+]).then(([content, pjson, cliHelp, workerCode]) =>
 	writeFile(
 		BIN_PATH,
 		content
 			.replace(/__VERSION__/g, `"${JSON.parse(pjson).version}"`)
-			.replace(/__CLI_HELP__/g, `\`${colorizeText(cliHelp)}\``)
+			.replace(/__CLI_HELP__/g, JSON.stringify(colorizeText(cliHelp)))
 			.replace(/__CLI_PREFIX__/g, `"${CLI_PREFIX}"`)
+			.replace(
+				/__WORKER_CODE__/g,
+				JSON.stringify(
+					workerCode.replace(/^\/\*.*?\*\/\n/g, '').replace(/^\/\/.+?\n/g, '')
+				)
+			)
 	)
 );
 
