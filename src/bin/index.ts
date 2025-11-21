@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { cpus } from 'node:os';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Worker } from 'node:worker_threads';
 import { pipelines } from '..';
 import { parseArgs } from './parse-args';
@@ -103,12 +105,13 @@ const workers = {
 	init() {
 		if (this.workers) return;
 		process.stderr.write(`(Initializing ${this.size} workers... `);
+		const dirname = path.dirname(fileURLToPath(import.meta.url));
 		this.workers = Array.from(
 			{ length: this.size },
 			() =>
 				new Worker(__WORKER_CODE__, {
 					eval: true,
-					workerData: { argv },
+					workerData: { argv, dirname },
 				})
 		);
 		process.stderr.write('done.) ');

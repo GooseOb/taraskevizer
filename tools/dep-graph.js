@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { readdirSync, existsSync, readFileSync } from 'fs';
-import * as path from 'path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import * as path from 'node:path';
 
 const COLORS = [
 	'lightblue',
