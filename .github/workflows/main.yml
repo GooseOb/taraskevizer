@@ -89,10 +89,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
-      - uses: awalsh128/cache-apt-pkgs-action@v1
-        with:
-          packages: graphviz graphviz-dev
-          version: 1.0
+      - uses: ts-graphviz/setup-graphviz@v2
 
       - run: bun i --frozen-lockfile
         env:
