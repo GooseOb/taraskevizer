@@ -91,7 +91,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: graphviz
+          packages: graphviz graphviz-dev
           version: 1.0
 
       - run: bun i --frozen-lockfile
