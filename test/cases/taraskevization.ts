@@ -202,5 +202,5 @@ export const noChange = [
 	'гоншчык',
 	'марозавіцкага',
 	'бегства Галкіна',
-	'',
+	'Сяргей Сяргеевіч',
 ].map((input) => [input, input] as const);
