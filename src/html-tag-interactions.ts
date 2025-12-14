@@ -2,20 +2,26 @@ import { gobj } from './dict';
 import type { Wrappers } from './wrappers';
 
 type ChangeableElement = HTMLElement & { seqNum: number };
+type Subscriber = (changeList: number[]) => void;
 
 const applyG = (el: Element) => {
 	el.textContent = gobj[el.textContent as keyof typeof gobj];
 };
 
-export const createInteractiveTags = (
-	{ variable, letterH }: Omit<Record<keyof Wrappers, string>, 'fix'> = {
-		variable: 'tarL',
-		letterH: 'tarH',
-	}
-) => {
-	const changeList: number[] = [];
+export const createInteractiveTags = ({
+	variable = 'tarL',
+	letterH = 'tarH',
+	changeList = [],
+}: Partial<
+	Record<Exclude<keyof Wrappers, 'fix'>, string> & { changeList: number[] }
+> = {}) => {
 	variable = variable.toUpperCase();
 	letterH = letterH.toUpperCase();
+
+	const subscribers = new Set<Subscriber>();
+	const notify = () => {
+		for (const cb of subscribers) cb(changeList);
+	};
 
 	return {
 		update: (root: Element) => {
@@ -28,6 +34,7 @@ export const createInteractiveTags = (
 				while (changeList.length < elems.length) {
 					changeList.push(0);
 				}
+				notify();
 			}
 			for (let i = 0; i < changeList.length; i++) {
 				const el = elems[i];
@@ -65,6 +72,7 @@ export const createInteractiveTags = (
 						{
 							changeList[el.seqNum] = changeList[el.seqNum] ? 0 : 1;
 							applyG(el);
+							notify();
 						}
 						break;
 					case variable: {
@@ -81,9 +89,17 @@ export const createInteractiveTags = (
 							el.dataset.l = el.innerHTML;
 						}
 						el.innerHTML = data;
+						notify();
 					}
 				}
 			}
+		},
+		changeList,
+		subscribe: (cb: Subscriber) => {
+			subscribers.add(cb);
+			return () => {
+				subscribers.delete(cb);
+			};
 		},
 	};
 };
