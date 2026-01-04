@@ -133,6 +133,8 @@ const workers = {
 	},
 };
 
+const convert = (text: string) => pipelines[mode](text, cfg);
+
 const processText = async (text: string) => {
 	let result = '';
 
@@ -144,7 +146,7 @@ const processText = async (text: string) => {
 
 		result = results.join('');
 	} else {
-		result = pipelines[mode](text, cfg);
+		result = convert(text);
 	}
 
 	if (!process.stdout.write(result)) {
@@ -156,8 +158,7 @@ const processText = async (text: string) => {
 };
 
 if (process.argv.length) {
-	printErrLn('Processing the rest of command-line arguments as text...');
-	await processText(process.argv.reverse().join(' '));
+	process.stdout.write(convert(process.argv.reverse().join(' ')) + '\n');
 } else {
 	const chunks: Uint8Array[] = [];
 	let value = '';
@@ -175,8 +176,7 @@ if (process.argv.length) {
 			if (chunk.includes('\n')) break;
 		}
 
-		await processText(getChunksString());
-		process.stdout.write('\n');
+		process.stdout.write(convert(getChunksString()));
 	} else {
 		printErrLn('Reading from stdin...');
 
