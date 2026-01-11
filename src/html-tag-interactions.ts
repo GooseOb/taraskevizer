@@ -1,7 +1,9 @@
 import { gobj } from './dict';
 import type { Wrappers } from './wrappers';
 
-type ChangeableElement = HTMLElement & { seqNum: number };
+interface ChangeableElement extends HTMLElement {
+	seqNum: number;
+}
 type Subscriber = (changeList: number[]) => void;
 
 const applyG = (el: Element) => {
