@@ -1,4 +1,4 @@
-import type { TaraskStep } from '@/steps/types';
+import type { TaraskStep, AsyncTaraskStep } from '@/steps/types';
 
 /**
  * Utility function for a step that always modifies the text
@@ -26,3 +26,14 @@ export const mutatingStep =
 	(ctx) => {
 		ctx.text = callback(ctx);
 	};
+
+export const mutatingAsyncStep =
+	<TStorage extends object = object>(
+		callback: (
+			...args: Parameters<AsyncTaraskStep<TStorage>>
+		) => Promise<string>
+	): AsyncTaraskStep<TStorage> =>
+	(ctx) =>
+		callback(ctx).then((result) => {
+			ctx.text = result;
+		});
