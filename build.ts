@@ -161,28 +161,38 @@ const colorizeText = (text: string) =>
 		.replace(/(\s)(--?\S+)/g, '$1\x1b[35m$2\x1b[0m')
 		.replace(/\{\\PREFIX}/g, CLI_PREFIX);
 
-const BIN_PATH = resolve('dist', 'bin/index.js');
+const BIN_PATH = resolve('dist', 'bin', 'index.js');
+const INDEX_PATH = resolve('dist', 'index.js');
 
 await Promise.all([
 	readFile(BIN_PATH, 'utf8'),
+	readFile(INDEX_PATH, 'utf8'),
 	readFile('package.json', 'utf8'),
 	readFile('cli-help.txt', 'utf8'),
 	readFile('src/bin/worker.js', 'utf8'),
-]).then(([content, pjson, cliHelp, workerCode]) =>
-	writeFile(
-		BIN_PATH,
-		content
-			.replace(/__VERSION__/g, `"${JSON.parse(pjson).version}"`)
-			.replace(/__CLI_HELP__/g, JSON.stringify(colorizeText(cliHelp)))
-			.replace(/__CLI_PREFIX__/g, `"${CLI_PREFIX}"`)
-			.replace(
-				/__WORKER_CODE__/g,
-				JSON.stringify(
-					workerCode.replace(/^\/\*.*?\*\/\n/g, '').replace(/^\/\/.+?\n/g, '')
+]).then(([contentBin, contentIndex, pjson, cliHelp, workerCode]) => {
+	const version = `"${JSON.parse(pjson).version}"`;
+
+	return Promise.all([
+		writeFile(
+			BIN_PATH,
+			contentBin
+				.replace(/__VERSION__/g, version)
+				.replace(/__CLI_HELP__/g, JSON.stringify(colorizeText(cliHelp)))
+				.replace(/__CLI_PREFIX__/g, `"${CLI_PREFIX}"`)
+				.replace(
+					/__WORKER_CODE__/g,
+					JSON.stringify(
+						workerCode.replace(/^\/\*.*?\*\/\n/g, '').replace(/^\/\/.+?\n/g, '')
+					)
 				)
-			)
-	)
-);
+		),
+		writeFile(
+			INDEX_PATH,
+			contentIndex + `\nexport const version = ${version};\n`
+		),
+	]);
+});
 
 printWithTime('Version and help text injected');
 

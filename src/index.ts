@@ -5,3 +5,4 @@ export * as pipelines from './pipelines';
 export * as lib from './lib';
 export * as wrappers from './wrappers';
 export * from './html-tag-interactions';
+export declare const version: string;
