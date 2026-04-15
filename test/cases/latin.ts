@@ -11,6 +11,7 @@ export const general = [
 	],
 	['грошы', 'hrošy'],
 	['еёёююяя', 'jejojojujujaja'],
+	['Англійская', 'An(glij|giel)skaja'],
 	['łiłia; UVAŁIŁASIA ŁIŁIA', 'łiłia; UVAŁIŁASIA ŁIŁIA'], // no change
 ] as const;
 
