@@ -4,6 +4,10 @@ on:
     branches:
       - "main"
 
+permissions:
+  id-token: write # Required for OIDC
+  contents: write
+
 jobs:
   build:
     outputs:
@@ -113,9 +117,6 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: build
-    permissions:
-      contents: write
-      id-token: write
     if: needs.build.outputs.version_changed == 'true'
     steps:
       - uses: actions/setup-node@v6
@@ -131,8 +132,6 @@ jobs:
 
       - name: Clear auth token for OIDC
         run: echo "NODE_AUTH_TOKEN=" >> $GITHUB_ENV
-
-      - run: npm -v
 
       - run: npm publish
 
