@@ -33,7 +33,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           PKG_VERSION=$(jq -r .version package.json)
-          LATEST_VERSION=$(npm view express version)
+          LATEST_VERSION=$(npm view taraskevizer version)
 
           if [[ "v$PKG_VERSION" != "$LATEST_VERSION" ]]; then
             echo "changed=true" >> $GITHUB_OUTPUT

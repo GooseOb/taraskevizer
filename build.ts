@@ -93,17 +93,13 @@ const replaceAsync = (
 	str: string,
 	regex: RegExp,
 	replacer: (...args: string[]) => Promise<string>
-) => {
-	const promises: Promise<string>[] = [];
-	str.replace(regex, (...args: string[]) => {
-		promises.push(replacer(...args));
-		return '';
-	});
-	return Promise.all(promises).then((data) => {
-		let i = 0;
-		return str.replace(regex, () => data[i++]);
-	});
-};
+): Promise<string> =>
+	Promise.all(Array.from(str.matchAll(regex), (m) => replacer(...m))).then(
+		(replacements) => {
+			let i = 0;
+			return str.replace(regex, () => replacements[i++]);
+		}
+	);
 
 type MaybePromise<T> = T | Promise<T>;
 

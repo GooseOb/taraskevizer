@@ -37,11 +37,10 @@ export const html: Wrappers = {
 
 export const ansiColor: Wrappers = {
 	fix: (content) => `\x1b[32m${content}\x1b[0m`,
-	variable: (
-		Object.entries(defaultVariation) as [Variation, TransformString][]
-	).reduce((acc, [key, getPart]) => {
-		acc[key] = (content) => `\x1b[35m${getPart(content)}\x1b[0m`;
-		return acc;
-	}, {} as VariationWrappers),
+	variable: {
+		all: (c) => `\x1b[35m${defaultVariation.all(c)}\x1b[0m`,
+		first: (c) => `\x1b[35m${defaultVariation.first(c)}\x1b[0m`,
+		no: (c) => `\x1b[35m${defaultVariation.no(c)}\x1b[0m`,
+	},
 	letterH: (content) => `\x1b[35m${content}\x1b[0m`,
 };

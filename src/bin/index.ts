@@ -100,7 +100,7 @@ const argv = process.argv.slice();
 const { mode, cfg, doForceSingleThread } = parseArgs(process.argv);
 
 const workers = {
-	size: cpus()?.length || 1,
+	size: cpus().length || 1,
 	workers: null as null | Worker[],
 	init() {
 		if (this.workers) return;

@@ -1,7 +1,6 @@
 const isUpperCase = (str: string): boolean => str === str.toUpperCase();
 const initcap = (word: string) => word[0].toUpperCase() + word.slice(1);
-const initcapVar = (str: string) =>
-	'(' + str.slice(1).replace(/[^|)]*[|)]/g, initcap);
+const initcapVar = (str: string) => str.replace(/[^(|)]*[|)]/g, initcap);
 
 export const restoreCase = (text: string[], orig: readonly string[]) => {
 	for (let i = 0; i < text.length; i++) {

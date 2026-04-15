@@ -9,17 +9,17 @@
 	"main": "dist/index.js",
 	"module": "dist/index.js",
 	"devDependencies": {
-		"@biomejs/biome": "^2.2.2",
+		"@biomejs/biome": "^2.4.12",
 		"@digitak/esrun": "^3.2.26",
-		"@eslint/js": "^9.34.0",
-		"@types/node": "^20.19.12",
-		"bun-types": "^1.2.21",
-		"esbuild": "^0.25.9",
-		"eslint": "^9.34.0",
+		"@eslint/js": "^10.0.1",
+		"@types/node": "^25.6.0",
+		"bun-types": "^1.3.12",
+		"esbuild": "^0.28.0",
+		"eslint": "^10.2.0",
 		"husky": "^9.1.7",
-		"typedoc": "^0.26.11",
-		"typescript": "^5.9.2",
-		"typescript-eslint": "^8.42.0"
+		"typedoc": "^0.28.19",
+		"typescript": "^6.0.2",
+		"typescript-eslint": "^8.58.2"
 	},
 	"bin": {
 		"tarask": "dist/bin/index.js"

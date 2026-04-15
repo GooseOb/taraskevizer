@@ -23,7 +23,7 @@ const requireGlobalFlag = {
 	},
 
 	create: (ctx) => {
-		return ctx.options[0]?.pathTest?.test(ctx.getFilename())
+		return ctx.options[0]?.pathTest?.test(ctx.filename)
 			? {
 					Literal(node) {
 						if (node.regex && !node.regex.flags.includes('g')) {

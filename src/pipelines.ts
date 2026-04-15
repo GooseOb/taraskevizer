@@ -53,9 +53,9 @@ import {
  * To see the full list of steps, check the source code.
  */
 export const alphabetic = pipe([
-	(ctx) => {
+	((ctx) => {
 		ctx.cfg = { ...ctx.cfg, doEscapeCapitalized: false };
-	},
+	}) as TaraskStep<any>,
 	trim,
 	resolveSpecialSyntax,
 	prepare,
