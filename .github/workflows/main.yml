@@ -20,7 +20,7 @@ jobs:
       - run: bun run build
       - run: bun run test
       - name: Upload package artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist
           path: |
@@ -121,7 +121,6 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           registry-url: "https://registry.npmjs.org"
-          node-version: "24"
 
       - name: Download package artifact
         uses: actions/download-artifact@v8
@@ -129,7 +128,10 @@ jobs:
           name: dist
           path: .
 
-      - run: npm publish --provenance --access public
+      - name: Clear auth token for OIDC
+        run: echo "NODE_AUTH_TOKEN=" >> $GITHUB_ENV
+
+      - run: npm publish
 
       - run: |
           curl -XPOST -u "${{secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/GooseOb/taraskevizatar/actions/workflows/build.yml/dispatches --data '{"ref": "main"}'
