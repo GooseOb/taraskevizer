@@ -44,30 +44,36 @@ export const resolveSpecialSyntax = mutatingStep<SpecialSyntaxStorage>(
 				abcOnlyText.split(' ')
 			).join(' ');
 
-		text = text.replace(/<(.*?[^\\])>/g, (_$0, $1) => {
-			const isAbc = +$1.startsWith('*');
-			const char = isAbc ? $1[1] : $1[0];
-			const doRemoveBrackets = +(char === '.');
-			const doTarask = +(char === ',');
-			$1 = $1.slice(isAbc + doRemoveBrackets + doTarask).replace(/\\>/g, '>');
-			if (doTarask) {
-				$1 = `<${$1}>`;
-			} else {
-				noFixArr.push(isAbc ? convertAlphavet($1, abc) : $1);
-				$1 = doRemoveBrackets ? noFixPlaceholder : `<${noFixPlaceholder}>`;
-			}
-			return $1;
-		});
-
-		if (doEscapeCapitalized) {
-			text = text.replace(
-				/(?!<=\p{Lu} )\p{Lu}{2}[\p{Lu} ]*(?!= \p{Lu})/gu,
-				($0) => {
+		text = text.replace(
+			doEscapeCapitalized
+				? /<(.*?[^\\])>|(?!<=\p{Lu} )\p{Lu}{2}[\p{Lu} ]*(?!= \p{Lu})/gu
+				: /<(.*?[^\\])>/g,
+			($0, $1) => {
+				let result: string = noFixPlaceholder;
+				if ($0.startsWith('<')) {
+					let inner = $1 as string;
+					const isAbc = +inner.startsWith('*');
+					const char = isAbc ? inner[1] : inner[0];
+					const doRemoveBrackets = +(char === '.');
+					const doTarask = +(char === ',');
+					inner = inner
+						.slice(isAbc + doRemoveBrackets + doTarask)
+						.replace(/\\>/g, '>');
+					if (doTarask) {
+						return `<${inner}>`;
+					}
+					noFixArr.push(isAbc ? convertAlphavet(inner, abc) : inner);
+					result = doRemoveBrackets
+						? noFixPlaceholder
+						: `<${noFixPlaceholder}>`;
+				} else {
 					noFixArr.push(convertAlphavet($0, abc));
-					return noFixPlaceholder;
 				}
-			);
-		}
+
+				return result;
+			}
+		);
+
 		return text;
 	}
 );
