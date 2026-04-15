@@ -119,8 +119,6 @@ jobs:
     if: needs.build.outputs.version_changed == 'true'
     steps:
       - uses: actions/setup-node@v6
-        with:
-          registry-url: "https://registry.npmjs.org"
 
       - name: Download package artifact
         uses: actions/download-artifact@v8
@@ -130,6 +128,12 @@ jobs:
 
       - name: Clear auth token for OIDC
         run: echo "NODE_AUTH_TOKEN=" >> $GITHUB_ENV
+
+      - name: Upgrade npm for OIDC
+        run: npm install -g npm@11.11.0
+
+      - name: Configure npm registry
+        run: npm config set registry https://registry.npmjs.org/
 
       - run: npm publish
 
