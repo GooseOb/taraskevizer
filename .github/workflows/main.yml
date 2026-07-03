@@ -114,7 +114,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write # Required for OIDC
+      id-token: write
       contents: read
     if: needs.build.outputs.version_changed == 'true'
     steps:

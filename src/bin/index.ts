@@ -23,7 +23,10 @@ const printErr = getPrint(process.stderr);
 const printLn = getPrintLn(print);
 const printErrLn = getPrintLn(printErr);
 
-// AI-written, may need improvements
+/**
+ * @param {string} text - The text to split into chunks.
+ * @param {number} n - The number of chunks to split the text into.
+ */
 const splitIntoChunks = (text: string, n: number): string[] => {
 	const size = Math.ceil(text.length / n);
 	const chunks: string[] = [];
@@ -62,8 +65,9 @@ const splitIntoChunks = (text: string, n: number): string[] => {
 			}
 		}
 
-		if (end > text.length) end = text.length;
-
+		if (i === n - 1 || end > text.length) {
+			end = text.length;
+		}
 		chunks.push(text.slice(start, end));
 		start = end;
 
@@ -136,12 +140,14 @@ const workers = {
 const convert = (text: string) => pipelines[mode](text, cfg);
 
 const processText = async (text: string) => {
+	// It's good for performance to mark a variable as a string explicitly
+	// eslint-disable-next-line no-useless-assignment
 	let result = '';
 
 	if (!doForceSingleThread && workers.size > 1 && text.length > 50_000) {
 		workers.init();
-		const chunks = splitIntoChunks(text, workers.size);
 
+		const chunks = splitIntoChunks(text, workers.size);
 		const results = await workers.process(chunks);
 
 		result = results.join('');

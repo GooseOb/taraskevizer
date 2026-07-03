@@ -1,6 +1,6 @@
 {
 	"name": "taraskevizer",
-	"version": "10.4.21",
+	"version": "10.4.22",
 	"author": "GooseOb",
 	"repository": {
 		"type": "git",
@@ -9,17 +9,17 @@
 	"main": "dist/index.js",
 	"module": "dist/index.js",
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.12",
+		"@biomejs/biome": "^2.5.1",
 		"@digitak/esrun": "^3.2.26",
 		"@eslint/js": "^10.0.1",
-		"@types/node": "^25.6.0",
-		"bun-types": "^1.3.12",
-		"esbuild": "^0.28.0",
-		"eslint": "^10.2.0",
+		"@types/node": "^25.9.4",
+		"bun-types": "^1.3.14",
+		"esbuild": "^0.28.1",
+		"eslint": "^10.5.0",
 		"husky": "^9.1.7",
 		"typedoc": "^0.28.19",
-		"typescript": "^6.0.2",
-		"typescript-eslint": "^8.58.2"
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.62.0"
 	},
 	"bin": {
 		"tarask": "dist/bin/index.js"
