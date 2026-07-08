@@ -103,39 +103,41 @@ if (firstArg) {
 const argv = process.argv.slice();
 const { mode, cfg, doForceSingleThread } = parseArgs(process.argv);
 
-const workers = {
-	size: cpus().length || 1,
-	workers: null as null | Worker[],
-	init() {
-		if (this.workers) return;
-		process.stderr.write(`(Initializing ${this.size} workers... `);
-		const dirname = path.dirname(fileURLToPath(import.meta.url));
-		this.workers = Array.from(
-			{ length: this.size },
-			() =>
-				new Worker(__WORKER_CODE__, {
-					eval: true,
-					workerData: { argv, dirname },
-				})
-		);
-		process.stderr.write('done.) ');
-	},
-	process(chunks: string[]) {
-		return Promise.all(
-			chunks.map(
-				(chunk, i) =>
-					new Promise((resolve, reject) => {
-						const worker = this.workers![i % this.size];
+const CPU_COUNT = cpus().length || 1;
 
-						worker.postMessage(chunk);
+const initWorkerPool = (size: number) => {
+	process.stderr.write(`(Initializing ${size} workers... `);
+	const dirname = path.dirname(fileURLToPath(import.meta.url));
+	const items = Array.from({ length: size }, () =>
+		new Worker(__WORKER_CODE__, {
+			eval: true,
+			workerData: { argv, dirname },
+		}).on('exit', (code) => {
+			if (code !== 0) {
+				printErrLn(`Worker stopped with exit code ${code}`);
+			}
+		})
+	);
+	process.stderr.write('done.) ');
 
-						worker.once('message', resolve);
-						worker.once('error', reject);
-					})
-			)
-		);
-	},
+	return {
+		process: (chunks: string[]) =>
+			Promise.all(
+				chunks.map(
+					(chunk, i) =>
+						new Promise<string>((resolve, reject) => {
+							items[i % size]
+								.removeAllListeners('error')
+								.removeAllListeners('message')
+								.once('error', reject)
+								.once('message', resolve)
+								.postMessage(chunk);
+						})
+				)
+			),
+	};
 };
+let workerPool: ReturnType<typeof initWorkerPool> | null = null;
 
 const convert = (text: string) => pipelines[mode](text, cfg);
 
@@ -144,11 +146,11 @@ const processText = async (text: string) => {
 	// eslint-disable-next-line no-useless-assignment
 	let result = '';
 
-	if (!doForceSingleThread && workers.size > 1 && text.length > 50_000) {
-		workers.init();
+	if (!doForceSingleThread && CPU_COUNT > 1 && text.length > 50_000) {
+		workerPool ||= initWorkerPool(CPU_COUNT);
 
-		const chunks = splitIntoChunks(text, workers.size);
-		const results = await workers.process(chunks);
+		const chunks = splitIntoChunks(text, CPU_COUNT);
+		const results = await workerPool.process(chunks);
 
 		result = results.join('');
 	} else {
