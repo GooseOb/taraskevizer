@@ -11,7 +11,7 @@ jobs:
       version: ${{ steps.set_version.outputs.value }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
 
       - run: bun i --frozen-lockfile
@@ -35,7 +35,7 @@ jobs:
           PKG_VERSION=$(jq -r .version package.json)
           LATEST_VERSION=$(npm view taraskevizer version)
 
-          if [[ "v$PKG_VERSION" != "$LATEST_VERSION" ]]; then
+          if [[ "$PKG_VERSION" != "$LATEST_VERSION" ]]; then
             echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT
@@ -130,8 +130,6 @@ jobs:
           path: .
 
       - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - run: |
           curl -XPOST -u "${{secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/GooseOb/taraskevizatar/actions/workflows/build.yml/dispatches --data '{"ref": "main"}'
