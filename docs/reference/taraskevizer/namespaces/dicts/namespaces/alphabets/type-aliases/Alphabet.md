@@ -7,7 +7,7 @@ title: "Alphabet"
 
 > **Alphabet**\<`LowerPattern`, `UpperPattern`\> = `object`
 
-Defined in: [dict/alphabets/types.ts:9](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/dict/alphabets/types.ts#L9)
+Defined in: [dict/alphabets/types.ts:9](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/dict/alphabets/types.ts#L9)
 
 If [Alphabet.upper](/taraskevizer/reference/taraskevizer/namespaces/dicts/namespaces/alphabets/type-aliases/alphabet/#upper) in not defined,
 it is assumed that the alphabet is case-insensitive,
@@ -30,7 +30,7 @@ upper and lower case letters.
 
 > **lower**: [`CallableDict`](/taraskevizer/reference/taraskevizer/namespaces/dicts/type-aliases/callabledict/)\<`LowerPattern`\>
 
-Defined in: [dict/alphabets/types.ts:10](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/dict/alphabets/types.ts#L10)
+Defined in: [dict/alphabets/types.ts:10](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/dict/alphabets/types.ts#L10)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [dict/alphabets/types.ts:10](https://github.com/GooseOb/taraskevizer
 
 > `optional` **upper?**: [`CallableDict`](/taraskevizer/reference/taraskevizer/namespaces/dicts/type-aliases/callabledict/)\<`UpperPattern`\>
 
-Defined in: [dict/alphabets/types.ts:11](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/dict/alphabets/types.ts#L11)
+Defined in: [dict/alphabets/types.ts:11](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/dict/alphabets/types.ts#L11)

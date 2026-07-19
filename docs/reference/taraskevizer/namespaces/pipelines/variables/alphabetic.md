@@ -7,7 +7,7 @@ title: "alphabetic"
 
 > `const` **alphabetic**: [`Pipeline`](/taraskevizer/reference/taraskevizer/namespaces/lib/type-aliases/pipeline/)\<[`TaraskStep`](/taraskevizer/reference/taraskevizer/namespaces/steps/type-aliases/taraskstep/)\<[`SpecialSyntaxStorage`](/taraskevizer/reference/taraskevizer/namespaces/steps/type-aliases/specialsyntaxstorage/)\> \| [`TaraskStep`](/taraskevizer/reference/taraskevizer/namespaces/steps/type-aliases/taraskstep/)\<[`WhiteSpaceStorage`](/taraskevizer/reference/taraskevizer/namespaces/steps/type-aliases/whitespacestorage/)\> \| [`TaraskStep`](/taraskevizer/reference/taraskevizer/namespaces/steps/type-aliases/taraskstep/)\<[`TrimStorage`](/taraskevizer/reference/taraskevizer/namespaces/steps/type-aliases/trimstorage/)\>\>
 
-Defined in: [pipelines.ts:55](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/pipelines.ts#L55)
+Defined in: [pipelines.ts:55](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/pipelines.ts#L55)
 
 Pipeline for changing only the alphabet.
 

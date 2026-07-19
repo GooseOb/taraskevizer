@@ -7,7 +7,7 @@ title: "SplittedTextStorage"
 
 > **SplittedTextStorage** = `object`
 
-Defined in: [steps/types.ts:22](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/steps/types.ts#L22)
+Defined in: [steps/types.ts:22](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/steps/types.ts#L22)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [steps/types.ts:22](https://github.com/GooseOb/taraskevizer/blob/371
 
 > **origArr**: readonly `string`[]
 
-Defined in: [steps/types.ts:24](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/steps/types.ts#L24)
+Defined in: [steps/types.ts:24](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/steps/types.ts#L24)
 
 ***
 
@@ -23,4 +23,4 @@ Defined in: [steps/types.ts:24](https://github.com/GooseOb/taraskevizer/blob/371
 
 > **textArr**: `string`[]
 
-Defined in: [steps/types.ts:23](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/steps/types.ts#L23)
+Defined in: [steps/types.ts:23](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/steps/types.ts#L23)

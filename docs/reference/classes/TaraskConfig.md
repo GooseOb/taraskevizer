@@ -5,7 +5,7 @@ prev: true
 title: "TaraskConfig"
 ---
 
-Defined in: [config.ts:9](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/config.ts#L9)
+Defined in: [config.ts:9](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L9)
 
 ## Constructors
 
@@ -13,7 +13,7 @@ Defined in: [config.ts:9](https://github.com/GooseOb/taraskevizer/blob/37165f10c
 
 > **new TaraskConfig**(`options?`): `TaraskConfig`
 
-Defined in: [config.ts:10](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/config.ts#L10)
+Defined in: [config.ts:10](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L10)
 
 #### Parameters
 
@@ -31,7 +31,7 @@ Defined in: [config.ts:10](https://github.com/GooseOb/taraskevizer/blob/37165f10
 
 > **abc**: [`Alphabet`](/taraskevizer/reference/taraskevizer/namespaces/dicts/namespaces/alphabets/type-aliases/alphabet/)
 
-Defined in: [config.ts:22](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/config.ts#L22)
+Defined in: [config.ts:22](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L22)
 
 Predefined alphabets are in [dicts.alphabets](/taraskevizer/reference/taraskevizer/namespaces/dicts/namespaces/alphabets/readme/).
 
@@ -47,7 +47,7 @@ alphabets.cyrillic
 
 > **doEscapeCapitalized**: `boolean`
 
-Defined in: [config.ts:43](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/config.ts#L43)
+Defined in: [config.ts:43](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L43)
 
 If set to false, may cause unwanted changes in acronyms.
 
@@ -63,7 +63,7 @@ true
 
 > **g**: `boolean`
 
-Defined in: [config.ts:67](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/config.ts#L67)
+Defined in: [config.ts:67](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L67)
 
 Do replace ґ(g) by г(h) in cyrillic alphabet?
 
@@ -86,7 +86,7 @@ false
 
 > **j**: [`OptionJ`](/taraskevizer/reference/type-aliases/optionj/)
 
-Defined in: [config.ts:36](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/config.ts#L36)
+Defined in: [config.ts:36](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L36)
 
 | When to replace `і`(`i`) by `й`(`j`) after vowels | Example                  |
 | ------------------------------------------------- | ------------------------ |
@@ -109,7 +109,7 @@ Has no effect with abc set to [dicts.alphabets.latinJi](/taraskevizer/reference/
 
 > **leftAngleBracket**: `string`
 
-Defined in: [config.ts:95](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/config.ts#L95)
+Defined in: [config.ts:95](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L95)
 
 String to replace `"<"` with.
 
@@ -131,7 +131,7 @@ String to replace `"<"` with.
 
 > **newLine**: `string`
 
-Defined in: [config.ts:87](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/config.ts#L87)
+Defined in: [config.ts:87](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L87)
 
 String to replace `"\n"` with.
 
@@ -153,7 +153,7 @@ String to replace `"\n"` with.
 
 > **noFixPlaceholder**: `string`
 
-Defined in: [config.ts:104](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/config.ts#L104)
+Defined in: [config.ts:104](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L104)
 
 Placeholder for parts that should not be fixed like those enclosed in `< >`.
 
@@ -171,7 +171,7 @@ Placeholder for parts that should not be fixed like those enclosed in `< >`.
 
 > **variations**: [`Variation`](/taraskevizer/reference/type-aliases/variation/)
 
-Defined in: [config.ts:79](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/config.ts#L79)
+Defined in: [config.ts:79](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L79)
 
 | Which variation is used if a part of word is variable | Example           |
 | ----------------------------------------------------- | ----------------- |
@@ -192,7 +192,7 @@ Defined in: [config.ts:79](https://github.com/GooseOb/taraskevizer/blob/37165f10
 
 > **wrappers**: `Partial`\<[`Wrappers`](/taraskevizer/reference/taraskevizer/namespaces/wrappers/type-aliases/wrappers/)\> \| `null`
 
-Defined in: [config.ts:53](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/config.ts#L53)
+Defined in: [config.ts:53](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L53)
 
 Used for wrapping changed parts.
 Predefined dicts are in [wrappers](/taraskevizer/reference/classes/taraskconfig/#wrappers).

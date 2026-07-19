@@ -56,7 +56,7 @@ pipelines.alphabetic("яна і іншыя", latinWithJiCfg);
 // "jana j jinšyja"
 ```
 
-See the [API reference](/taraskevizer/reference/) for every export, option, and type.
+See the [API reference](/taraskevizer/reference/readme/) for every export, option, and type.
 
 ## The two moving parts: pipelines and config
 

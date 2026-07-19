@@ -9,7 +9,7 @@ hero:
       link: /taraskevizer/guides/getting-started/
       icon: right-arrow
     - text: API reference
-      link: /taraskevizer/reference/
+      link: /taraskevizer/reference/readme/
       icon: open-book
       variant: minimal
     - text: View on GitHub

@@ -7,7 +7,7 @@ title: "pipe"
 
 > **pipe**\<`Step`\>(`steps`): [`Pipeline`](/taraskevizer/reference/taraskevizer/namespaces/lib/type-aliases/pipeline/)\<`Step`\>
 
-Defined in: [lib/pipe.ts:18](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/lib/pipe.ts#L18)
+Defined in: [lib/pipe.ts:18](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/lib/pipe.ts#L18)
 
 Create a callable pipeline from steps
 

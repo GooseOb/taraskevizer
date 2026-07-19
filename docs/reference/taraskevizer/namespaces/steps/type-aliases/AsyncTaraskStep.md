@@ -7,7 +7,7 @@ title: "AsyncTaraskStep"
 
 > **AsyncTaraskStep**\<`Storage`\> = (`context`) => `void` \| `Promise`\<`void`\>
 
-Defined in: [steps/types.ts:16](https://github.com/GooseOb/taraskevizer/blob/37165f10cf371bf2f1bc325191e2b2edacbf9dbd/src/steps/types.ts#L16)
+Defined in: [steps/types.ts:16](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/steps/types.ts#L16)
 
 Step of an async pipeline.
 
