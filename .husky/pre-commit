@@ -10,5 +10,5 @@ bun run build
 bun run test
 bun run format &
 bun run lint &
-bun run docs
+bun run docs:build
 git add -A .

@@ -91,20 +91,29 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - uses: ts-graphviz/setup-graphviz@v2
 
-      - run: bun i --frozen-lockfile
+      - name: Install root dependencies
+        run: bun i --frozen-lockfile
         env:
           HUSKY: 0
-      - run: bun run docs
+
+      - name: Install docs dependencies
+        run: bun install --frozen-lockfile
+        working-directory: website
 
       - name: Generate dependency graph
         run: |
-          node ./tools/dep-graph.js | dot -Tpng -o docs/graph.png
+          mkdir -p website/public
+          node ./tools/dep-graph.js | dot -Tpng -o website/public/graph.png
+
+      - name: Build docs site
+        run: bun run build
+        working-directory: website
 
       - name: Upload docs artifact
         uses: actions/upload-pages-artifact@v3
         with:
           name: "github-pages"
-          path: "docs"
+          path: "website/dist"
 
       - name: Deploy docs to GitHub Pages
         id: deployment

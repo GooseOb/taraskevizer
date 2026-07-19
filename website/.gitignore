@@ -1,0 +1,11 @@
+# build output
+dist/
+# generated dependency graph (produced in CI before build)
+public/graph.png
+# generated types
+.astro/
+# dependencies
+node_modules/
+# environment variables
+.env
+.env.production

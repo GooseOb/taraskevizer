@@ -17,7 +17,6 @@
 		"esbuild": "^0.28.1",
 		"eslint": "^10.5.0",
 		"husky": "^9.1.7",
-		"typedoc": "^0.28.19",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.62.0"
 	},
@@ -48,7 +47,9 @@
 		"test": "bun ./test",
 		"json": "node ./generate-json.js",
 		"test-cli": "bun run build && bun run test",
-		"docs": "typedoc"
+		"docs:dev": "cd website && bun run dev",
+		"docs:build": "cd website && bun install && bun run build",
+		"docs:preview": "cd website && bun run preview"
 	},
 	"sideEffects": false,
 	"type": "module",
