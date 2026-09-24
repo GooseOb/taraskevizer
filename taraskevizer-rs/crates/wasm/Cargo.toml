@@ -1,0 +1,12 @@
+[package]
+name = "taraskevizer-wasm"
+version = "10.5.0"
+edition = "2021"
+description = "WASM bindings for taraskevizer"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+taraskevizer-core = { path = "../core" }
+wasm-bindgen = "0.2"

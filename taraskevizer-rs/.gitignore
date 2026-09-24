@@ -1,0 +1,4 @@
+/target
+/crates/core/src/dict/data/
+output.txt
+output.rs.txt

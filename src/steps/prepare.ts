@@ -10,7 +10,7 @@ export const prepare = mutatingStep(({ text, cfg: { leftAngleBracket } }) =>
 		.replace(/г'(?![еёіюя])/g, 'ґ')
 		.replace(/ - /g, ' — ')
 		.replace(re.g(leftAngleBracket), ' $& ')
+		.replace(/['`’](?=\S)/g, 'ʼ')
 		.replace(/\p{P}|\p{S}|\d+/gu, ' $& ')
-		.replace(/ ['`’] (?=\S)/g, 'ʼ')
 		.replace(/\(/g, '&#40')
 );

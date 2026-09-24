@@ -1,0 +1,11 @@
+[package]
+name = "taraskevizer-cli"
+version = "10.5.0"
+edition = "2021"
+description = "CLI for taraskevizer — Belarusian orthography converter"
+
+[dependencies]
+taraskevizer-core = { path = "../core" }
+clap = { version = "4", features = ["derive"] }
+rayon = "1"
+num_cpus = "1"
