@@ -73,9 +73,7 @@ fn html_var_no(s: &str) -> String {
 /// Shared variation helpers (mirror `defaultVariation` in the reference).
 pub fn variation_no(s: &str) -> String {
     let after_paren = s.trim_start_matches('(');
-    let end = after_paren
-        .find(|c| c == '|' || c == ')')
-        .unwrap_or(after_paren.len());
+    let end = after_paren.find(['|', ')']).unwrap_or(after_paren.len());
     after_paren[..end].to_string()
 }
 
@@ -83,13 +81,11 @@ pub fn variation_first(s: &str) -> String {
     let after_paren = s.trim_start_matches('(');
     if let Some(pipe) = after_paren.find('|') {
         let after_pipe = &after_paren[pipe + 1..];
-        let end = after_pipe
-            .find(|c| c == '|' || c == ')')
-            .unwrap_or(after_pipe.len());
+        let end = after_pipe.find(['|', ')']).unwrap_or(after_pipe.len());
         after_pipe[..end].to_string()
     } else {
         after_paren
-            .find(|c| c == ')')
+            .find(')')
             .map_or(after_paren, |end| &after_paren[..end])
             .to_string()
     }

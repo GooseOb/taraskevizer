@@ -88,18 +88,6 @@ impl CompiledDict {
     pub fn has_entries(&self) -> bool {
         !self.entries.is_empty()
     }
-
-    /// Iterative soften: apply all entries repeatedly until stable.
-    pub fn soften(&self, text: &str) -> String {
-        let mut result = text.to_string();
-        loop {
-            let prev = result.clone();
-            result = self.replace_all(&result);
-            if result == prev {
-                return result;
-            }
-        }
-    }
 }
 
 /// Check if a pattern needs fancy-regex (has lookarounds, backrefs, or

@@ -11,8 +11,7 @@ pub fn step_apply_g(ctx: &mut PipelineContext) {
         return;
     }
     let wrap = ctx.cfg.wrappers.as_ref().and_then(|w| w.letter_h);
-    if wrap.is_some() {
-        let wrap = wrap.unwrap();
+    if let Some(wrap) = wrap {
         ctx.text = replace_g_with_map(&ctx.text, |ch| {
             wrap(if ctx.cfg.g {
                 ch

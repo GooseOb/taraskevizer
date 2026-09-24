@@ -205,7 +205,7 @@ fn main() {
         };
         if !input.is_empty() {
             const CHUNK_SIZE: usize = 64_000;
-            let nchunks = (input.len() + CHUNK_SIZE - 1) / CHUNK_SIZE;
+            let nchunks = input.len().div_ceil(CHUNK_SIZE);
             let chunks = split_into_chunks(&input, nchunks);
             let nchars = input.len();
             if !cli.single_thread && chunks.len() > 1 {
@@ -251,7 +251,7 @@ fn split_into_chunks(text: &str, n: usize) -> Vec<String> {
     if n <= 1 || text.is_empty() {
         return vec![text.to_string()];
     }
-    let target = (text.len() + n - 1) / n;
+    let target = text.len().div_ceil(n);
     let mut chunks = Vec::with_capacity(n);
     let mut start = 0;
     for i in 0..n {

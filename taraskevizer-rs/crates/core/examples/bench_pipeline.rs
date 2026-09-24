@@ -92,7 +92,7 @@ fn main() {
     let mut results: Vec<RunResult> = Vec::with_capacity(chunk_sizes.len());
 
     for &chunk_size in chunk_sizes {
-        let nchunks = (total_bytes + chunk_size - 1) / chunk_size;
+        let nchunks = total_bytes.div_ceil(chunk_size);
         let chunks = split_into_chunks(&text, nchunks);
 
         eprintln!("[CHUNK_SIZE={chunk_size:>10}] splitting into {nchunks} chunk(s)...",);
@@ -218,7 +218,7 @@ fn split_into_chunks(text: &str, n: usize) -> Vec<String> {
     if n <= 1 || text.is_empty() {
         return vec![text.to_string()];
     }
-    let target = (text.len() + n - 1) / n;
+    let target = text.len().div_ceil(n);
     let mut chunks = Vec::with_capacity(n);
     let mut start = 0;
     for i in 0..n {

@@ -189,7 +189,7 @@ pub fn run_tarask_timed(
     cfg: &TaraskConfig,
     timings: Option<&mut Vec<StepTiming>>,
 ) -> String {
-    run_base_pipeline_timed(text, cfg, |ctx| step_taraskevize(ctx), timings)
+    run_base_pipeline_timed(text, cfg, step_taraskevize, timings)
 }
 
 pub fn run_phonetic(text: &str, cfg: &TaraskConfig) -> String {

@@ -42,7 +42,7 @@ pub(crate) fn replace_g_apostrophe(text: &str) -> String {
             continue;
         }
         out.push_str(&text[flush_from..pos - 2]);
-        out.push_str("ґ");
+        out.push('ґ');
         flush_from = pos + 1;
     }
     out.push_str(&text[flush_from..]);
@@ -84,7 +84,7 @@ pub(crate) fn normalize_apostrophes(text: &str) -> String {
         };
         if replace {
             out.push_str(&text[flush_from..i]);
-            out.push_str("ʼ");
+            out.push('ʼ');
             flush_from = i + qlen;
         }
         i += qlen;
@@ -283,7 +283,7 @@ pub fn step_prepare(ctx: &mut PipelineContext) {
     let mut t = replace_g_apostrophe(&text);
     t = t.replace(" - ", " — ").replace(
         &ctx.cfg.left_angle_bracket,
-        &format!(" {} ", &ctx.cfg.left_angle_bracket),
+        &format!(" {} ", ctx.cfg.left_angle_bracket),
     );
     t = normalize_apostrophes(&t);
     t = space_out_punct_sym_digits(&t);

@@ -13,10 +13,11 @@ use crate::pipeline::{
 ///     because the character is unchanged by `toUpperCase`; and
 ///   * non-letters that are unchanged by uppercasing (digits, some punctuation)
 ///     are treated as uppercase by JS for the same reason.
+///
 /// Replicating the string comparison keeps the Rust port faithful to the
 /// reference `restoreCase` logic.
 fn is_upper_str(s: &str) -> bool {
-    s == &s.to_uppercase()
+    s == s.to_uppercase()
 }
 
 pub fn step_restore_case(ctx: &mut PipelineContext) {

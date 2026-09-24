@@ -64,9 +64,7 @@ pub(crate) fn alphabet_dict(abc: Alphabet, case: &str) -> CompiledDict {
 }
 
 pub(crate) fn soften(text: &str) -> String {
-    // `SOFTEN` is a single-pattern-priority `Matcher`; replicate the old
-    // `CompiledDict::soften` iterative behaviour by re-scanning until stable
-    // so cascading soften rules still apply.
+    // Re-scan until stable so cascading soften rules still apply.
     let mut result = text.to_string();
     loop {
         let next = SOFTEN.replace_all(&result);
@@ -91,8 +89,7 @@ pub(crate) fn end_z_soften_and_nia_biaz(text: &str) -> String {
         " бяз",
     );
     let t = regex_replace_all(&t, r" б[ея]з(?= і\S*[ая]ў|ну )", " бязь");
-    let t = regex_replace_all(&t, r" (?:пра|цера)?з(?= і\S*[ая]ў|ну )", "$0ь");
-    t
+    regex_replace_all(&t, r" (?:пра|цера)?з(?= і\S*[ая]ў|ну )", "$0ь")
 }
 
 pub(crate) fn find_unescaped_gt(s: &str) -> Option<usize> {
@@ -226,7 +223,7 @@ pub(crate) fn highlight_diff_word(
 
     if is_cyrillic && !word.contains('(') {
         let no_soft_word: String = word.chars().filter(|&c| c != 'ь').collect();
-        if o_word == &no_soft_word {
+        if o_word == no_soft_word {
             let mut result = String::new();
             for c in word.chars() {
                 if c == 'ь' {
@@ -239,7 +236,7 @@ pub(crate) fn highlight_diff_word(
         }
         let mut no_soft_word_plus_ь = no_soft_word.clone();
         no_soft_word_plus_ь.push('ь');
-        if o_word == &no_soft_word_plus_ь {
+        if o_word == no_soft_word_plus_ь {
             let mut result = String::new();
             let wchars: Vec<char> = word.chars().collect();
             for (j, &c) in wchars.iter().enumerate() {
@@ -253,8 +250,7 @@ pub(crate) fn highlight_diff_word(
         }
     }
 
-    let result = highlight_diff_variable(&wchars, &ochars, &hchars, highlight);
-    result
+    highlight_diff_variable(&wchars, &ochars, &hchars, highlight)
 }
 
 fn highlight_diff_variable(
