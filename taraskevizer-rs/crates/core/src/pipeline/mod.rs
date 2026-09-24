@@ -94,6 +94,7 @@ pub fn run_alphabetic(text: &str, cfg: &TaraskConfig) -> String {
     step_whitespaces_to_spaces(&mut ctx);
     step_convert_alphabet(&mut ctx);
     step_restore_whitespaces(&mut ctx);
+    step_unspace(&mut ctx);
     step_apply_no_fix(&mut ctx);
     step_finalize(&mut ctx);
     step_untrim(&mut ctx);
@@ -164,6 +165,7 @@ where
     );
     timed_step!(timings, "apply_g", step_apply_g(&mut ctx));
     timed_step!(timings, "apply_variations", step_apply_variations(&mut ctx));
+    timed_step!(timings, "unspace", step_unspace(&mut ctx));
     timed_step!(timings, "apply_no_fix", step_apply_no_fix(&mut ctx));
     timed_step!(timings, "finalize", step_finalize(&mut ctx));
     timed_step!(timings, "untrim", step_untrim(&mut ctx));

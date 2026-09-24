@@ -77,14 +77,19 @@ pub(crate) fn unspace_punct_sym_digits(text: &str) -> String {
     out
 }
 
-pub fn step_finalize(ctx: &mut PipelineContext) {
-    let text = std::mem::take(&mut ctx.text);
-    let mut t = text.replace("&#40", "(").replace("&nbsp;", " ");
+pub fn step_unspace(ctx: &mut PipelineContext) {
+    let mut t = std::mem::take(&mut ctx.text);
     t = unspace_punct_sym_digits(&t);
     t = t.replace(
         &format!(" {} ", ctx.cfg.left_angle_bracket),
         ctx.cfg.left_angle_bracket.as_str(),
     );
+    ctx.text = t
+}
+
+pub fn step_finalize(ctx: &mut PipelineContext) {
+    let text = std::mem::take(&mut ctx.text);
+    let mut t = text.replace("&nbsp;", " ");
     if ctx.cfg.new_line != "\n" {
         t = t.replace('\n', &ctx.cfg.new_line);
     }
@@ -96,7 +101,11 @@ mod tests {
     use super::unspace_punct_sym_digits;
 
     fn check(input: &str, expected: &str) {
-        assert_eq!(unspace_punct_sym_digits(input), expected, "input: {input:?}");
+        assert_eq!(
+            unspace_punct_sym_digits(input),
+            expected,
+            "input: {input:?}"
+        );
     }
 
     #[test]

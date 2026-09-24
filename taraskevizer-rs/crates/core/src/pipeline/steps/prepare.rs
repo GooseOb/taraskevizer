@@ -287,7 +287,6 @@ pub fn step_prepare(ctx: &mut PipelineContext) {
     );
     t = normalize_apostrophes(&t);
     t = space_out_punct_sym_digits(&t);
-    t = t.replace('(', "&#40");
     ctx.text = t;
 }
 
