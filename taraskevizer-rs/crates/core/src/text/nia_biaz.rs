@@ -1,0 +1,1187 @@
+use super::{match_iwords_len, utf8_char_len};
+
+/// Consonant cluster of the `не`/`без` rules: `[бвгджзйклмнпрстфхцчшўьʼ]`.
+fn is_zw_cons(ch: char) -> bool {
+    matches!(
+        ch,
+        'б' | 'в'
+            | 'г'
+            | 'д'
+            | 'ж'
+            | 'з'
+            | 'й'
+            | 'к'
+            | 'л'
+            | 'м'
+            | 'н'
+            | 'п'
+            | 'р'
+            | 'с'
+            | 'т'
+            | 'ф'
+            | 'х'
+            | 'ц'
+            | 'ч'
+            | 'ш'
+            | 'ў'
+            | 'ь'
+            | 'ʼ'
+    )
+}
+
+/// Vowel of the `не`/`без` rules: `[аеёіоуыэюя]`.
+fn is_zw_vow(ch: char) -> bool {
+    matches!(
+        ch,
+        'а' | 'е' | 'ё' | 'і' | 'о' | 'у' | 'ы' | 'э' | 'ю' | 'я'
+    )
+}
+
+/// Byte length of one cluster consonant at `b[i]`, or 0 when absent.
+///
+/// `ʼ` (U+02BC) is 3 bytes (E2 80 BC); every Cyrillic member is 2 bytes.
+fn cons_char_len(b: &[u8], i: usize) -> usize {
+    if i >= b.len() {
+        return 0;
+    }
+    match b[i] {
+        0xE2 if i + 3 <= b.len() && b[i + 1] == 0x80 && b[i + 2] == 0xBC => 3,
+        0xD0 if i + 1 < b.len() => match b[i + 1] {
+            0xB1 | 0xB2 | 0xB3 | 0xB4 | 0xB6 | 0xB7 | 0xB9 | 0xBA | 0xBB | 0xBC
+            | 0xBD | 0xBF => 2,
+            _ => 0,
+        },
+        0xD1 if i + 1 < b.len() => match b[i + 1] {
+            0x80 | 0x81 | 0x82 | 0x84 | 0x85 | 0x86 | 0x87 | 0x88 | 0x9E
+            | 0x8C => 2,
+            _ => 0,
+        },
+        _ => 0,
+    }
+}
+
+/// `[бвгджзйклмнпрстфхцчшўьʼ]*[оё]` prefix length in bytes, if present.
+///
+/// The star is greedy but deterministic: consonants exclude `о`/`ё`, so the
+/// run extends to the first non-cluster char, which must be `о`/`ё` (an
+/// empty run matches bare `о`/`ё`, like the regex).
+fn cons_o_len(s: &str) -> Option<usize> {
+    let b = s.as_bytes();
+    let mut i = 0;
+    while cons_char_len(b, i) > 0 {
+        i += cons_char_len(b, i);
+    }
+    if i + 2 <= b.len()
+        && ((b[i] == 0xD0 && b[i + 1] == 0xBE) || (b[i] == 0xD1 && b[i + 1] == 0x91))
+    {
+        Some(i + 2)
+    } else {
+        None
+    }
+}
+
+/// `карт\S{0,4}[ \)]` / `мап\S{0,4}[ \)]` match length in bytes, if present.
+///
+/// `\S{0,4}` is greedy with backtracking over the longest-first `k = 4..=0`
+/// whose `k` chars are all non-whitespace and char `k` is a space or `)`.
+/// (`\S` is `!char::is_whitespace`, the same class `fancy_regex` uses.)
+fn kartmap_len(s: &str) -> Option<usize> {
+    let pre = if s.starts_with("карт") {
+        "карт"
+    } else if s.starts_with("мап") {
+        "мап"
+    } else {
+        return None;
+    };
+    let rest: Vec<char> = s[pre.len()..].chars().take(5).collect();
+    for k in (0..=4).rev() {
+        if k >= rest.len() {
+            continue;
+        }
+        if rest[..k].iter().all(|c| !c.is_whitespace())
+            && (rest[k] == ' ' || rest[k] == ')')
+        {
+            let n: usize = rest[..k].iter().map(|c| c.len_utf8()).sum();
+            return Some(pre.len() + n + 1);
+        }
+    }
+    None
+}
+
+/// First matching literal's byte length, in pattern order.
+fn prefix_len(s: &str, pats: &[&str]) -> Option<usize> {
+    for p in pats {
+        if s.starts_with(p) {
+            return Some(p.len());
+        }
+    }
+    None
+}
+
+// IA-ne word lists, pattern order, grouped by first char.
+// The `i`-group (Latin i + iwords) is handled via `match_iwords_len`.
+static NE_D0B1: &[&str] = &[
+    "бача",
+    "бачу",
+    "бачы",
+    "бегл",
+    "бега",
+    "блытаю",
+    "блытац",
+    "брала",
+    "бралі",
+    "будзе ",
+    "будуць ",
+    "будучы ",
+    "буду ",
+    "болш",
+    "болей",
+];
+static NE_D0B2: &[&str] = &[
+    "выбача",
+    "выбачу",
+    "выбачы",
+    "выбегл",
+    "выбега",
+    "выблытаю",
+    "выблытац",
+    "выбрала",
+    "выбралі",
+    "выбудзе ",
+    "выбудуць ",
+    "выбудучы ",
+    "выбуду ",
+    "вываш",
+    "выведала",
+    "выведалі",
+    "выведаць",
+    "выведаюць",
+    "выведаючы",
+    "выведаю",
+    "выведаў",
+    "выдумала",
+    "выдумалі",
+    "выдумаць",
+    "выдумаюць",
+    "выдумаючы",
+    "выдумаю",
+    "выдумаў",
+    "выдура",
+    "выдуру",
+    "выдуры",
+    "выдурай",
+    "выдурань",
+    "выдурняў",
+    "выдурням",
+    "выдурня",
+    "выдур ",
+    "вызнае",
+    "вызнала",
+    "вызналі",
+    "вызнаць",
+    "вызнаюць",
+    "вызнаючы",
+    "вызнаю",
+    "выклад ",
+    "выклал",
+    "выклаў",
+    "вымае",
+    "вымаючы",
+    "вымаюць",
+    "вымаю",
+    "вымел",
+    "вымеў",
+    "вымець",
+    "вымыц",
+    "вымыла",
+    "вымылі",
+    "вынейк",
+    "выпісацц",
+    "выпісачы",
+    "выпісаць ",
+    "выпіса",
+    "выпішуцц",
+    "выпішучы",
+    "выпішуць ",
+    "выпішу",
+    "выўпэўн",
+    "выпэўн",
+    "выскажа",
+    "выскажуць",
+    "высказа ",
+    "выспала",
+    "выспалі",
+    "высправ",
+    "выспраў",
+    "вытрэба ",
+    "вычуе",
+    "вычул",
+    "вычуў",
+    "вычуц",
+    "вычую",
+    "ваш",
+    "ведала",
+    "ведалі",
+    "ведаць",
+    "ведаюць",
+    "ведаючы",
+    "ведаю",
+    "ведаў",
+    "веды",
+    "веліч",
+    "выраш",
+    "выгар",
+    "выпад",
+    "выдале",
+    "выдалі",
+    "выдаля",
+    "выдалю",
+    "выпале",
+    "выпалі",
+    "выпаля",
+    "выпалю",
+];
+static NE_D0B3: &[&str] = &[
+    "горш",
+    "горай",
+    "гук",
+    "гучн",
+    "густ",
+];
+static NE_D0B4: &[&str] = &[
+    "думала",
+    "думалі",
+    "думаць",
+    "думаюць",
+    "думаючы",
+    "думаю",
+    "думаў",
+    "дура",
+    "дуру",
+    "дуры",
+    "дурай",
+    "дурань",
+    "дурняў",
+    "дурням",
+    "дурня",
+    "дур ",
+    "дрэнн",
+];
+static NE_D0B7: &[&str] = &[
+    "знае",
+    "знала",
+    "зналі",
+    "знаць",
+    "знаюць",
+    "знаючы",
+    "знаю",
+    "зьбег",
+];
+static NE_D0BA: &[&str] = &[
+    "клад ",
+    "клал",
+    "клаў",
+    "кашай ",
+    "каша ",
+    "кашамі ",
+    "кашу ",
+    "кашы ",
+];
+static NE_D0BB: &[&str] = &[
+    "лёгк",
+    "літар",
+    "лішн",
+    "лепш",
+    "лепей",
+];
+static NE_D0BC: &[&str] = &[
+    "мае",
+    "маючы",
+    "маюць",
+    "маю",
+    "мел",
+    "меў",
+    "мець",
+    "мыц",
+    "мыла",
+    "мылі",
+    "менш",
+    "меней",
+    "медз",
+    "мякк",
+];
+static NE_D0BD: &[&str] = &[
+    "нейк",
+    "нашая",
+    "нашыя",
+    "нашую",
+    "нашых",
+];
+static NE_D0BF: &[&str] = &[
+    "пісацц",
+    "пісачы",
+    "пісаць ",
+    "піса",
+    "пішуцц",
+    "пішучы",
+    "пішуць ",
+    "пішу",
+    "пэўн",
+    "прыйдзеш",
+];
+static NE_D180: &[&str] = &[
+    "руша",
+    "рушы",
+];
+static NE_D181: &[&str] = &[
+    "скажа",
+    "скажуць",
+    "сказа ",
+    "спала",
+    "спалі",
+    "справ",
+    "спраў",
+    "стаў",
+    "стане",
+    "стануць",
+    "стала",
+    "сталі",
+];
+static NE_D182: &[&str] = &[
+    "трэба ",
+    "таго",
+    "тое",
+    "тыя",
+];
+static NE_D184: &[&str] = &[
+    "фарбаў ",
+    "фарбамі ",
+    "фарба ",
+    "фарбу ",
+    "фарбы ",
+    "фарб ",
+];
+static NE_D187: &[&str] = &[
+    "чуе",
+    "чул",
+    "чуў",
+    "чуц",
+    "чую",
+];
+static NE_D18F: &[&str] = &[
+    "ян ",
+];
+static NE_D196: &[&str] = &[
+    "іхн",
+];
+static NE_D19E: &[&str] = &[
+    "ўпэўн",
+    "ўвод",
+    "ўсе",
+    "ўсё",
+    "ўся",
+];
+
+// IA-bez word lists, pattern order, grouped by first char.
+// The `i`-group (Latin i + iwords) is handled via `match_iwords_len`.
+static BEZ_D0B1: &[&str] = &[
+    "бол",
+];
+static BEZ_D0B2: &[&str] = &[
+    "выклада",
+    "выкладу",
+    "вымела ",
+    "вымытых",
+    "выпісан",
+    "выпісац",
+    "выскажа ",
+    "выскажуць ",
+    "высказа ",
+    "выспала",
+    "выспалі",
+    "вычуе",
+    "вычул",
+    "вычуў",
+    "вычуц",
+    "вычую",
+    "ваш",
+    "ведаў",
+    "велічы",
+    "выраш",
+    "выдале",
+    "выпале",
+    "выпад",
+];
+static BEZ_D0B3: &[&str] = &[
+    "горш",
+    "горай",
+    "гук",
+    "гучн",
+    "густ",
+];
+static BEZ_D0B4: &[&str] = &[
+    "дрэнн",
+];
+static BEZ_D0B5: &[&str] = &[
+    "ей",
+];
+static BEZ_D0BA: &[&str] = &[
+    "клада",
+    "кладу",
+    "кашы ",
+    "кашаў ",
+];
+static BEZ_D0BB: &[&str] = &[
+    "лёгк",
+    "літар",
+    "лішн",
+    "леп",
+];
+static BEZ_D0BC: &[&str] = &[
+    "мела ",
+    "мытых",
+    "медз",
+    "мен",
+    "мякк",
+];
+static BEZ_D0BD: &[&str] = &[
+    "нейк",
+    "нашую",
+    "нашых",
+];
+static BEZ_D0BF: &[&str] = &[
+    "пісан",
+    "пісац",
+    "пішучы",
+];
+static BEZ_D180: &[&str] = &[
+    "руша",
+];
+static BEZ_D181: &[&str] = &[
+    "скажа ",
+    "скажуць ",
+    "сказа ",
+    "спала",
+    "спалі",
+    "стаў",
+];
+static BEZ_D182: &[&str] = &[
+    "таго",
+];
+static BEZ_D184: &[&str] = &[
+    "фарбаў ",
+    "фарбы ",
+    "фарб ",
+];
+static BEZ_D186: &[&str] = &[
+    "цукра ",
+    "цукру ",
+];
+static BEZ_D187: &[&str] = &[
+    "чуе",
+    "чул",
+    "чуў",
+    "чуц",
+    "чую",
+];
+static BEZ_D188: &[&str] = &[
+    "ш",
+];
+static BEZ_D18F: &[&str] = &[
+    "ян",
+];
+static BEZ_D196: &[&str] = &[
+    "іхн",
+];
+static BEZ_D19E: &[&str] = &[
+    "ўвод",
+    "ўсе",
+    "ўсё",
+    "ўся",
+];
+
+// ================= alt_len functions ================
+/// `IA_WORDS` не-entry alternation match length.
+///
+/// Pattern order: `[cons]*[оё]` first, then words (the `i`-branch
+/// last — disjoint from the rest, so dispatch position is free).
+fn ia_ne_alt_len(s: &str) -> Option<usize> {
+    if let Some(n) = cons_o_len(s) {
+        return Some(n);
+    }
+    let b = s.as_bytes();
+    if b.len() < 2 {
+        return None;
+    }
+    match (b[0], b[1]) {
+        (0xD0, 0xB1) => prefix_len(s, NE_D0B1),
+        (0xD0, 0xB2) => prefix_len(s, NE_D0B2),
+        (0xD0, 0xB3) => prefix_len(s, NE_D0B3),
+        (0xD0, 0xB4) => prefix_len(s, NE_D0B4),
+        (0xD0, 0xB7) => prefix_len(s, NE_D0B7),
+        (0xD0, 0xBA) => {
+            // Pattern-ordered before literals, but disjoint from them
+            // (3rd byte т/п vs ш/л/н/с/б/д/е/я), so position is free.
+            if let Some(n) = kartmap_len(s) {
+                return Some(n);
+            }
+            prefix_len(s, NE_D0BA)
+        }
+        (0xD0, 0xBB) => prefix_len(s, NE_D0BB),
+        (0xD0, 0xBC) => {
+            // Pattern-ordered before literals, but disjoint from them
+            // (3rd byte т/п vs ш/л/н/с/б/д/е/я), so position is free.
+            if let Some(n) = kartmap_len(s) {
+                return Some(n);
+            }
+            prefix_len(s, NE_D0BC)
+        }
+        (0xD0, 0xBD) => prefix_len(s, NE_D0BD),
+        (0xD0, 0xBF) => prefix_len(s, NE_D0BF),
+        (0xD1, 0x80) => prefix_len(s, NE_D180),
+        (0xD1, 0x81) => prefix_len(s, NE_D181),
+        (0xD1, 0x82) => prefix_len(s, NE_D182),
+        (0xD1, 0x84) => prefix_len(s, NE_D184),
+        (0xD1, 0x87) => prefix_len(s, NE_D187),
+        (0xD1, 0x8F) => prefix_len(s, NE_D18F),
+        (0xD1, 0x96) => prefix_len(s, NE_D196),
+        (0xD1, 0x9E) => prefix_len(s, NE_D19E),
+        // Latin `i` + iwords (last branch of the pattern).
+        (0x69, _) => {
+            if let Some(n) = match_iwords_len(&s[1..]) {
+                return Some(1 + n);
+            }
+            None
+        }
+        _ => None,
+    }
+}
+
+/// `IA_WORDS` без-entry alternation match length.
+///
+/// Pattern order: `[cons]*[оё]` first, then words (the `i`-branch
+/// last — disjoint from the rest, so dispatch position is free).
+fn ia_bez_alt_len(s: &str) -> Option<usize> {
+    if let Some(n) = cons_o_len(s) {
+        return Some(n);
+    }
+    let b = s.as_bytes();
+    if b.len() < 2 {
+        return None;
+    }
+    match (b[0], b[1]) {
+        (0xD0, 0xB1) => prefix_len(s, BEZ_D0B1),
+        (0xD0, 0xB2) => prefix_len(s, BEZ_D0B2),
+        (0xD0, 0xB3) => prefix_len(s, BEZ_D0B3),
+        (0xD0, 0xB4) => prefix_len(s, BEZ_D0B4),
+        (0xD0, 0xB5) => prefix_len(s, BEZ_D0B5),
+        (0xD0, 0xBA) => {
+            // Pattern-ordered before literals, but disjoint from them
+            // (3rd byte т/п vs ш/л/н/с/б/д/е/я), so position is free.
+            if let Some(n) = kartmap_len(s) {
+                return Some(n);
+            }
+            prefix_len(s, BEZ_D0BA)
+        }
+        (0xD0, 0xBB) => prefix_len(s, BEZ_D0BB),
+        (0xD0, 0xBC) => {
+            // Pattern-ordered before literals, but disjoint from them
+            // (3rd byte т/п vs ш/л/н/с/б/д/е/я), so position is free.
+            if let Some(n) = kartmap_len(s) {
+                return Some(n);
+            }
+            prefix_len(s, BEZ_D0BC)
+        }
+        (0xD0, 0xBD) => prefix_len(s, BEZ_D0BD),
+        (0xD0, 0xBF) => prefix_len(s, BEZ_D0BF),
+        (0xD1, 0x80) => prefix_len(s, BEZ_D180),
+        (0xD1, 0x81) => prefix_len(s, BEZ_D181),
+        (0xD1, 0x82) => prefix_len(s, BEZ_D182),
+        (0xD1, 0x84) => prefix_len(s, BEZ_D184),
+        (0xD1, 0x86) => prefix_len(s, BEZ_D186),
+        (0xD1, 0x87) => prefix_len(s, BEZ_D187),
+        (0xD1, 0x88) => prefix_len(s, BEZ_D188),
+        (0xD1, 0x8F) => prefix_len(s, BEZ_D18F),
+        (0xD1, 0x96) => prefix_len(s, BEZ_D196),
+        (0xD1, 0x9E) => prefix_len(s, BEZ_D19E),
+        // Latin `i` + iwords (last branch of the pattern).
+        (0x69, _) => {
+            if let Some(n) = match_iwords_len(&s[1..]) {
+                return Some(1 + n);
+            }
+            None
+        }
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+const ALL_NE_GROUPS: &[&[&str]] = &[NE_D0B1, NE_D0B2, NE_D0B3, NE_D0B4, NE_D0B7, NE_D0BA, NE_D0BB, NE_D0BC, NE_D0BD, NE_D0BF, NE_D180, NE_D181, NE_D182, NE_D184, NE_D187, NE_D18F, NE_D196, NE_D19E];
+#[cfg(test)]
+const ALL_BEZ_GROUPS: &[&[&str]] = &[BEZ_D0B1, BEZ_D0B2, BEZ_D0B3, BEZ_D0B4, BEZ_D0B5, BEZ_D0BA, BEZ_D0BB, BEZ_D0BC, BEZ_D0BD, BEZ_D0BF, BEZ_D180, BEZ_D181, BEZ_D182, BEZ_D184, BEZ_D186, BEZ_D187, BEZ_D188, BEZ_D18F, BEZ_D196, BEZ_D19E];
+
+
+/// ` ...[ая]ў | ну␣` lookahead of the `б[ея]з` / `(пра|цера)?з` rules.
+///
+/// ` і\S*[ая]ў`: after ` і`, some non-whitespace run containing `[ая]ў`
+/// (greedy `\S*` backtracks, so any position works); `ну ` is literal.
+fn has_nu_imlau(s: &str) -> bool {
+    if s.starts_with("ну ") {
+        return true;
+    }
+    let b = s.as_bytes();
+    if b.len() < 4 || b[0] != b' ' || b[1] != 0xD1 || b[2] != 0x96 {
+        return false;
+    }
+    let mut i = 3;
+    while i < b.len() {
+        let ch = s[i..].chars().next().unwrap_or('\0');
+        if ch.is_whitespace() {
+            break;
+        }
+        if ch == 'а' || ch == 'я' {
+            let j = i + ch.len_utf8();
+            if j + 2 <= b.len() && b[j] == 0xD1 && b[j + 1] == 0x9E {
+                return true;
+            }
+        }
+        i += ch.len_utf8();
+    }
+    false
+}
+
+/// `[бвгджзйклмнпрстфхцчшўьʼ]*.\u{301}` lookahead: a stress mark preceded by
+/// one arbitrary (`\n`-less) char after a consonant run.
+///
+/// The regex backtracks the run, so this holds iff an acute sits at
+/// char-index `m` with `1 <= m <= run+1` and a non-`\n` char before it.
+fn has_acute(s: &str) -> bool {
+    let chars: Vec<char> = s.chars().collect();
+    let mut run = 0;
+    while run < chars.len() && is_zw_cons(chars[run]) {
+        run += 1;
+    }
+    for m in 1..=run + 1 {
+        if m < chars.len() && chars[m] == '́' && chars[m - 1] != '\n' {
+            return true;
+        }
+    }
+    false
+}
+
+/// `[бвгджзйклмнпрстфхцчшўьʼ]*[аеёіоуыэюя][бвгджзйклмнпрстфхцчшўьʼ]*␣`
+/// lookahead: a phonetic word (consonants, vowel, consonants, space).
+///
+/// Deterministic left-to-right: the sets are disjoint, so no backtracking
+/// can ever succeed where the greedy run fails.
+fn has_phonetic_word(s: &str) -> bool {
+    let mut it = s.chars();
+    let mut c = it.next();
+    while matches!(c, Some(ch) if is_zw_cons(ch)) {
+        c = it.next();
+    }
+    if !matches!(c, Some(ch) if is_zw_vow(ch)) {
+        return false;
+    }
+    c = it.next();
+    while matches!(c, Some(ch) if is_zw_cons(ch)) {
+        c = it.next();
+    }
+    matches!(c, Some(' '))
+}
+
+/// Preposition blacklist of the generic `не → ня` rule.
+///
+/// `(?!а[бд]? |б[ея]зь? |[дз]а |д?ля |дзеля |[нп]ад? |пр[аы] |празь? |у `
+/// `|церазь? )`, expanded to literals.
+fn is_prep(s: &str) -> bool {
+    const PREPS: &[&str] = &[
+        "а ", "аб ", "ад ", "без ", "безь ", "бяз ", "бязь ", "да ", "за ",
+        "ля ", "для ", "дзеля ", "на ", "над ", "па ", "пад ", "пра ",
+        "пры ", "праз ", "празь ", "у ", "цераз ", "церазь ",
+    ];
+    PREPS.iter().any(|p| s.starts_with(p))
+}
+
+/// One `IA_WORDS` entry as a manual pass: ` не`/` без` + ` \(?ALT` capture.
+///
+/// Equivalent to the dict entry (` ня$1` / ` бяз$1`): the head becomes
+/// `repl`, the captured ` ␣[(]?ALT` is copied verbatim, and scanning
+/// resumes after it (consuming semantics — a later anchor inside the
+/// capture is skipped by this pass, like `replace_all`).
+fn ia_replace(
+    text: &str,
+    head: &str,
+    repl: &str,
+    alt_len: fn(&str) -> Option<usize>,
+) -> String {
+    if !text.contains(head) {
+        return text.to_string();
+    }
+    let bytes = text.as_bytes();
+    let len = bytes.len();
+    let hlen = head.len();
+    let mut out = String::with_capacity(len);
+    let mut flush = 0usize;
+    let mut i = 0usize;
+    while i < len {
+        if bytes[i] == b' ' && text[i..].starts_with(head) {
+            let after = i + hlen;
+            if after < len && bytes[after] == b' ' {
+                let mut p = after + 1;
+                if p < len && bytes[p] == b'(' {
+                    p += 1;
+                }
+                if let Some(n) = alt_len(&text[p..]) {
+                    let end = p + n;
+                    out.push_str(&text[flush..i]);
+                    out.push_str(repl);
+                    out.push_str(&text[after..end]);
+                    flush = end;
+                    i = end;
+                    continue;
+                }
+            }
+            i += 1;
+            continue;
+        }
+        i += if bytes[i] < 0x80 {
+            1
+        } else {
+            utf8_char_len(bytes[i])
+        };
+    }
+    out.push_str(&text[flush..]);
+    out
+}
+
+/// `IA_WORDS` without the regex engine or the JSON file: `не`-entry, then
+/// `без`-entry, like the compiled dict order.
+pub(crate) fn ia_words(text: &str) -> String {
+    ia_replace(&ia_replace(text, " не", " ня", ia_ne_alt_len), " без", " бяз", ia_bez_alt_len)
+}
+
+/// The four generic rules merged into one scan over spaces.
+///
+/// Anchors are disjoint (`не␣`, `без`/`бяз`, `(пра|цера)?з`), and at a
+/// ` без` position the original order (`без → бяз`, then `б[ея]з → бязь`)
+/// is chained: after `без → бяз`, the same spot is re-tested for `бязь`.
+/// Every other anchor maps to exactly one rule, so one pass equals the four
+/// sequential `replace_all` calls.
+fn explicit_pass(text: &str) -> String {
+    if !text.contains(' ') {
+        return text.to_string();
+    }
+    let bytes = text.as_bytes();
+    let len = bytes.len();
+    let mut out = String::with_capacity(len + 16);
+    let mut flush = 0usize;
+    let mut i = 0usize;
+    while i < len {
+        if bytes[i] != b' ' {
+            i += if bytes[i] < 0x80 {
+                1
+            } else {
+                utf8_char_len(bytes[i])
+            };
+            continue;
+        }
+        // ` не ` → ` ня ` with phonetic lookahead + preposition guard.
+        if i + 6 <= len
+            && bytes[i + 1] == 0xD0
+            && bytes[i + 2] == 0xBD
+            && bytes[i + 3] == 0xD0
+            && bytes[i + 4] == 0xB5
+            && bytes[i + 5] == b' '
+            && (has_acute(&text[i + 6..]) || has_phonetic_word(&text[i + 6..]))
+            && !is_prep(&text[i + 6..])
+        {
+            out.push_str(&text[flush..i]);
+            out.push_str(" ня ");
+            flush = i + 6;
+            i += 6;
+            continue;
+        }
+        // ` без` / ` бяз` (+ optional `ь` for `без`).
+        if i + 7 <= len
+            && bytes[i + 1] == 0xD0
+            && bytes[i + 2] == 0xB1
+            && bytes[i + 5] == 0xD0
+            && bytes[i + 6] == 0xB7
+            && ((bytes[i + 3] == 0xD0 && bytes[i + 4] == 0xB5)
+                || (bytes[i + 3] == 0xD1 && bytes[i + 4] == 0x8F))
+        {
+            let is_bez = bytes[i + 3] == 0xD0;
+            let after = i + 7;
+            if is_bez {
+                // ` без(?=ь? (?:acute|phonetic))` → ` бяз`, then chain `бязь`.
+                let mut p = after;
+                if p + 2 <= len && bytes[p] == 0xD1 && bytes[p + 1] == 0x8C {
+                    p += 2;
+                }
+                if p < len
+                    && bytes[p] == b' '
+                    && (has_acute(&text[p + 1..]) || has_phonetic_word(&text[p + 1..]))
+                {
+                    out.push_str(&text[flush..i]);
+                    out.push_str(" бяз");
+                    flush = after;
+                    if has_nu_imlau(&text[after..]) {
+                        out.push('ь');
+                    }
+                    i = after;
+                    continue;
+                }
+            }
+            // ` б[ея]з(?= і\S*[ая]ў|ну )` → ` бязь`.
+            if has_nu_imlau(&text[after..]) {
+                out.push_str(&text[flush..i]);
+                out.push_str(" бязь");
+                flush = after;
+                i = after;
+                continue;
+            }
+        }
+        // ` (?:пра|цера)?з(?= і\S*[ая]ў|ну )` → `$0ь`.
+        let zlen = if i + 11 <= len
+            && bytes[i + 1] == 0xD1
+            && bytes[i + 2] == 0x86
+            && bytes[i + 3] == 0xD0
+            && bytes[i + 4] == 0xB5
+            && bytes[i + 5] == 0xD1
+            && bytes[i + 6] == 0x80
+            && bytes[i + 7] == 0xD0
+            && bytes[i + 8] == 0xB0
+            && bytes[i + 9] == 0xD0
+            && bytes[i + 10] == 0xB7
+        {
+            11 // ` цераз`
+        } else if i + 9 <= len
+            && bytes[i + 1] == 0xD0
+            && bytes[i + 2] == 0xBF
+            && bytes[i + 3] == 0xD1
+            && bytes[i + 4] == 0x80
+            && bytes[i + 5] == 0xD0
+            && bytes[i + 6] == 0xB0
+            && bytes[i + 7] == 0xD0
+            && bytes[i + 8] == 0xB7
+        {
+            9 // ` праз`
+        } else if i + 3 <= len && bytes[i + 1] == 0xD0 && bytes[i + 2] == 0xB7 {
+            3 // ` з`
+        } else {
+            0
+        };
+        if zlen > 0 && has_nu_imlau(&text[i + zlen..]) {
+            out.push_str(&text[flush..i + zlen]);
+            out.push('ь');
+            flush = i + zlen;
+            i += zlen;
+            continue;
+        }
+        i += 1;
+    }
+    out.push_str(&text[flush..]);
+    out
+}
+
+/// `end_z_soften_and_nia_biaz` without the regex engine or `iawords.json`.
+///
+/// `IA_WORDS` entries first (word-list `не → ня`, `без → бяз`), then the
+/// four generic rules — the same order as the original sequential
+/// `replace_all` calls.
+pub(crate) fn end_z_soften_and_nia_biaz(text: &str) -> String {
+    explicit_pass(&ia_words(text))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        cons_o_len, end_z_soften_and_nia_biaz, has_acute, has_nu_imlau,
+        has_phonetic_word, ia_bez_alt_len, ia_ne_alt_len, is_prep, kartmap_len,
+        ALL_BEZ_GROUPS, ALL_NE_GROUPS,
+    };
+
+    // Oracle: original impl (fancy IA dict + 4 explicit regexes),
+    // inlined so tests survive `iawords.json` removal.
+    fn fancy_end_z(text: &str) -> String {
+        use crate::dict::{types::fancy_replace_all, CompiledDict, DictEntry};
+        static P0: &str = r" не( \(?(?:[бвгджзйклмнпрстфхцчшўьʼ]*[оё]|(?:вы)?(?:бач[ауы]|бег[ла]|блыта[юц]|брал[аі]|буд(?:зе|у(?:ць|чы)?) |ваш|веда(?:л[аі]|ць|ю(?:ць|чы)?|ў)|дума(?:л[аі]|ць|ю(?:ць|чы)?|ў)|дур(?:[ауы]|ай|ань|ня[ўм]?| )|зна(?:е|л[аі]|ць|ю(?:ць|чы)?)|кла(?:д |л|ў)|ма(?:е|ючы|ю(?:ць|чы)?)|ме(?:л|ў|ць)|мы(?:ц|л[аі])|нейк|пі(?:са|шу)(?:цц|чы|ць )?|ў?пэўн|ска(?:ж(?:а|уць)|за )|спал[аі]|спра[вў]|трэба |чу[елўцю])|веды|веліч|вы(?:раш|гар|пад|[дп]ал[еіяю])|гор(?:ш|ай)|гу(?:к|чн|ст)|дрэнн|зьбег|іхн|карт\S{0,4}[ \)]|каш(?:ай?|амі|у|ы) |лёгк|літар|лішн|(?:мен|бол|леп)(?:ш|ей)|мап\S{0,4}[ \)]|медз|мякк|наш(?:[аы]я|ую|ых)|прыйдзеш|руш[аы]|ста(?:ў|не|нуць|л[аі])|таго|тое|тыя|ўвод|ўс[еёя]|фарб(?:а(?:ў|мі)?|у|ы)? |ян |i(?:́|біс|бсэн|в[аеоы] |верс|вал[гз]|гар|грышч|грэк|дал|дыш|жыц|канапіс|кань?н|ка[цўл]|каў[кц]|кл(ыя?|а([яей]|га|му)|ую) |ксі|леус|л(іст| )|лістас|льк|м |мант|мась?ц|мбры[кч]|менна |мідж|мпар[тц]|мпульс[аеуы]|нахадз|нды([ійюя] |ев)|ндэкс(а(ў|мі?)? |[еуыі])|н[еі][ейяю]|нк([аіу])|нтэрым|нфікс|нфімум|ншась?ц|нш(а[ейя]?|ага|аму|ась?ц|ую|ы(мі?|х|я)?) |псілан|р([аыу]|а[мхйў]|амі|) |рад|рбіс|рмас|рха|рыс |скарк|скарак|скра|скравец|скрачк|ста |с[нт]ась?ц|сь?ці[нк]|та[р ]|тры|х(ны[хя]?|ную|на[яей])?|ць?він|шыяс)))";
+        static P1: &str = r" без( \(?(?:[бвгджзйклмнпрстфхцчшўьʼ]*[оё]|(?:вы)?(?:клад[ау]|мела |мытых|піса[нц]|ска(?:жа|жуць|за) |спал[аі]|чу[елўцю])|ваш|ведаў|велічы|выраш|вы[дп]але|выпад|гор(?:ш|ай)|гу(?:к|чн|ст)|дрэнн|іхн|карт\S{0,4}[ \)]|каш(?:ы|аў) |лёгк|літар|лішн|медз|(?:мен|бол|леп|ш|ей)|мап\S{0,4}[ \)]|мякк|нейк|наш(?:ую|ых)|пішучы|руша|стаў|таго|ўвод|ўс[еёя]|фарб(?:аў|ы)? |цукр[ау] |ян|i(?:́|біс|бсэн|в[аеоы] |верс|вал[гз]|гар|грышч|грэк|дал|дыш|жыц|канапіс|кань?н|ка[цўл]|каў[кц]|кл(ыя?|а([яей]|га|му)|ую) |ксі|леус|л(іст| )|лістас|льк|м |мант|мась?ц|мбры[кч]|менна |мідж|мпар[тц]|мпульс[аеуы]|нахадз|нды([ійюя] |ев)|ндэкс(а(ў|мі?)? |[еуыі])|н[еі][ейяю]|нк([аіу])|нтэрым|нфікс|нфімум|ншась?ц|нш(а[ейя]?|ага|аму|ась?ц|ую|ы(мі?|х|я)?) |псілан|р([аыу]|а[мхйў]|амі|) |рад|рбіс|рмас|рха|рыс |скарк|скарак|скра|скравец|скрачк|ста |с[нт]ась?ц|сь?ці[нк]|та[р ]|тры|х(ны[хя]?|ную|на[яей])?|ць?він|шыяс)))";
+        let dict = CompiledDict::new(&[
+            DictEntry { pattern: P0.to_string(), result: " ня$1".to_string() },
+            DictEntry { pattern: P1.to_string(), result: " бяз$1".to_string() },
+        ]);
+        let mut t = dict.replace_all(text);
+        for (pat, rep) in [
+            (r" не (?=[бвгджзйклмнпрстфхцчшўьʼ]*.\u{301}|[бвгджзйклмнпрстфхцчшўьʼ]*[аеёіоуыэюя][бвгджзйклмнпрстфхцчшўьʼ]* )(?!а[бд]? |б[ея]зь? |[дз]а |д?ля |дзеля |[нп]ад? |пр[аы] |празь? |у |церазь? )", " ня "),
+            (r" без(?=ь? (?:[бвгджзйклмнпрстфхцчшўьʼ]*.\u{301}|[бвгджзйклмнпрстфхцчшўьʼ]*[аеёіоуыэюя][бвгджзйклмнпрстфхцчшўьʼ]* ))", " бяз"),
+            (r" б[ея]з(?= і\S*[ая]ў|ну )", " бязь"),
+            (r" (?:пра|цера)?з(?= і\S*[ая]ў|ну )", "$0ь"),
+        ] {
+            let re = fancy_regex::Regex::new(pat).unwrap();
+            t = fancy_replace_all(&re, &t, rep);
+        }
+        t
+    }
+
+    fn check(input: &str) {
+        assert_eq!(
+            end_z_soften_and_nia_biaz(input),
+            fancy_end_z(input),
+            "input: {input:?}"
+        );
+    }
+
+    #[test]
+    fn all_ia_ne_literals() {
+        for group in ALL_NE_GROUPS {
+            for w in *group {
+                check(&format!("не {w}"));
+                check(&format!("не ({w}"));
+                check(&format!("x не {w} y"));
+            }
+        }
+    }
+
+    #[test]
+    fn all_ia_bez_literals() {
+        for group in ALL_BEZ_GROUPS {
+            for w in *group {
+                check(&format!("без {w}"));
+                check(&format!("без ({w}"));
+                check(&format!("x без {w} y"));
+            }
+        }
+    }
+
+    #[test]
+    fn ia_branch1_stressed_o() {
+        // `[cons]*[оё]`: consonant run (possibly empty) + о/ё.
+        for w in [
+            "во", "го", "до", "о", "ё", "сон", "мост", "восень", "(во", "зло",
+        ] {
+            check(&format!("не {w}"));
+            check(&format!("без {w}"));
+        }
+        // Not о/ё after the run: no branch-1 match (words may still match).
+        for w in ["ва", "ве", "на", "ма", "ба"] {
+            check(&format!("не {w}"));
+            check(&format!("без {w}"));
+        }
+    }
+
+    #[test]
+    fn ia_kart_map_specials() {
+        for w in [
+            "карта ", "карт ", "карт)", "карт12 ", "карт1234 ", "мапа ",
+            "мап)", "мап12 ", "мап1234 ",
+        ] {
+            check(&format!("не {w}x"));
+            check(&format!("без {w}x"));
+        }
+        // 5+ non-spaces: `\S{0,4}` can't reach the delimiter.
+        for w in ["карт12345 ", "мап12345 ", "карт12)"] {
+            check(&format!("не {w}x"));
+            check(&format!("без {w}x"));
+        }
+        // `карт1234 ` SHOULD match (4 \S + space).
+        check("не карт1234 x");
+    }
+
+    #[test]
+    fn ia_latin_i_branch() {
+        // Latin `i` + iwords (note: Cyrillic `і` does NOT take this branch).
+        for w in ["iбіс", "iх", "iва ", "iм ", "iр ", "iхны", "i\u{301}"] {
+            check(&format!("не {w}"));
+            check(&format!("без {w}"));
+        }
+        for w in ["iб", "ix", "iмама", "ікус"] {
+            check(&format!("не {w}"));
+            check(&format!("без {w}"));
+        }
+    }
+
+    #[test]
+    fn ia_no_match_basics() {
+        for input in [
+            "",
+            "не",
+            "без",
+            "не ",
+            "без ",
+            "небо",
+            "безь",
+            " ане ",
+            "не а",
+            "не ма",
+            "без ма",
+            "не  веды",
+        ] {
+            check(input);
+        }
+    }
+
+    #[test]
+    fn explicit_ne_nia() {
+        for input in [
+            "не маю часу",
+            "не ма",
+            "не мост",
+            "не ста́ну",
+            "не ста\u{301}ну",
+            "не веды",
+            "не буду",
+            "не буду ",
+        ] {
+            check(input);
+        }
+    }
+
+    #[test]
+    fn explicit_prep_blacklist() {
+        // Prepositions block the generic `не → ня`.
+        for prep in [
+            "а", "аб", "ад", "без", "безь", "бяз", "бязь", "да", "за", "ля",
+            "для", "дзеля", "на", "над", "па", "пад", "пра", "пры", "праз",
+            "празь", "у", "цераз", "церазь",
+        ] {
+            check(&format!("не {prep} x"));
+        }
+        // ...but IA words still fire through the blacklist.
+        check("не веды");
+        check("не буду ");
+    }
+
+    #[test]
+    fn explicit_bez_biaz() {
+        for input in [
+            "без вокнаў",
+            "без ма",
+            "без мост",
+            "без ведаў",
+            "безь ма ",
+            "безь ведаў",
+            "без клубных",
+            "без  ма",
+        ] {
+            check(input);
+        }
+    }
+
+    #[test]
+    fn bez_imlau_and_nu() {
+        for input in [
+            "без імглаў",
+            "без імяў",
+            "без іаў",
+            "без іх",
+            "без ну ",
+            "без ну",
+            "бяз імглаў",
+            "з імглаў",
+            "з імяў",
+            "з ну ",
+            "праз імглаў",
+            "праз ну ",
+            "цераз ну ",
+            "цераз імяў",
+            "праз іх",
+            "з іх",
+            "праца",
+            "праз",
+            "без",
+        ] {
+            check(input);
+        }
+    }
+
+    #[test]
+    fn consumption_order() {
+        // Trailing-space captures are consumed: the inner anchor is skipped
+        // by the same pass (later passes still see it — like the original).
+        for input in [
+            "не буду не ма",
+            "не буду без ведаў",
+            "без ведаў не ма",
+            "не веды не веды",
+            "не буду не буду не ма",
+            "без мела без ведаў",
+            "не трэба не ма",
+            "не кашамі не ма",
+        ] {
+            check(input);
+        }
+    }
+
+    #[test]
+    fn phonetic_regression() {
+        // Cases from the integration suite's phonetic pipeline.
+        for input in [
+            "я і смяяўся",
+            "не маю часу",
+            "без вокнаў",
+            "без імглаў",
+            "праз імглаў",
+            "бязь імглаў",
+            "не дурань",
+            "не справімся",
+            "не выгарыць",
+            "не збегчы",
+            "не стану",
+            "без клубных",
+            "не ста\u{301}ну",
+            "без клу\u{301}бных",
+        ] {
+            check(input);
+        }
+    }
+
+    #[test]
+    fn helpers() {
+        assert_eq!(cons_o_len("во"), Some(4));
+        assert_eq!(cons_o_len("о"), Some(2));
+        assert_eq!(cons_o_len("ё"), Some(2));
+        assert_eq!(cons_o_len("ва"), None);
+        assert_eq!(cons_o_len("в"), None);
+        assert_eq!(cons_o_len(""), None);
+        assert_eq!(cons_o_len("сон"), Some(4));
+        assert_eq!(kartmap_len("карта "), Some(11));
+        assert_eq!(kartmap_len("карт)"), Some(9));
+        assert_eq!(kartmap_len("карт1234 "), Some(13));
+        assert_eq!(kartmap_len("карт12345 "), None);
+        assert_eq!(kartmap_len("карт"), None);
+        assert_eq!(kartmap_len("мап)"), Some(7));
+        assert_eq!(kartmap_len("мапа"), None);
+        assert!(has_acute("ма\u{301}"));
+        assert!(has_acute("вма\u{301}x"));
+        assert!(!has_acute("ма"));
+        assert!(!has_acute(""));
+        assert!(!has_acute("́"));
+        assert!(has_phonetic_word("ма "));
+        assert!(has_phonetic_word("мост "));
+        assert!(has_phonetic_word("а "));
+        assert!(!has_phonetic_word("ма"));
+        assert!(!has_phonetic_word("ведаў "));
+        assert!(!has_phonetic_word(""));
+        assert!(is_prep("а x"));
+        assert!(is_prep("безь x"));
+        assert!(is_prep("церазь x"));
+        assert!(!is_prep("ма x"));
+        assert!(!is_prep(""));
+        assert!(has_nu_imlau("ну "));
+        assert!(has_nu_imlau(" імяў"));
+        assert!(has_nu_imlau(" іаў"));
+        assert!(!has_nu_imlau("ну"));
+        assert!(!has_nu_imlau(" іх"));
+        assert!(!has_nu_imlau(""));
+        assert_eq!(ia_ne_alt_len("веды"), Some(8));
+        assert_eq!(ia_ne_alt_len("во"), Some(4));
+        assert_eq!(ia_ne_alt_len("(во"), None);
+        assert_eq!(ia_ne_alt_len("ма"), None);
+        assert_eq!(ia_bez_alt_len("ведаў"), Some(10));
+        assert_eq!(ia_bez_alt_len("ш"), Some(2));
+        assert_eq!(ia_bez_alt_len("ма"), None);
+    }
+}
+

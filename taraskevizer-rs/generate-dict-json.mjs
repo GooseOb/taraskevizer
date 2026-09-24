@@ -161,13 +161,6 @@ async function main() {
 		console.log(`Wrote phonetic.json (${ph.length} entries)`);
 	}
 
-	// --- 7. iaWords (не→ня, без→бяз) ---
-	if (dicts.iaWords) {
-		const ia = convert(dicts.iaWords.value);
-		await fs.writeFile(path.join(outDir, 'iawords.json'), JSON.stringify(ia));
-		console.log(`Wrote iawords.json (${ia.length} entries)`);
-	}
-
 	console.log('\nDone!');
 }
 

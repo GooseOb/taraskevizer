@@ -6,7 +6,7 @@ use crate::{
     },
 };
 
-use super::{ALPHABETS, IA_WORDS, SOFTEN};
+use super::{ALPHABETS, SOFTEN};
 
 use std::collections::HashMap;
 use std::sync::{Arc, LazyLock, Mutex};
@@ -74,22 +74,6 @@ pub(crate) fn soften(text: &str) -> String {
         result = next;
     }
     result.replace('\u{E0FF}', "")
-}
-
-pub(crate) fn end_z_soften_and_nia_biaz(text: &str) -> String {
-    let t = IA_WORDS.replace_all(text);
-    let t = regex_replace_all(
-        &t,
-        r" не (?=[бвгджзйклмнпрстфхцчшўьʼ]*.\u{301}|[бвгджзйклмнпрстфхцчшўьʼ]*[аеёіоуыэюя][бвгджзйклмнпрстфхцчшўьʼ]* )(?!а[бд]? |б[ея]зь? |[дз]а |д?ля |дзеля |[нп]ад? |пр[аы] |празь? |у |церазь? )",
-        " ня ",
-    );
-    let t = regex_replace_all(
-        &t,
-        r" без(?=ь? (?:[бвгджзйклмнпрстфхцчшўьʼ]*.\u{301}|[бвгджзйклмнпрстфхцчшўьʼ]*[аеёіоуыэюя][бвгджзйклмнпрстфхцчшўьʼ]* ))",
-        " бяз",
-    );
-    let t = regex_replace_all(&t, r" б[ея]з(?= і\S*[ая]ў|ну )", " бязь");
-    regex_replace_all(&t, r" (?:пра|цера)?з(?= і\S*[ая]ў|ну )", "$0ь")
 }
 
 pub(crate) fn find_unescaped_gt(s: &str) -> Option<usize> {

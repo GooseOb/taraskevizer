@@ -215,6 +215,45 @@ fn matches_iwords(s: &str) -> bool {
     }
 }
 
+/// Length (in bytes) of the `iwords` prefix of `s`, if any.
+///
+/// Same alternation as [`matches_iwords`], but returns the match length
+/// with the original alternation order (first listed wins, like the regex
+/// engine): e.g. `скра` wins over `скравец`, bare `х` loses to `хны…`.
+/// Needed where the match is consumed, not just tested (IA-words capture).
+/// `None` ⟺ [`matches_iwords`] is false.
+pub(crate) fn match_iwords_len(s: &str) -> Option<usize> {
+    // Pattern order; mutually-exclusive neighbors make most positions
+    // order-insensitive, but prefix pairs (скра|скравец, каў|каўк,
+    // ншасц|ншасц␣) and greedy optionals (каньн|канн, хны…|х) need it.
+    const WORDS: &[&str] = &[
+        "́", "біс", "бсэн", "ва ", "ве ", "во ", "вы ", "верс", "валг", "валз",
+        "гар", "грышч", "грэк", "дал", "дыш", "жыц", "канапіс", "каньн", "канн",
+        "кац", "каў", "кал", "каўк", "каўц", "клы ", "клыя ", "клая ", "клае ",
+        "клай ", "клага ", "кламу ", "клую ", "ксі", "леус", "ліст", "л ",
+        "лістас", "льк", "м ", "мант", "масьц", "масц", "мбрык", "мбрыч",
+        "менна ", "мідж", "мпарт", "мпарц", "мпульса", "мпульсе", "мпульсу",
+        "мпульсы", "нахадз", "ндыі ", "ндый ", "ндыю ", "ндыя ", "ндыев",
+        "ндэксаў ", "ндэксамі ", "ндэксам ", "ндэкса ", "ндэксе", "ндэксу",
+        "ндэксы", "ндэксі", "нее", "ней", "нея", "нею", "ніе", "ній", "нія",
+        "нію", "нка", "нкі", "нку", "нтэрым", "нфікс", "нфімум", "ншасц",
+        "ншасьц", "нша ", "ншае ", "ншай ", "ншая ", "ншага ", "ншаму ",
+        "ншасц ", "ншасьц ", "ншую ", "ншы ", "ншым ", "ншымі ", "ншых ",
+        "ншыя ", "псілан", "ра ", "ры ", "ру ", "рам ", "рах ", "рай ",
+        "раў ", "рамі ", "р ", "рад", "рбіс", "рмас", "рха", "рыс ", "скарк",
+        "скарак", "скра", "скравец", "скрачк", "ста ", "снасц", "снасьц",
+        "стасц", "стасьц", "сцін", "сцік", "сьцін", "сьцік", "тар", "та ",
+        "тры", "хных", "хныя", "хны", "хную", "хная", "хнае", "хнай", "х",
+        "цьвін", "цвін", "шыяс",
+    ];
+    for w in WORDS {
+        if s.starts_with(w) {
+            return Some(w.len());
+        }
+    }
+    None
+}
+
 /// Iotacize `і` → `й`/`йі` in phonetic contexts.
 ///
 /// Equivalent to the four sequential replacements in `step_iotacize_ji`:

@@ -1,6 +1,6 @@
-use crate::pipeline::{
-    helpers::{end_z_soften_and_nia_biaz, soften},
-    PipelineContext, WORD_LIST,
+use crate::{
+    pipeline::{helpers::soften, PipelineContext, WORD_LIST},
+    text::end_z_soften_and_nia_biaz,
 };
 
 pub fn step_taraskevize(ctx: &mut PipelineContext) {
