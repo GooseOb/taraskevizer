@@ -7,7 +7,7 @@ title: "SpecialSyntaxStorage"
 
 > **SpecialSyntaxStorage** = `object`
 
-Defined in: [steps/resolve-syntax.ts:10](https://github.com/GooseOb/taraskevizer/blob/180fb29c64d2ce101010ca10e3c9b2ffec5369c0/src/steps/resolve-syntax.ts#L10)
+Defined in: [steps/resolve-syntax.ts:10](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/steps/resolve-syntax.ts#L10)
 
 Created in [resolveSpecialSyntax](/taraskevizer/reference/taraskevizer/namespaces/steps/variables/resolvespecialsyntax/).
 
@@ -19,4 +19,4 @@ Emptied in [applyNoFix](/taraskevizer/reference/taraskevizer/namespaces/steps/va
 
 > **noFixArr**: `string`[]
 
-Defined in: [steps/resolve-syntax.ts:11](https://github.com/GooseOb/taraskevizer/blob/180fb29c64d2ce101010ca10e3c9b2ffec5369c0/src/steps/resolve-syntax.ts#L11)
+Defined in: [steps/resolve-syntax.ts:11](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/steps/resolve-syntax.ts#L11)
