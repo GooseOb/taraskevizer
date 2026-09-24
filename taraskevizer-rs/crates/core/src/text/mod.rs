@@ -1,3 +1,4 @@
+mod iotacize_ji;
 mod is_ascii_punct_sym;
 mod is_decimal_number;
 mod is_punct_or_symbol;
@@ -8,6 +9,7 @@ mod space_out_punct_sym_digits;
 mod unspace_punct_sym_digits;
 mod utf8_char_len;
 
+pub(crate) use iotacize_ji::iotacize_ji;
 pub(crate) use is_ascii_punct_sym::is_ascii_punct_sym;
 pub(crate) use is_decimal_number::is_decimal_number;
 pub(crate) use is_punct_or_symbol::is_punct_or_symbol;
