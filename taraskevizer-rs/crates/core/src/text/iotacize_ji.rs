@@ -39,7 +39,7 @@ fn is_vowel_ji(b1: u8, b2: u8) -> bool {
 /// `р([аыу]|а[мхйў]|амі|) |рад|рбіс|рмас|рха|рыс |скарк|скарак|скра|`
 /// `скравец|скрачк|ста |с[нт]ась?ц|сь?ці[нк]|та[р ]|тры|`
 /// `х(ны[хя]?|ную|на[яей])?|ць?він|шыяс`
-fn matches_iwords(s: &str) -> bool {
+pub(crate) fn matches_iwords(s: &str) -> bool {
     let b = s.as_bytes();
     if b.len() < 2 {
         return false;
@@ -272,14 +272,19 @@ pub(crate) fn iotacize_ji(text: &str) -> String {
     iotacize_iwords(&iotacize_vowel_ji(text))
 }
 
-/// Vowel part: `/([V] )і ў/ → $1й у`, `/([V] )і / → $1й␣`,
-/// `/([V] ?)і/ → $1йі` merged into one scan.
+/// Vowel part: `/([V] )і ў/ → $1й у`, then `/([V] )і / → $1й␣`,
+/// then `/([V] ?)і/ → $1йі` — three sequential passes in dict order.
 ///
-/// `V␣і␣ў`/`V␣і␣` take priority over plain `V[␣]?і`. Replacements never
-/// create new matches (`й` ∉ `V`), and trailing lookaheads (`␣ў`/`␣`)
-/// contain no `і`, so sequential passes equal one prioritized pass.
-/// Non-overlapping: a consumed `і` can't serve as the next `V`.
+/// They must not fuse: e1 and e2 matches can overlap at different starts
+/// (`італіі і …`: e1 `і і ` at one position, e2 `іі` starting a char
+/// earlier), and the earlier dict entry wins its full pass first. Fusing
+/// lets the earlier-starting e2 destroy e1's match (`йімператар` bug).
 fn iotacize_vowel_ji(text: &str) -> String {
+    iotacize_opt_space_ji(&iotacize_sp_ji(&iotacize_sp_u_ji(text)))
+}
+
+/// Entry 0: `(V )і ў` → `$1й у` (`V␣і␣ў`, 2+1+2+1+2 bytes).
+fn iotacize_sp_u_ji(text: &str) -> String {
     if !text.contains('і') {
         return text.to_string();
     }
@@ -288,63 +293,87 @@ fn iotacize_vowel_ji(text: &str) -> String {
     let mut out = String::with_capacity(len + 16);
     let mut flush_from = 0usize;
     let mut i = 0usize;
-    // `i` always stays on a char boundary, so all slicing is safe.
     while i < len {
-        let b = bytes[i];
-        // Vowel start? All V are 2 bytes.
-        if i + 2 <= len && is_vowel_ji(b, bytes[i + 1]) {
-            // `V␣і`?
-            if i + 5 <= len
-                && bytes[i + 2] == b' '
-                && bytes[i + 3] == 0xD1
-                && bytes[i + 4] == 0x96
-            {
-                let j = i + 5; // after `і`
-                // Case 1: `V␣і␣ў` → `V␣й␣у`.
-                if j + 3 <= len
-                    && bytes[j] == b' '
-                    && bytes[j + 1] == 0xD1
-                    && bytes[j + 2] == 0x9E
-                {
-                    out.push_str(&text[flush_from..i + 3]);
-                    out.push('й');
-                    out.push(' ');
-                    out.push('у');
-                    flush_from = j + 3;
-                    i = j + 3;
-                    continue;
-                }
-                // Case 2: `V␣і␣` → `V␣й␣`.
-                if j < len && bytes[j] == b' ' {
-                    out.push_str(&text[flush_from..i + 3]);
-                    out.push('й');
-                    out.push(' ');
-                    flush_from = j + 1;
-                    i = j + 1;
-                    continue;
-                }
-                // Case 3 with space: `V␣і` → `V␣йі`.
-                out.push_str(&text[flush_from..i + 3]);
-                out.push('й');
-                out.push('і');
-                flush_from = i + 5;
-                i += 5;
-                continue;
-            }
-            // Case 3 without space: `Vі` → `Vйі`.
-            if i + 4 <= len && bytes[i + 2] == 0xD1 && bytes[i + 3] == 0x96 {
-                out.push_str(&text[flush_from..i + 2]);
-                out.push('й');
-                out.push('і');
-                flush_from = i + 4;
-                i += 4;
-                continue;
-            }
-            // Bare vowel, no `і` after.
-            i += 2;
+        if i + 8 <= len
+            && is_vowel_ji(bytes[i], bytes[i + 1])
+            && bytes[i + 2] == b' '
+            && bytes[i + 3] == 0xD1
+            && bytes[i + 4] == 0x96
+            && bytes[i + 5] == b' '
+            && bytes[i + 6] == 0xD1
+            && bytes[i + 7] == 0x9E
+        {
+            out.push_str(&text[flush_from..i + 3]);
+            out.push('й');
+            out.push(' ');
+            out.push('у');
+            flush_from = i + 8;
+            i += 8;
             continue;
         }
-        i += if b < 0x80 { 1 } else { utf8_char_len(b) };
+        i += if bytes[i] < 0x80 { 1 } else { utf8_char_len(bytes[i]) };
+    }
+    out.push_str(&text[flush_from..]);
+    out
+}
+
+/// Entry 1: `(V )і␣` → `$1й␣` (`V␣і␣`, trailing space consumed).
+fn iotacize_sp_ji(text: &str) -> String {
+    if !text.contains('і') {
+        return text.to_string();
+    }
+    let bytes = text.as_bytes();
+    let len = bytes.len();
+    let mut out = String::with_capacity(len + 16);
+    let mut flush_from = 0usize;
+    let mut i = 0usize;
+    while i < len {
+        if i + 6 <= len
+            && is_vowel_ji(bytes[i], bytes[i + 1])
+            && bytes[i + 2] == b' '
+            && bytes[i + 3] == 0xD1
+            && bytes[i + 4] == 0x96
+            && bytes[i + 5] == b' '
+        {
+            out.push_str(&text[flush_from..i + 3]);
+            out.push('й');
+            out.push(' ');
+            flush_from = i + 6;
+            i += 6;
+            continue;
+        }
+        i += if bytes[i] < 0x80 { 1 } else { utf8_char_len(bytes[i]) };
+    }
+    out.push_str(&text[flush_from..]);
+    out
+}
+
+/// Entry 2: `(V ?)і` → `$1йі` (optional single space kept in `$1`).
+fn iotacize_opt_space_ji(text: &str) -> String {
+    if !text.contains('і') {
+        return text.to_string();
+    }
+    let bytes = text.as_bytes();
+    let len = bytes.len();
+    let mut out = String::with_capacity(len + 16);
+    let mut flush_from = 0usize;
+    let mut i = 0usize;
+    while i < len {
+        if i + 2 <= len && is_vowel_ji(bytes[i], bytes[i + 1]) {
+            let mut j = i + 2;
+            if j < len && bytes[j] == b' ' {
+                j += 1;
+            }
+            if j + 2 <= len && bytes[j] == 0xD1 && bytes[j + 1] == 0x96 {
+                out.push_str(&text[flush_from..j]);
+                out.push('й');
+                out.push('і');
+                flush_from = j + 2;
+                i = j + 2;
+                continue;
+            }
+        }
+        i += if bytes[i] < 0x80 { 1 } else { utf8_char_len(bytes[i]) };
     }
     out.push_str(&text[flush_from..]);
     out
@@ -396,18 +425,14 @@ mod tests {
     }
 
     fn fancy_iotacize(text: &str) -> String {
-        let mut t = text.to_string();
-        for (pat, rep) in [
+        use super::super::fancy_test::FancyDict;
+        FancyDict::new(&[
             (r"([аеёіоуыэюя́] )і ў", "$1й у"),
             (r"([аеёіоуыэюя́] )і ", "$1й "),
             (r"([аеёіоуыэюя́] ?)і", "$1йі"),
-        ] {
-            let re = fancy_regex::Regex::new(pat).unwrap();
-            t = crate::dict::types::fancy_replace_all(&re, &t, rep);
-        }
-        let re4 = fancy_regex::Regex::new(r" і(?=́|біс|бсэн|в[аеоы] |верс|вал[гз]|гар|грышч|грэк|дал|дыш|жыц|канапіс|кань?н|ка[цўл]|каў[кц]|кл(ыя?|а([яей]|га|му)|ую) |ксі|леус|л(іст| )|лістас|льк|м |мант|мась?ц|мбры[кч]|менна |мідж|мпар[тц]|мпульс[аеуы]|нахадз|нды([ійюя] |ев)|ндэкс(а(ў|мі?)? |[еуыі])|н[еі][ейяю]|нк([аіу])|нтэрым|нфікс|нфімум|ншась?ц|нш(а[ейя]?|ага|аму|ась?ц|ую|ы(мі?|х|я)?) |псілан|р([аыу]|а[мхйў]|амі|) |рад|рбіс|рмас|рха|рыс |скарк|скарак|скра|скравец|скрачк|ста |с[нт]ась?ц|сь?ці[нк]|та[р ]|тры|х(ны[хя]?|ную|на[яей])?|ць?він|шыяс)").unwrap();
-        t = crate::dict::types::fancy_replace_all(&re4, &t, " йі");
-        t
+            (r" і(?=́|біс|бсэн|в[аеоы] |верс|вал[гз]|гар|грышч|грэк|дал|дыш|жыц|канапіс|кань?н|ка[цўл]|каў[кц]|кл(ыя?|а([яей]|га|му)|ую) |ксі|леус|л(іст| )|лістас|льк|м |мант|мась?ц|мбры[кч]|менна |мідж|мпар[тц]|мпульс[аеуы]|нахадз|нды([ійюя] |ев)|ндэкс(а(ў|мі?)? |[еуыі])|н[еі][ейяю]|нк([аіу])|нтэрым|нфікс|нфімум|ншась?ц|нш(а[ейя]?|ага|аму|ась?ц|ую|ы(мі?|х|я)?) |псілан|р([аыу]|а[мхйў]|амі|) |рад|рбіс|рмас|рха|рыс |скарк|скарак|скра|скравец|скрачк|ста |с[нт]ась?ц|сь?ці[нк]|та[р ]|тры|х(ны[хя]?|ную|на[яей])?|ць?він|шыяс)", " йі"),
+        ])
+        .replace_all(text)
     }
 
     #[test]
@@ -469,6 +494,10 @@ mod tests {
         check("а і ", "а й ");
         // `V␣і␣ў` wins over `V␣і␣`.
         check("а і ў", "а й у");
+        // Cross-entry overlap: e1 (`V␣і␣`) wins its full pass over e2
+        // (`V ?і`) starting a char earlier (`йімператар` bug).
+        check("італіі і імператар", "італійі й імператар");
+        check("а і і б", "а й і б");
     }
 
     #[test]
@@ -489,6 +518,9 @@ mod tests {
             " і ў",
             "а і б",
             "аіў",
+            "аі",
+            "італіі і імператар",
+            "а і і б",
             "оі",
             "эі",
             "ббі",
@@ -630,4 +662,5 @@ mod tests {
         assert!(!matches_iwords(""));
         assert!(!matches_iwords(" м"));
     }
+
 }

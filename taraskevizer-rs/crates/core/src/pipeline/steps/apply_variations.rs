@@ -14,10 +14,9 @@ pub fn step_apply_variations(ctx: &mut PipelineContext) {
                 if let Some(w) = wrap {
                     (w.no)(matched)
                 } else {
-                    fancy_regex::Regex::new(r"^\(([^|]*)")
+                    regex::Regex::new(r"^\(([^|]*)")
                         .ok()
-                        .and_then(|re| re.captures(matched).ok())
-                        .flatten()
+                        .and_then(|re| re.captures(matched))
                         .and_then(|c| c.get(1))
                         .map_or(matched.to_string(), |m| m.as_str().to_string())
                 }
@@ -26,10 +25,9 @@ pub fn step_apply_variations(ctx: &mut PipelineContext) {
                 if let Some(w) = wrap {
                     (w.first)(matched)
                 } else {
-                    fancy_regex::Regex::new(r"^[^|]*?\|([^|)]*)")
+                    regex::Regex::new(r"^[^|]*?\|([^|)]*)")
                         .ok()
-                        .and_then(|re| re.captures(matched).ok())
-                        .flatten()
+                        .and_then(|re| re.captures(matched))
                         .and_then(|c| c.get(1))
                         .map_or(matched.to_string(), |m| m.as_str().to_string())
                 }

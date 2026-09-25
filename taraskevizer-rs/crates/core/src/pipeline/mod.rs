@@ -20,9 +20,6 @@ static SOFTEN: std::sync::LazyLock<CompiledDict> =
     std::sync::LazyLock::new(|| build_dict_matcher(include_str!("../dict/data/soften.json")));
 static PHONETIC: std::sync::LazyLock<CompiledDict> =
     std::sync::LazyLock::new(|| build_dict_matcher(include_str!("../dict/data/phonetic.json")));
-static ALPHABETS: std::sync::LazyLock<serde_json::Value> = std::sync::LazyLock::new(|| {
-    serde_json::from_str(include_str!("../dict/data/alphabets.json")).unwrap()
-});
 
 pub struct PipelineContext<'a> {
     pub text: String,

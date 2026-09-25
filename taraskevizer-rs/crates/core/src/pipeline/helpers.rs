@@ -1,66 +1,48 @@
-use crate::{
-    config::Alphabet,
-    dict::{
-        types::{fancy_replace_all, has_regex_meta},
-        CompiledDict, DictEntry,
-    },
-};
+use crate::config::Alphabet;
 
-use super::{ALPHABETS, SOFTEN};
+use super::SOFTEN;
 
 use std::collections::HashMap;
 use std::sync::{Arc, LazyLock, Mutex};
 
-/// Compile a `fancy_regex` pattern once and reuse it across all calls.
+/// Compile a `regex` pattern once and reuse it across all calls.
 ///
-/// `fancy_regex::Regex::new` is surprisingly expensive (it builds Unicode
+/// `regex::Regex::new` is surprisingly expensive (it builds Unicode
 /// property automata, e.g. for `\p{P}|\p{S}|\d+`), so recompiling it on every
 /// `regex_replace_all` call — which happens once per chunk in the parallel
 /// pipeline — dominated `step_prepare`/`step_finalize`. This cache compiles
 /// each distinct pattern a single time for the whole process and returns a
 /// cheaply-cloneable `Arc` handle.
-fn compiled_regex(pattern: &str) -> Arc<fancy_regex::Regex> {
-    static CACHE: LazyLock<Mutex<HashMap<String, Arc<fancy_regex::Regex>>>> =
+fn compiled_regex(pattern: &str) -> Arc<regex::Regex> {
+    static CACHE: LazyLock<Mutex<HashMap<String, Arc<regex::Regex>>>> =
         LazyLock::new(|| Mutex::new(HashMap::new()));
     let mut cache = CACHE.lock().unwrap();
     if let Some(re) = cache.get(pattern) {
         return Arc::clone(re);
     }
-    let re = Arc::new(fancy_regex::Regex::new(pattern).unwrap());
+    let re = Arc::new(regex::Regex::new(pattern).unwrap());
     cache.insert(pattern.to_string(), Arc::clone(&re));
     re
 }
 
-pub(crate) fn alphabet_entries(abc: Alphabet, case: &str) -> Vec<DictEntry> {
-    let key = match abc {
-        Alphabet::Cyrillic => "cyrillic",
-        Alphabet::Latin => "latin",
-        Alphabet::LatinJi => "latinJi",
-        Alphabet::Arabic => "arabic",
-    };
-    let entries = &ALPHABETS[key][case];
-    if entries.is_null() {
-        return vec![];
+/// Manual lower-case alphabet conversion (replaces `apply_alphabet(…, "lower")`).
+pub(crate) fn apply_abc_lower(text: &str, abc: Alphabet) -> String {
+    match abc {
+        Alphabet::Cyrillic => text.to_string(),
+        Alphabet::Latin => crate::text::convert_latin_lower(text),
+        Alphabet::LatinJi => crate::text::convert_latin_ji_lower(text),
+        Alphabet::Arabic => crate::text::convert_arabic(text),
     }
-    serde_json::from_value(entries.clone()).unwrap()
 }
 
-pub(crate) fn apply_alphabet(text: &str, abc: Alphabet, case: &str) -> String {
-    let entries = alphabet_entries(abc, case);
-    let mut result = text.to_string();
-    for entry in &entries {
-        if has_regex_meta(&entry.pattern) {
-            result = regex_replace_all(&result, &entry.pattern, &entry.result);
-        } else {
-            result = result.replace(&entry.pattern, &entry.result);
-        }
+/// Manual upper-case alphabet conversion; `None` when the alphabet has no
+/// upper table (cyrillic, arabic) — replaces the `has_entries()` check.
+pub(crate) fn apply_abc_upper(text: &str, abc: Alphabet) -> Option<String> {
+    match abc {
+        Alphabet::Latin => Some(crate::text::convert_latin_upper(text)),
+        Alphabet::LatinJi => Some(crate::text::convert_latin_ji_upper(text)),
+        Alphabet::Cyrillic | Alphabet::Arabic => None,
     }
-    result
-}
-
-pub(crate) fn alphabet_dict(abc: Alphabet, case: &str) -> CompiledDict {
-    let entries = alphabet_entries(abc, case);
-    CompiledDict::new(&entries)
 }
 
 pub(crate) fn soften(text: &str) -> String {
@@ -88,24 +70,15 @@ pub(crate) fn find_unescaped_gt(s: &str) -> Option<usize> {
     None
 }
 
-pub(crate) fn regex_replace_all(text: &str, pattern: &str, replacement: &str) -> String {
-    let re = compiled_regex(pattern);
-    fancy_replace_all(&re, text, replacement)
-}
-
 pub(crate) fn regex_replace_all_with(
     text: &str,
     pattern: &str,
-    mut callback: impl FnMut(&fancy_regex::Captures) -> String,
+    mut callback: impl FnMut(&regex::Captures) -> String,
 ) -> String {
     let re = compiled_regex(pattern);
     let mut result = String::with_capacity(text.len());
     let mut last_end = 0;
     for cap in re.captures_iter(text) {
-        let cap = match cap {
-            Ok(c) => c,
-            Err(_) => continue,
-        };
         let m = match cap.get(0) {
             Some(m) => m,
             None => continue,
@@ -121,11 +94,11 @@ pub(crate) fn regex_replace_all_with(
 pub(crate) fn replace_g_str(text: &str) -> String {
     let mut out = String::with_capacity(text.len());
     for ch in text.chars() {
-        match ch {
-            'Ґ' => out.push('Г'),
-            'ґ' => out.push('г'),
-            _ => out.push(ch),
-        }
+        out.push(match ch {
+            'Ґ' => 'Г',
+            'ґ' => 'г',
+            _ => ch,
+        })
     }
     out
 }

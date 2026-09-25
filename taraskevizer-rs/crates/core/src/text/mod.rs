@@ -1,25 +1,47 @@
+mod convert_arabic;
+mod convert_latin;
+#[cfg(test)]
+mod fancy_test;
 mod iotacize_ji;
 mod is_ascii_punct_sym;
 mod is_decimal_number;
+mod is_ll;
+mod is_lu;
+mod is_punct;
 mod is_punct_or_symbol;
 mod is_spaced_cluster_char;
 mod normalize_apostrophes;
 mod nia_biaz;
 mod replace_g_apostrophe;
+mod replace_i_by_j;
 mod space_out_punct_sym_digits;
+#[cfg(test)]
+mod test_oracle;
 mod unspace_punct_sym_digits;
 mod utf8_char_len;
 
+pub(crate) use convert_arabic::convert_arabic;
+#[cfg(test)]
+pub(crate) use fancy_test::FancyDict;
+pub(crate) use convert_latin::convert_latin_ji_lower;
+pub(crate) use convert_latin::convert_latin_ji_upper;
+pub(crate) use convert_latin::convert_latin_lower;
+pub(crate) use convert_latin::convert_latin_upper;
 pub(crate) use iotacize_ji::iotacize_ji;
 pub(crate) use iotacize_ji::match_iwords_len;
+pub(crate) use iotacize_ji::matches_iwords;
 pub(crate) use is_ascii_punct_sym::is_ascii_punct_sym;
 pub(crate) use is_decimal_number::is_decimal_number;
+pub(crate) use is_ll::is_ll;
+pub(crate) use is_lu::is_lu;
+pub(crate) use is_punct::is_punct;
 pub(crate) use is_punct_or_symbol::is_punct_or_symbol;
 pub(crate) use is_spaced_cluster_char::is_spaced_cluster_char;
 pub(crate) use nia_biaz::end_z_soften_and_nia_biaz;
 pub(crate) use nia_biaz::ia_words;
 pub(crate) use normalize_apostrophes::normalize_apostrophes;
 pub(crate) use replace_g_apostrophe::replace_g_apostrophe;
+pub(crate) use replace_i_by_j::replace_i_by_j;
 pub(crate) use space_out_punct_sym_digits::space_out_punct_sym_digits;
 pub(crate) use unspace_punct_sym_digits::unspace_punct_sym_digits;
 pub(crate) use utf8_char_len::utf8_char_len;

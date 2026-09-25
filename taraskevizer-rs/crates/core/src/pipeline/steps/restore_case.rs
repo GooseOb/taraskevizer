@@ -21,21 +21,35 @@ fn is_upper_str(s: &str) -> bool {
 }
 
 pub fn step_restore_case(ctx: &mut PipelineContext) {
-    for i in 0..ctx.text_arr.len() {
-        let word = &ctx.text_arr[i];
-        let o_word = &ctx.orig_arr[i];
+    restore_case_words(&mut ctx.text_arr, &ctx.orig_arr);
+}
+
+/// Mirrors the JS `restoreCase`, shared by the pipeline step and the
+/// caps-escape stash in `resolve_syntax` (JS `convertAlphavet`).
+///
+/// Per word: identical words stay; a word equal to the lowercased original
+/// takes the original (this preserves letters like Turkish `İ`, which a
+/// plain `to_uppercase` would decompose to `I` + combining dot); otherwise
+/// an uppercase-initial original fully uppercases a fully-uppercase
+/// original word, else `initcap`s it.
+pub(crate) fn restore_case_words(text: &mut [String], orig: &[String]) {
+    for (i, word) in text.iter_mut().enumerate() {
+        let o_word = match orig.get(i) {
+            Some(o) => o,
+            None => continue,
+        };
         if word == o_word {
             continue;
         }
-        if word.to_lowercase() == o_word.to_lowercase() {
-            ctx.text_arr[i] = o_word.clone();
+        if *word == o_word.to_lowercase() {
+            *word = o_word.clone();
             continue;
         }
         if o_word.is_empty() || !is_upper_str(&o_word.chars().next().unwrap().to_string()) {
             continue;
         }
         if word == "зь" {
-            ctx.text_arr[i] = if i + 1 < ctx.orig_arr.len() && is_upper_str(&ctx.orig_arr[i + 1]) {
+            *word = if orig.get(i + 1).is_some_and(|n| is_upper_str(n)) {
                 "ЗЬ".to_string()
             } else {
                 "Зь".to_string()
@@ -43,11 +57,11 @@ pub fn step_restore_case(ctx: &mut PipelineContext) {
         } else {
             let last = o_word.chars().last().unwrap();
             if is_upper_str(&last.to_string()) {
-                ctx.text_arr[i] = word.to_uppercase();
+                *word = word.to_uppercase();
             } else if word.starts_with('(') {
-                ctx.text_arr[i] = initcap_var(word);
+                *word = initcap_var(word);
             } else {
-                ctx.text_arr[i] = initcap(word);
+                *word = initcap(word);
             }
         }
     }

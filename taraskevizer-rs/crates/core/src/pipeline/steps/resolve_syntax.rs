@@ -1,14 +1,16 @@
-use crate::pipeline::{
-    helpers::{alphabet_dict, find_unescaped_gt},
-    PipelineContext,
+use crate::{
+    pipeline::{
+        helpers::{apply_abc_lower, apply_abc_upper, find_unescaped_gt},
+        steps::restore_case::restore_case_words,
+        PipelineContext,
+    },
+    text::is_lu,
 };
 
 pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
     let do_escape = ctx.cfg.do_escape_capitalized;
     let no_fix_ph = &ctx.cfg.no_fix_placeholder;
     let abc = ctx.cfg.abc;
-    let abc_lower = alphabet_dict(abc, "lower");
-    let abc_upper = alphabet_dict(abc, "upper");
 
     let text = std::mem::take(&mut ctx.text);
     let mut result = String::with_capacity(text.len());
@@ -59,12 +61,9 @@ pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
                         result.push_str(&real_content);
                         result.push('>');
                     } else if is_abc {
-                        let converted = abc_lower.replace_all(&real_content);
-                        let converted = if abc_upper.has_entries() {
-                            abc_upper.replace_all(&converted)
-                        } else {
-                            converted
-                        };
+                        let lowered = apply_abc_lower(&real_content, abc);
+                        let converted =
+                            apply_abc_upper(&lowered, abc).unwrap_or(lowered);
                         no_fix.push(converted);
                         if do_remove {
                             result.push_str(no_fix_ph);
@@ -90,49 +89,55 @@ pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
             }
         }
 
-        if do_escape && ch.is_uppercase() {
+        // Caps-escape, mirroring the JS
+        // `/(?!<=\p{Lu} )\p{Lu}{2}[\p{Lu} ]*(?!= \p{Lu})/gu`: the leading
+        // guard is vacuous (a match must start with two Lu, never `<=`),
+        // so this is a greedy Lu/space run of length ≥ 2, backed off by
+        // one char when it ends right before `= Lu`. One match is one
+        // stash (no resume-inside-match: `У ХХІ` escapes `ХХІ ` whole,
+        // never `Х` + `ХІ `).
+        if do_escape && is_lu(ch as u32) && i + 1 < len && is_lu(chars[i + 1].1 as u32) {
             let start = i;
-            let mut upper_count = 0u32;
-            while i < len {
-                let c = chars[i].1;
-                if c.is_uppercase() {
-                    upper_count += 1;
-                    i += 1;
-                } else if c == ' ' && upper_count >= 2 {
-                    i += 1;
-                } else {
-                    break;
-                }
+            let mut end = i + 2;
+            while end < len && (chars[end].1 == ' ' || is_lu(chars[end].1 as u32)) {
+                end += 1;
             }
-            if upper_count >= 2 {
-                let preceded_by_upper_space =
-                    start > 1 && chars[start - 1].1 == ' ' && chars[start - 2].1.is_uppercase();
-                let after = i;
-                let followed_by_space_upper = after < len
-                    && chars[after].1 == ' '
-                    && after + 1 < len
-                    && chars[after + 1].1.is_uppercase();
-                if !preceded_by_upper_space && !followed_by_space_upper {
-                    let word: String = chars[start..i]
-                        .iter()
-                        .map(|(_, c)| c.to_uppercase().to_string())
-                        .collect::<Vec<_>>()
-                        .join("");
-                    let lowered = word.to_lowercase();
-                    let conv = abc_lower.replace_all(&lowered);
-                    let conv = if abc_upper.has_entries() {
-                        abc_upper.replace_all(&conv)
-                    } else {
-                        conv
-                    };
-                    no_fix.push(conv.to_uppercase());
-                    result.push_str(no_fix_ph);
+            // `(?!= \p{Lu})`: `=`, space, uppercase right after the run.
+            let cut_off = end < len
+                && chars[end].1 == '='
+                && end + 1 < len
+                && chars[end + 1].1 == ' '
+                && end + 2 < len
+                && is_lu(chars[end + 2].1 as u32);
+            if cut_off {
+                if end == start + 2 {
+                    // Below the two-letter minimum: no match here.
+                    result.push(ch);
+                    i += 1;
                     continue;
                 }
-                i = start;
-            } else {
-                i = start;
+                end -= 1;
             }
+            let word: String = chars[start..end]
+                .iter()
+                .map(|(_, c)| c.to_string())
+                .collect::<Vec<_>>()
+                .join("");
+            // JS `convertAlphavet`: lower + `restoreCase` against the
+            // original (NOT full-upper + `to_uppercase`: restoring copies
+            // the original word on lowercase-equality, preserving
+            // letters like Turkish `İ`).
+            let lowered = word.to_lowercase();
+            let conv = apply_abc_lower(&lowered, abc);
+            let mut text_words: Vec<String> =
+                conv.split(' ').map(|s| s.to_string()).collect();
+            let orig_words: Vec<String> =
+                word.split(' ').map(|s| s.to_string()).collect();
+            restore_case_words(&mut text_words, &orig_words);
+            no_fix.push(text_words.join(" "));
+            result.push_str(no_fix_ph);
+            i = end;
+            continue;
         }
 
         result.push(ch);

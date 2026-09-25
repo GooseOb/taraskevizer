@@ -1,4 +1,3 @@
-use fancy_regex::Regex as FancyRegex;
 use regex::Regex;
 use serde::Deserialize;
 
@@ -12,15 +11,14 @@ pub struct DictEntry {
 
 enum Entry {
     Literal(String, String),
-    Fancy(FancyRegex, String),
     Std(Regex, String),
 }
 
 /// A compiled dictionary that processes entries sequentially in their
 /// original JSON order. For each entry:
 /// - If it has no regex metacharacters → plain `str::replace`
-/// - If it has lookarounds/backrefs → `fancy_regex` replacement
-/// - Otherwise → `taraskevizer-matcher` (single-pattern DFA-based)
+/// - Otherwise → `regex` crate replacement (lookarounds/backrefs are not
+///   supported here; test-only patterns live in `text::fancy_test`)
 pub struct CompiledDict {
     entries: Vec<Entry>,
 }
@@ -31,21 +29,14 @@ impl CompiledDict {
 
         for entry in entries {
             if !has_regex_meta(&entry.pattern) {
-                // Plain string replacement (no regex metacharacters).
-                let expanded = entry.result.replace("$&", &entry.pattern);
-                compiled.push(Entry::Literal(entry.pattern.clone(), expanded));
-            } else if needs_fancy_regex(&entry.pattern) {
-                // Look-arounds / backreferences the default `regex` crate
-                // cannot compile: use `fancy_regex`.
-                if let Ok(re) = FancyRegex::new(&entry.pattern) {
-                    compiled.push(Entry::Fancy(re, entry.result.clone()));
-                }
+                compiled.push(Entry::Literal(entry.pattern.clone(), entry.result.clone()));
             } else if let Ok(re) = Regex::new(&entry.pattern) {
-                // Default `regex` crate, applied sequentially per entry.
                 compiled.push(Entry::Std(re, entry.result.clone()));
-            } else if let Ok(re) = FancyRegex::new(&entry.pattern) {
-                // Fallback for anything the default crate rejects.
-                compiled.push(Entry::Fancy(re, entry.result.clone()));
+            } else {
+                panic!(
+                    "Failed to compile regex pattern: {:?} (result: {:?})",
+                    entry.pattern, entry.result
+                );
             }
         }
 
@@ -62,11 +53,6 @@ impl CompiledDict {
                 Entry::Literal(pattern, replacement) => {
                     if result.contains(pattern) {
                         result = result.replace(pattern, replacement);
-                    }
-                }
-                Entry::Fancy(re, result_tpl) => {
-                    if re.is_match(&result).unwrap_or(false) {
-                        result = fancy_replace_all(re, &result, result_tpl);
                     }
                 }
                 Entry::Std(re, result_tpl) => {
@@ -90,56 +76,8 @@ impl CompiledDict {
     }
 }
 
-/// Check if a pattern needs fancy-regex (has lookarounds, backrefs, or
-/// other constructs not supported by regex-automata).
-fn needs_fancy_regex(pattern: &str) -> bool {
-    let bytes = pattern.as_bytes();
-    let mut i = 0;
-    while i + 1 < bytes.len() {
-        if bytes[i] == b'\\' && bytes[i + 1].is_ascii_digit() {
-            return true; // backreference \1, \2, etc.
-        }
-        if bytes[i] == b'(' && i + 2 < bytes.len() && bytes[i + 1] == b'?' {
-            match bytes[i + 2] {
-                b'=' | b'!' => return true, // lookahead (?= or (?!)
-                b'<' if i + 3 < bytes.len() => match bytes[i + 3] {
-                    b'=' | b'!' => return true, // lookbehind (?<= or (?<!)
-                    _ => {}
-                },
-                b'>' => return true, // atomic group (?>)
-                _ => {}
-            }
-        }
-        i += 1;
-    }
-    false
-}
-
-/// Custom `replace_all` that manually expands `$1`, `$2` etc. backreferences
-/// in the replacement string, because `fancy_regex::Regex::replace_all()`
-/// does not properly handle them.
-pub(crate) fn fancy_replace_all(re: &FancyRegex, text: &str, replacement: &str) -> String {
-    let mut result = String::with_capacity(text.len());
-    let mut last_end = 0;
-    for cap in re.captures_iter(text) {
-        let cap = match cap {
-            Ok(c) => c,
-            Err(_) => continue,
-        };
-        let m = match cap.get(0) {
-            Some(m) => m,
-            None => continue,
-        };
-        result.push_str(&text[last_end..m.start()]);
-        result.push_str(&expand_replacement(replacement, &cap));
-        last_end = m.end();
-    }
-    result.push_str(&text[last_end..]);
-    result
-}
-
-/// `regex` (std) analogue of [`fancy_replace_all`], applying `re` and
-/// expanding `$1`, `$2`, ... backreferences with surrounding literal text.
+/// Custom `replace_all` applying `re` and expanding `$1`, `$2`, ...
+/// backreferences with surrounding literal text.
 /// Uses a manual `Captures`-based expansion to avoid the broken `&str`
 /// Replacer behaviour (see [`CompiledDict::replace_all`]).
 fn replace_all_std(re: &Regex, text: &str, replacement: &str) -> String {
@@ -159,56 +97,6 @@ fn replace_all_std(re: &Regex, text: &str, replacement: &str) -> String {
 }
 
 fn expand_replacement_std(replacement: &str, cap: &regex::Captures) -> String {
-    let mut result = String::new();
-    let mut chars = replacement.chars().peekable();
-    while let Some(ch) = chars.next() {
-        if ch == '$' {
-            match chars.peek() {
-                Some('$') => {
-                    result.push('$');
-                    chars.next();
-                }
-                Some('&') => {
-                    if let Some(m) = cap.get(0) {
-                        result.push_str(m.as_str());
-                    }
-                    chars.next();
-                }
-                Some('0'..='9') => {
-                    let mut num = String::new();
-                    while let Some(d) = chars.peek() {
-                        if d.is_ascii_digit() {
-                            num.push(*d);
-                            chars.next();
-                        } else {
-                            break;
-                        }
-                    }
-                    let idx: usize = num.parse().unwrap_or(0);
-                    if let Some(m) = cap.get(idx) {
-                        result.push_str(m.as_str());
-                    }
-                }
-                _ => {
-                    result.push('$');
-                }
-            }
-        } else if ch == '\\' {
-            match chars.peek() {
-                Some('$') => {
-                    result.push('$');
-                    chars.next();
-                }
-                _ => result.push(ch),
-            }
-        } else {
-            result.push(ch);
-        }
-    }
-    result
-}
-
-fn expand_replacement(replacement: &str, cap: &fancy_regex::Captures) -> String {
     let mut result = String::new();
     let mut chars = replacement.chars().peekable();
     while let Some(ch) = chars.next() {
@@ -313,11 +201,10 @@ mod tests {
 
     #[test]
     fn test_soften_loop() {
-        let entries = vec![
-            make_entry("пэндзлік", "пэндзлік"),
-            make_entry("дз(?=[еёіюяь])", "дзь"),
-        ];
-        let dict = CompiledDict::new(&entries);
+        let dict = crate::text::FancyDict::new(&[
+            ("пэндзлік", "пэндзлік"),
+            ("дз(?=[еёіюяь])", "дзь"),
+        ]);
         assert_eq!(dict.replace_all("пэндзлік"), "пэндзлік");
         assert_eq!(dict.replace_all("дзі"), "дзьі");
     }
@@ -335,11 +222,10 @@ mod tests {
     #[test]
     fn test_order_preserved() {
         // Simulate the ганконг case: regex then literal AC
-        let entries = vec![
-            make_entry(" ган(?=к|ак )", " ґан"),
-            make_entry("ґанконг", "ганконґ"),
-        ];
-        let dict = CompiledDict::new(&entries);
+        let dict = crate::text::FancyDict::new(&[
+            (" ган(?=к|ак )", " ґан"),
+            ("ґанконг", "ганконґ"),
+        ]);
         let result = dict.replace_all(" ганконг ");
         assert_eq!(result, " ганконґ ", "got: {result:?}");
     }
