@@ -21,8 +21,7 @@ pub(crate) fn normalize_apostrophes(text: &str) -> String {
         // (quote, byte length): `'` = 27, `` ` `` = 60, `’` = E2 80 99.
         let qlen = if b == 0x27 || b == 0x60 {
             1
-        } else if b == 0xE2 && i + 3 <= len && bytes[i + 1] == 0x80 && bytes[i + 2] == 0x99
-        {
+        } else if b == 0xE2 && i + 3 <= len && bytes[i + 1] == 0x80 && bytes[i + 2] == 0x99 {
             3
         } else {
             i += utf8_char_len(b);
@@ -89,9 +88,8 @@ mod tests {
     fn apos_matches_fancy_regex() {
         let re = fancy_regex::Regex::new(r"['`’](?=\S)").unwrap();
         let spaces = [
-            " ", "\t", "\n", "\r", "\u{00A0}", "\u{0085}", "\u{1680}", "\u{2000}",
-            "\u{2009}", "\u{2028}", "\u{2029}", "\u{202F}", "\u{205F}", "\u{3000}",
-            "\u{FEFF}", "\u{200B}",
+            " ", "\t", "\n", "\r", "\u{00A0}", "\u{0085}", "\u{1680}", "\u{2000}", "\u{2009}",
+            "\u{2028}", "\u{2029}", "\u{202F}", "\u{205F}", "\u{3000}", "\u{FEFF}", "\u{200B}",
         ];
         let mut inputs = vec![
             String::new(),

@@ -303,7 +303,34 @@ fn lower_pass(text: &str, rule5: bool, jef: bool) -> String {
 
 /// `([eouaаеёіоуыэюяʼАЕЁІОУЫЭЮЯЬ] *)` context char (latinJi rule5).
 fn is_rule5_ctx(c: char) -> bool {
-    matches!(c, 'e' | 'o' | 'u' | 'a' | 'а' | 'е' | 'ё' | 'і' | 'о' | 'у' | 'ы' | 'э' | 'ю' | 'я' | 'ʼ' | 'А' | 'Е' | 'Ё' | 'І' | 'О' | 'У' | 'Ы' | 'Э' | 'Ю' | 'Я' | 'Ь')
+    matches!(
+        c,
+        'e' | 'o'
+            | 'u'
+            | 'a'
+            | 'а'
+            | 'е'
+            | 'ё'
+            | 'і'
+            | 'о'
+            | 'у'
+            | 'ы'
+            | 'э'
+            | 'ю'
+            | 'я'
+            | 'ʼ'
+            | 'А'
+            | 'Е'
+            | 'Ё'
+            | 'І'
+            | 'О'
+            | 'У'
+            | 'Ы'
+            | 'Э'
+            | 'Ю'
+            | 'Я'
+            | 'Ь'
+    )
 }
 
 /// Emit a rule5 `$1` context char mapped as the singles pass would:
@@ -369,175 +396,452 @@ fn is_ji_vow(b0: u8, b1: u8) -> bool {
 /// Uppercase `iwords` alternation (`iwords.toUpperCase()` in JS), bool only.
 /// Rare path (uppercase `І`): flat prefix scan in pattern order.
 fn matches_iwords_upper(s: &str) -> bool {
-    if s.len() >= 2 && s.as_bytes()[0] == 0xCC && s.as_bytes()[1] == 0x81
-        && s.starts_with("́") { return true; }
+    if s.len() >= 2 && s.as_bytes()[0] == 0xCC && s.as_bytes()[1] == 0x81 && s.starts_with("́") {
+        return true;
+    }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x91 {
-        if s.starts_with("БІС") { return true; }
-        if s.starts_with("БСЭН") { return true; }
+        if s.starts_with("БІС") {
+            return true;
+        }
+        if s.starts_with("БСЭН") {
+            return true;
+        }
     }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x92 {
-        if s.starts_with("ВА ") { return true; }
-        if s.starts_with("ВЕ ") { return true; }
-        if s.starts_with("ВО ") { return true; }
-        if s.starts_with("ВЫ ") { return true; }
-        if s.starts_with("ВЕРС") { return true; }
-        if s.starts_with("ВАЛГ") { return true; }
-        if s.starts_with("ВАЛЗ") { return true; }
+        if s.starts_with("ВА ") {
+            return true;
+        }
+        if s.starts_with("ВЕ ") {
+            return true;
+        }
+        if s.starts_with("ВО ") {
+            return true;
+        }
+        if s.starts_with("ВЫ ") {
+            return true;
+        }
+        if s.starts_with("ВЕРС") {
+            return true;
+        }
+        if s.starts_with("ВАЛГ") {
+            return true;
+        }
+        if s.starts_with("ВАЛЗ") {
+            return true;
+        }
     }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x93 {
-        if s.starts_with("ГАР") { return true; }
-        if s.starts_with("ГРЫШЧ") { return true; }
-        if s.starts_with("ГРЭК") { return true; }
+        if s.starts_with("ГАР") {
+            return true;
+        }
+        if s.starts_with("ГРЫШЧ") {
+            return true;
+        }
+        if s.starts_with("ГРЭК") {
+            return true;
+        }
     }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x94 {
-        if s.starts_with("ДАЛ") { return true; }
-        if s.starts_with("ДЫШ") { return true; }
+        if s.starts_with("ДАЛ") {
+            return true;
+        }
+        if s.starts_with("ДЫШ") {
+            return true;
+        }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x96
-        && s.starts_with("ЖЫЦ") { return true; }
+    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x96 && s.starts_with("ЖЫЦ")
+    {
+        return true;
+    }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x9A {
-        if s.starts_with("КАНАПІС") { return true; }
-        if s.starts_with("КАНЬН") { return true; }
-        if s.starts_with("КАНН") { return true; }
-        if s.starts_with("КАЦ") { return true; }
-        if s.starts_with("КАЎ") { return true; }
-        if s.starts_with("КАЛ") { return true; }
-        if s.starts_with("КАЎК") { return true; }
-        if s.starts_with("КАЎЦ") { return true; }
-        if s.starts_with("КЛЫ ") { return true; }
-        if s.starts_with("КЛЫЯ ") { return true; }
-        if s.starts_with("КЛАЯ ") { return true; }
-        if s.starts_with("КЛАЕ ") { return true; }
-        if s.starts_with("КЛАЙ ") { return true; }
-        if s.starts_with("КЛАГА ") { return true; }
-        if s.starts_with("КЛАМУ ") { return true; }
-        if s.starts_with("КЛУЮ ") { return true; }
-        if s.starts_with("КСІ") { return true; }
+        if s.starts_with("КАНАПІС") {
+            return true;
+        }
+        if s.starts_with("КАНЬН") {
+            return true;
+        }
+        if s.starts_with("КАНН") {
+            return true;
+        }
+        if s.starts_with("КАЦ") {
+            return true;
+        }
+        if s.starts_with("КАЎ") {
+            return true;
+        }
+        if s.starts_with("КАЛ") {
+            return true;
+        }
+        if s.starts_with("КАЎК") {
+            return true;
+        }
+        if s.starts_with("КАЎЦ") {
+            return true;
+        }
+        if s.starts_with("КЛЫ ") {
+            return true;
+        }
+        if s.starts_with("КЛЫЯ ") {
+            return true;
+        }
+        if s.starts_with("КЛАЯ ") {
+            return true;
+        }
+        if s.starts_with("КЛАЕ ") {
+            return true;
+        }
+        if s.starts_with("КЛАЙ ") {
+            return true;
+        }
+        if s.starts_with("КЛАГА ") {
+            return true;
+        }
+        if s.starts_with("КЛАМУ ") {
+            return true;
+        }
+        if s.starts_with("КЛУЮ ") {
+            return true;
+        }
+        if s.starts_with("КСІ") {
+            return true;
+        }
     }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x9B {
-        if s.starts_with("ЛЕУС") { return true; }
-        if s.starts_with("ЛІСТ") { return true; }
-        if s.starts_with("Л ") { return true; }
-        if s.starts_with("ЛІСТАС") { return true; }
-        if s.starts_with("ЛЬК") { return true; }
+        if s.starts_with("ЛЕУС") {
+            return true;
+        }
+        if s.starts_with("ЛІСТ") {
+            return true;
+        }
+        if s.starts_with("Л ") {
+            return true;
+        }
+        if s.starts_with("ЛІСТАС") {
+            return true;
+        }
+        if s.starts_with("ЛЬК") {
+            return true;
+        }
     }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x9C {
-        if s.starts_with("М ") { return true; }
-        if s.starts_with("МАНТ") { return true; }
-        if s.starts_with("МАСЬЦ") { return true; }
-        if s.starts_with("МАСЦ") { return true; }
-        if s.starts_with("МБРЫК") { return true; }
-        if s.starts_with("МБРЫЧ") { return true; }
-        if s.starts_with("МЕННА ") { return true; }
-        if s.starts_with("МІДЖ") { return true; }
-        if s.starts_with("МПАРТ") { return true; }
-        if s.starts_with("МПАРЦ") { return true; }
-        if s.starts_with("МПУЛЬСА") { return true; }
-        if s.starts_with("МПУЛЬСЕ") { return true; }
-        if s.starts_with("МПУЛЬСУ") { return true; }
-        if s.starts_with("МПУЛЬСЫ") { return true; }
+        if s.starts_with("М ") {
+            return true;
+        }
+        if s.starts_with("МАНТ") {
+            return true;
+        }
+        if s.starts_with("МАСЬЦ") {
+            return true;
+        }
+        if s.starts_with("МАСЦ") {
+            return true;
+        }
+        if s.starts_with("МБРЫК") {
+            return true;
+        }
+        if s.starts_with("МБРЫЧ") {
+            return true;
+        }
+        if s.starts_with("МЕННА ") {
+            return true;
+        }
+        if s.starts_with("МІДЖ") {
+            return true;
+        }
+        if s.starts_with("МПАРТ") {
+            return true;
+        }
+        if s.starts_with("МПАРЦ") {
+            return true;
+        }
+        if s.starts_with("МПУЛЬСА") {
+            return true;
+        }
+        if s.starts_with("МПУЛЬСЕ") {
+            return true;
+        }
+        if s.starts_with("МПУЛЬСУ") {
+            return true;
+        }
+        if s.starts_with("МПУЛЬСЫ") {
+            return true;
+        }
     }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x9D {
-        if s.starts_with("НАХАДЗ") { return true; }
-        if s.starts_with("НДЫІ ") { return true; }
-        if s.starts_with("НДЫЙ ") { return true; }
-        if s.starts_with("НДЫЮ ") { return true; }
-        if s.starts_with("НДЫЯ ") { return true; }
-        if s.starts_with("НДЫЕВ") { return true; }
-        if s.starts_with("НДЭКСАЎ ") { return true; }
-        if s.starts_with("НДЭКСАМІ ") { return true; }
-        if s.starts_with("НДЭКСАМ ") { return true; }
-        if s.starts_with("НДЭКСА ") { return true; }
-        if s.starts_with("НДЭКСЕ") { return true; }
-        if s.starts_with("НДЭКСУ") { return true; }
-        if s.starts_with("НДЭКСЫ") { return true; }
-        if s.starts_with("НДЭКСІ") { return true; }
-        if s.starts_with("НЕЕ") { return true; }
-        if s.starts_with("НЕЙ") { return true; }
-        if s.starts_with("НЕЯ") { return true; }
-        if s.starts_with("НЕЮ") { return true; }
-        if s.starts_with("НІЕ") { return true; }
-        if s.starts_with("НІЙ") { return true; }
-        if s.starts_with("НІЯ") { return true; }
-        if s.starts_with("НІЮ") { return true; }
-        if s.starts_with("НКА") { return true; }
-        if s.starts_with("НКІ") { return true; }
-        if s.starts_with("НКУ") { return true; }
-        if s.starts_with("НТЭРЫМ") { return true; }
-        if s.starts_with("НФІКС") { return true; }
-        if s.starts_with("НФІМУМ") { return true; }
-        if s.starts_with("НШАСЦ") { return true; }
-        if s.starts_with("НШАСЬЦ") { return true; }
-        if s.starts_with("НША ") { return true; }
-        if s.starts_with("НШАЕ ") { return true; }
-        if s.starts_with("НШАЙ ") { return true; }
-        if s.starts_with("НШАЯ ") { return true; }
-        if s.starts_with("НШАГА ") { return true; }
-        if s.starts_with("НШАМУ ") { return true; }
-        if s.starts_with("НШАСЦ ") { return true; }
-        if s.starts_with("НШАСЬЦ ") { return true; }
-        if s.starts_with("НШУЮ ") { return true; }
-        if s.starts_with("НШЫ ") { return true; }
-        if s.starts_with("НШЫМ ") { return true; }
-        if s.starts_with("НШЫМІ ") { return true; }
-        if s.starts_with("НШЫХ ") { return true; }
-        if s.starts_with("НШЫЯ ") { return true; }
+        if s.starts_with("НАХАДЗ") {
+            return true;
+        }
+        if s.starts_with("НДЫІ ") {
+            return true;
+        }
+        if s.starts_with("НДЫЙ ") {
+            return true;
+        }
+        if s.starts_with("НДЫЮ ") {
+            return true;
+        }
+        if s.starts_with("НДЫЯ ") {
+            return true;
+        }
+        if s.starts_with("НДЫЕВ") {
+            return true;
+        }
+        if s.starts_with("НДЭКСАЎ ") {
+            return true;
+        }
+        if s.starts_with("НДЭКСАМІ ") {
+            return true;
+        }
+        if s.starts_with("НДЭКСАМ ") {
+            return true;
+        }
+        if s.starts_with("НДЭКСА ") {
+            return true;
+        }
+        if s.starts_with("НДЭКСЕ") {
+            return true;
+        }
+        if s.starts_with("НДЭКСУ") {
+            return true;
+        }
+        if s.starts_with("НДЭКСЫ") {
+            return true;
+        }
+        if s.starts_with("НДЭКСІ") {
+            return true;
+        }
+        if s.starts_with("НЕЕ") {
+            return true;
+        }
+        if s.starts_with("НЕЙ") {
+            return true;
+        }
+        if s.starts_with("НЕЯ") {
+            return true;
+        }
+        if s.starts_with("НЕЮ") {
+            return true;
+        }
+        if s.starts_with("НІЕ") {
+            return true;
+        }
+        if s.starts_with("НІЙ") {
+            return true;
+        }
+        if s.starts_with("НІЯ") {
+            return true;
+        }
+        if s.starts_with("НІЮ") {
+            return true;
+        }
+        if s.starts_with("НКА") {
+            return true;
+        }
+        if s.starts_with("НКІ") {
+            return true;
+        }
+        if s.starts_with("НКУ") {
+            return true;
+        }
+        if s.starts_with("НТЭРЫМ") {
+            return true;
+        }
+        if s.starts_with("НФІКС") {
+            return true;
+        }
+        if s.starts_with("НФІМУМ") {
+            return true;
+        }
+        if s.starts_with("НШАСЦ") {
+            return true;
+        }
+        if s.starts_with("НШАСЬЦ") {
+            return true;
+        }
+        if s.starts_with("НША ") {
+            return true;
+        }
+        if s.starts_with("НШАЕ ") {
+            return true;
+        }
+        if s.starts_with("НШАЙ ") {
+            return true;
+        }
+        if s.starts_with("НШАЯ ") {
+            return true;
+        }
+        if s.starts_with("НШАГА ") {
+            return true;
+        }
+        if s.starts_with("НШАМУ ") {
+            return true;
+        }
+        if s.starts_with("НШАСЦ ") {
+            return true;
+        }
+        if s.starts_with("НШАСЬЦ ") {
+            return true;
+        }
+        if s.starts_with("НШУЮ ") {
+            return true;
+        }
+        if s.starts_with("НШЫ ") {
+            return true;
+        }
+        if s.starts_with("НШЫМ ") {
+            return true;
+        }
+        if s.starts_with("НШЫМІ ") {
+            return true;
+        }
+        if s.starts_with("НШЫХ ") {
+            return true;
+        }
+        if s.starts_with("НШЫЯ ") {
+            return true;
+        }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x9F
-        && s.starts_with("ПСІЛАН") { return true; }
+    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x9F && s.starts_with("ПСІЛАН")
+    {
+        return true;
+    }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA0 {
-        if s.starts_with("РА ") { return true; }
-        if s.starts_with("РЫ ") { return true; }
-        if s.starts_with("РУ ") { return true; }
-        if s.starts_with("РАМ ") { return true; }
-        if s.starts_with("РАХ ") { return true; }
-        if s.starts_with("РАЙ ") { return true; }
-        if s.starts_with("РАЎ ") { return true; }
-        if s.starts_with("РАМІ ") { return true; }
-        if s.starts_with("Р ") { return true; }
-        if s.starts_with("РАД") { return true; }
-        if s.starts_with("РБІС") { return true; }
-        if s.starts_with("РМАС") { return true; }
-        if s.starts_with("РХА") { return true; }
-        if s.starts_with("РЫС ") { return true; }
+        if s.starts_with("РА ") {
+            return true;
+        }
+        if s.starts_with("РЫ ") {
+            return true;
+        }
+        if s.starts_with("РУ ") {
+            return true;
+        }
+        if s.starts_with("РАМ ") {
+            return true;
+        }
+        if s.starts_with("РАХ ") {
+            return true;
+        }
+        if s.starts_with("РАЙ ") {
+            return true;
+        }
+        if s.starts_with("РАЎ ") {
+            return true;
+        }
+        if s.starts_with("РАМІ ") {
+            return true;
+        }
+        if s.starts_with("Р ") {
+            return true;
+        }
+        if s.starts_with("РАД") {
+            return true;
+        }
+        if s.starts_with("РБІС") {
+            return true;
+        }
+        if s.starts_with("РМАС") {
+            return true;
+        }
+        if s.starts_with("РХА") {
+            return true;
+        }
+        if s.starts_with("РЫС ") {
+            return true;
+        }
     }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA1 {
-        if s.starts_with("СКАРК") { return true; }
-        if s.starts_with("СКАРАК") { return true; }
-        if s.starts_with("СКРА") { return true; }
-        if s.starts_with("СКРАВЕЦ") { return true; }
-        if s.starts_with("СКРАЧК") { return true; }
-        if s.starts_with("СТА ") { return true; }
-        if s.starts_with("СНАСЦ") { return true; }
-        if s.starts_with("СНАСЬЦ") { return true; }
-        if s.starts_with("СТАСЦ") { return true; }
-        if s.starts_with("СТАСЬЦ") { return true; }
-        if s.starts_with("СЦІН") { return true; }
-        if s.starts_with("СЦІК") { return true; }
-        if s.starts_with("СЬЦІН") { return true; }
-        if s.starts_with("СЬЦІК") { return true; }
+        if s.starts_with("СКАРК") {
+            return true;
+        }
+        if s.starts_with("СКАРАК") {
+            return true;
+        }
+        if s.starts_with("СКРА") {
+            return true;
+        }
+        if s.starts_with("СКРАВЕЦ") {
+            return true;
+        }
+        if s.starts_with("СКРАЧК") {
+            return true;
+        }
+        if s.starts_with("СТА ") {
+            return true;
+        }
+        if s.starts_with("СНАСЦ") {
+            return true;
+        }
+        if s.starts_with("СНАСЬЦ") {
+            return true;
+        }
+        if s.starts_with("СТАСЦ") {
+            return true;
+        }
+        if s.starts_with("СТАСЬЦ") {
+            return true;
+        }
+        if s.starts_with("СЦІН") {
+            return true;
+        }
+        if s.starts_with("СЦІК") {
+            return true;
+        }
+        if s.starts_with("СЬЦІН") {
+            return true;
+        }
+        if s.starts_with("СЬЦІК") {
+            return true;
+        }
     }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA2 {
-        if s.starts_with("ТАР") { return true; }
-        if s.starts_with("ТА ") { return true; }
-        if s.starts_with("ТРЫ") { return true; }
+        if s.starts_with("ТАР") {
+            return true;
+        }
+        if s.starts_with("ТА ") {
+            return true;
+        }
+        if s.starts_with("ТРЫ") {
+            return true;
+        }
     }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA5 {
-        if s.starts_with("ХНЫХ") { return true; }
-        if s.starts_with("ХНЫЯ") { return true; }
-        if s.starts_with("ХНЫ") { return true; }
-        if s.starts_with("ХНУЮ") { return true; }
-        if s.starts_with("ХНАЯ") { return true; }
-        if s.starts_with("ХНАЕ") { return true; }
-        if s.starts_with("ХНАЙ") { return true; }
-        if s.starts_with("Х") { return true; }
+        if s.starts_with("ХНЫХ") {
+            return true;
+        }
+        if s.starts_with("ХНЫЯ") {
+            return true;
+        }
+        if s.starts_with("ХНЫ") {
+            return true;
+        }
+        if s.starts_with("ХНУЮ") {
+            return true;
+        }
+        if s.starts_with("ХНАЯ") {
+            return true;
+        }
+        if s.starts_with("ХНАЕ") {
+            return true;
+        }
+        if s.starts_with("ХНАЙ") {
+            return true;
+        }
+        if s.starts_with("Х") {
+            return true;
+        }
     }
     if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA6 {
-        if s.starts_with("ЦЬВІН") { return true; }
-        if s.starts_with("ЦВІН") { return true; }
+        if s.starts_with("ЦЬВІН") {
+            return true;
+        }
+        if s.starts_with("ЦВІН") {
+            return true;
+        }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA8
-        && s.starts_with("ШЫЯС") { return true; }
+    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA8 && s.starts_with("ШЫЯС")
+    {
+        return true;
+    }
     false
 }
 
@@ -558,26 +862,27 @@ fn ji_trailers(text: &str) -> String {
         if i + 5 <= len && is_ji_vow(b, bytes[i + 1]) && bytes[i + 2] == b' ' {
             let ii = i + 3;
             let is_lower = ii + 2 <= len && bytes[ii] == 0xD1 && bytes[ii + 1] == 0x96;
-            let is_upper =
-                ii + 2 <= len && bytes[ii] == 0xD0 && bytes[ii + 1] == 0x86;
+            let is_upper = ii + 2 <= len && bytes[ii] == 0xD0 && bytes[ii + 1] == 0x86;
             if is_lower || is_upper {
                 let j = ii + 2; // after `і`/`І`
-                // Trailer ` Ў` / ` ў` / ` ` (dict order).
-                let trailer: Option<&str> =
-                    if j + 3 <= len && bytes[j] == b' ' && bytes[j + 1] == 0xD0 && bytes[j + 2] == 0x8E
-                    {
-                        Some(" U")
-                    } else if j + 3 <= len
-                        && bytes[j] == b' '
-                        && bytes[j + 1] == 0xD1
-                        && bytes[j + 2] == 0x9E
-                    {
-                        Some(" u")
-                    } else if j < len && bytes[j] == b' ' {
-                        Some(" ")
-                    } else {
-                        None
-                    };
+                                // Trailer ` Ў` / ` ў` / ` ` (dict order).
+                let trailer: Option<&str> = if j + 3 <= len
+                    && bytes[j] == b' '
+                    && bytes[j + 1] == 0xD0
+                    && bytes[j + 2] == 0x8E
+                {
+                    Some(" U")
+                } else if j + 3 <= len
+                    && bytes[j] == b' '
+                    && bytes[j + 1] == 0xD1
+                    && bytes[j + 2] == 0x9E
+                {
+                    Some(" u")
+                } else if j < len && bytes[j] == b' ' {
+                    Some(" ")
+                } else {
+                    None
+                };
                 if let Some(t) = trailer {
                     out.push_str(&text[flush..i + 3]);
                     out.push(if is_lower { 'j' } else { 'J' });
@@ -590,11 +895,7 @@ fn ji_trailers(text: &str) -> String {
                 }
             }
         }
-        i += if b < 0x80 {
-            1
-        } else {
-            utf8_char_len(b)
-        };
+        i += if b < 0x80 { 1 } else { utf8_char_len(b) };
     }
     out.push_str(&text[flush..]);
     out
@@ -612,7 +913,10 @@ fn ji_iwords(text: &str) -> String {
     while i < len {
         let b = bytes[i];
         // ` і` + iwords lookahead.
-        if b == b' ' && i + 3 <= len && bytes[i + 1] == 0xD1 && bytes[i + 2] == 0x96
+        if b == b' '
+            && i + 3 <= len
+            && bytes[i + 1] == 0xD1
+            && bytes[i + 2] == 0x96
             && crate::text::matches_iwords(&text[i + 3..])
         {
             out.push_str(&text[flush..i + 1]);
@@ -637,11 +941,7 @@ fn ji_iwords(text: &str) -> String {
                 continue;
             }
         }
-        i += if b < 0x80 {
-            1
-        } else {
-            utf8_char_len(b)
-        };
+        i += if b < 0x80 { 1 } else { utf8_char_len(b) };
     }
     out.push_str(&text[flush..]);
     out
@@ -761,8 +1061,8 @@ fn cap_class_len(text: &str, end: usize, extra: &[char]) -> usize {
         let (c0, c1) = (b[end - 2], b[end - 1]);
         if c0 == 0xD0
             && matches!(
-                c1, 0x90 | 0x95 | 0x81 | 0x86 | 0x9E | 0xA3
-                    | 0x8E | 0xAB | 0xAD | 0xAE | 0xAF | 0xAC
+                c1,
+                0x90 | 0x95 | 0x81 | 0x86 | 0x9E | 0xA3 | 0x8E | 0xAB | 0xAD | 0xAE | 0xAF | 0xAC
             )
         {
             return 2;
@@ -876,9 +1176,7 @@ fn aoeu_i_upper(text: &str) -> String {
             while k > 0 && (bytes[k - 1] == b'(' || bytes[k - 1] == b' ') {
                 k -= 1;
             }
-            let start = if k >= 1
-                && matches!(bytes[k - 1], b'A' | b'O' | b'E' | b'U')
-            {
+            let start = if k >= 1 && matches!(bytes[k - 1], b'A' | b'O' | b'E' | b'U') {
                 Some(k - 1)
             } else if k >= 2
                 && bytes[k - 2] == 0xD0
@@ -962,11 +1260,7 @@ fn upper_singles(text: &str) -> String {
     while i < len {
         let b = bytes[i];
         // ` Х(?=[\p{Ll} ])` → ` Ch` (before bare `Х`).
-        if b == b' '
-            && i + 3 <= len
-            && bytes[i + 1] == 0xD0
-            && bytes[i + 2] == 0xA5
-        {
+        if b == b' ' && i + 3 <= len && bytes[i + 1] == 0xD0 && bytes[i + 2] == 0xA5 {
             let after = i + 3;
             let ll = if after < len {
                 if bytes[after] == b' ' {
@@ -1044,11 +1338,7 @@ fn upper_singles(text: &str) -> String {
             i += 2;
             continue;
         }
-        i += if b < 0x80 {
-            1
-        } else {
-            utf8_char_len(b)
-        };
+        i += if b < 0x80 { 1 } else { utf8_char_len(b) };
     }
     out.push_str(&text[flush..]);
     out
@@ -1194,9 +1484,8 @@ mod tests {
             inputs.push(char::from_u32(cp).unwrap().to_string());
         }
         for s in [
-            "ʼ", "ь", "Ь", "`", "’", "́", "ł", "Ł", "č", "ž", "ŭ", "ć", "ś",
-            "ź", "ń", "04", "«»", "—", "…", "\n", "\u{a0}", "\t", "і", "І", "ї",
-            "Ј",
+            "ʼ", "ь", "Ь", "`", "’", "́", "ł", "Ł", "č", "ž", "ŭ", "ć", "ś", "ź", "ń", "04", "«»",
+            "—", "…", "\n", "\u{a0}", "\t", "і", "І", "ї", "Ј",
         ] {
             inputs.push(s.to_string());
         }
@@ -1210,9 +1499,9 @@ mod tests {
     #[test]
     fn latin_lower_clusters() {
         for c in [
-            "ць", "зь", "сь", "нь", "ль", "лі", "ля", "лё", "лю", "ле",
-            "Ць", "ЦЬ", "ЗЬ", "ЛЬ", "ЛІ", "цЬ", "Ль", "льʼь", "цʼь", "цʼʼь",
-            "лʼь", "лʼі", "ʼі", "ʼʼі", "ʼ", "цʼа", "лʼ", "льʼь", "ньʼ",
+            "ць", "зь", "сь", "нь", "ль", "лі", "ля", "лё", "лю", "ле", "Ць", "ЦЬ", "ЗЬ", "ЛЬ",
+            "ЛІ", "цЬ", "Ль", "льʼь", "цʼь", "цʼʼь", "лʼь", "лʼі", "ʼі", "ʼʼі", "ʼ", "цʼа", "лʼ",
+            "льʼь", "ньʼ",
         ] {
             check_lat(c);
             check_lat(&format!("а{c}о"));
@@ -1223,9 +1512,9 @@ mod tests {
     #[test]
     fn latin_lower_jefication() {
         let behinds = [
-            "", "а", "е", "ё", "і", "о", "у", "ў", "ы", "э", "ю", "я", "ь",
-            "ʼ", "|", " ", ">", "А", "Е", "Ё", "І", "О", "У", "Ў", "Ы",
-            "Э", "Ю", "Я", "Ь", "й", "б", "к", "е", "о", "у", "1", ".",
+            "", "а", "е", "ё", "і", "о", "у", "ў", "ы", "э", "ю", "я", "ь", "ʼ", "|", " ", ">",
+            "А", "Е", "Ё", "І", "О", "У", "Ў", "Ы", "Э", "Ю", "Я", "Ь", "й", "б", "к", "е", "о",
+            "у", "1", ".",
         ];
         for ch in ['е', 'ё', 'ю', 'я'] {
             for b in behinds {
@@ -1245,8 +1534,8 @@ mod tests {
     #[test]
     fn ji_vow_rules() {
         let vowels = [
-            'а', 'е', 'ё', 'і', 'о', 'у', 'ы', 'э', 'ю', 'я', 'А', 'Е', 'Ё',
-            'І', 'О', 'У', 'Ы', 'Э', 'Ю', 'Я',
+            'а', 'е', 'ё', 'і', 'о', 'у', 'ы', 'э', 'ю', 'я', 'А', 'Е', 'Ё', 'І', 'О', 'У', 'Ы',
+            'Э', 'Ю', 'Я',
         ];
         for v in vowels {
             for mid in ['і', 'І'] {
@@ -1278,8 +1567,8 @@ mod tests {
     #[test]
     fn ji_iwords_rules() {
         for w in [
-            "біс", "х", "м ", "р ", "ва ", "тар", "тары", "хны", "цвін",
-            "шыяс", "б", "мама", "і", "л ",
+            "біс", "х", "м ", "р ", "ва ", "тар", "тары", "хны", "цвін", "шыяс", "б", "мама", "і",
+            "л ",
         ] {
             check_ji(&format!(" і{w}"));
             check_ji(&format!(" І{w}"));
@@ -1295,9 +1584,8 @@ mod tests {
     fn ji_rule5_and_rest() {
         // Every rule5 context char + `і`, with 0–2 spaces.
         for c in [
-            'e', 'o', 'u', 'a', 'а', 'е', 'ё', 'і', 'о', 'у', 'ы', 'э',
-            'ю', 'я', 'ʼ', 'А', 'Е', 'Ё', 'І', 'О', 'У', 'Ы', 'Э', 'Ю',
-            'Я', 'Ь',
+            'e', 'o', 'u', 'a', 'а', 'е', 'ё', 'і', 'о', 'у', 'ы', 'э', 'ю', 'я', 'ʼ', 'А', 'Е',
+            'Ё', 'І', 'О', 'У', 'Ы', 'Э', 'Ю', 'Я', 'Ь',
         ] {
             check_ji(&format!("{c}і"));
             check_ji(&format!("{c} і"));
@@ -1334,8 +1622,7 @@ mod tests {
     fn upper_spaced_vowels() {
         for v in ["Е", "Ё", "Ю", "Я"] {
             for after in [
-                "а", "a", "Z", "2a", ",а", " Аа", "а ", "5", ".", " Еа",
-                "е", "",
+                "а", "a", "Z", "2a", ",а", " Аа", "а ", "5", ".", " Еа", "е", "",
             ] {
                 check_lat_full(&format!(" {v}{after}"));
                 check_ji_full(&format!(" {v}{after}"));
@@ -1344,7 +1631,10 @@ mod tests {
         assert_eq!(convert_latin_upper(&convert_latin_lower(" Еа")), " Jea");
         assert_eq!(convert_latin_upper(&convert_latin_lower("ЕЕ")), "IEJE");
         assert_eq!(convert_latin_upper(&convert_latin_lower("АЕ")), "AJE");
-        assert_eq!(convert_latin_upper(&convert_latin_ji_lower(" Е2а")), " Je2a");
+        assert_eq!(
+            convert_latin_upper(&convert_latin_ji_lower(" Е2а")),
+            " Je2a"
+        );
         // Spaced entries chain in dict order: `Е.` → `Je` first, then
         // `Ю` + `Je` lookahead → `Ju` (one fused scan would miss it).
         for s in ["А Ю. Е. t", "А Ю. Ё. x", "А Я. Е. z", " Ю. Е. Foo"] {
@@ -1374,16 +1664,14 @@ mod tests {
     #[test]
     fn upper_singles_and_x() {
         for c in [
-            'А', 'Б', 'В', 'Г', 'Ґ', 'Д', 'Ж', 'З', 'І', 'Й', 'К', 'Л', 'М',
-            'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ў', 'Ф', 'Х', 'Ц', 'Ч', 'Ш',
-            'Ы', 'Э', 'Ь',
+            'А', 'Б', 'В', 'Г', 'Ґ', 'Д', 'Ж', 'З', 'І', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р',
+            'С', 'Т', 'У', 'Ў', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Ы', 'Э', 'Ь',
         ] {
             check_lat_full(&c.to_string());
             check_lat_full(&format!("а{c}"));
         }
         for s in [
-            "Ць", "ЦЬ", "ЗЬ", "СЬ", "НЬ", "ЛЬ", " Хa", " Х ", "Х", " ХА",
-            " ХA", "Хa",
+            "Ць", "ЦЬ", "ЗЬ", "СЬ", "НЬ", "ЛЬ", " Хa", " Х ", "Х", " ХА", " ХA", "Хa",
         ] {
             check_lat_full(s);
             check_ji_full(s);
@@ -1396,18 +1684,7 @@ mod tests {
     #[test]
     fn ji_upper_extras() {
         for s in [
-            "eІа",
-            "ouaІx",
-            "ЕІа",
-            "oІ",
-            "АЕЁ",
-            " ІА",
-            "AІ",
-            "(І",
-            " (І",
-            "ЬІ",
-            " JIŁ -",
-            " JIŁI",
+            "eІа", "ouaІx", "ЕІа", "oІ", "АЕЁ", " ІА", "AІ", "(І", " (І", "ЬІ", " JIŁ -", " JIŁI",
             " JIŁ -x",
         ] {
             check_ji_full(s);
@@ -1427,7 +1704,6 @@ mod tests {
         );
     }
 
-
     #[test]
     fn iwords_upper_trie_vs_fancy() {
         // ` І(?=UPPER)` from latinJi/lower, inlined from the JSON.
@@ -1442,8 +1718,7 @@ mod tests {
                 .is_some_and(|m| m.start() == 0 && m.end() == 3)
         };
         let abc = [
-            'А', 'Б', 'В', 'І', 'М', 'Н', 'Р', 'С', 'Т', 'Х', ' ', '́', 'а',
-            'б',
+            'А', 'Б', 'В', 'І', 'М', 'Н', 'Р', 'С', 'Т', 'Х', ' ', '́', 'а', 'б',
         ];
         let mut seed = 0x9E3779B9u64;
         let mut next = move || {
@@ -1458,9 +1733,7 @@ mod tests {
             assert_eq!(matches_iwords_upper(&s), fancy_hit(&s), "fuzz {s:?}");
         }
         // Every generated literal must hit (both bare and extended).
-        for line in [
-            "БІС", "Х", "М ", "ВА ", "ТАР", "ХНЫ", "ЦВІН", "ШЫЯС",
-        ] {
+        for line in ["БІС", "Х", "М ", "ВА ", "ТАР", "ХНЫ", "ЦВІН", "ШЫЯС"] {
             assert!(matches_iwords_upper(line), "{line:?}");
             assert!(fancy_hit(line), "oracle {line:?}");
         }
@@ -1469,20 +1742,20 @@ mod tests {
     /// Deterministic fuzz over a mixed soup, all six converters at once.
     #[test]
     fn fuzz_all_converters() {
-        let mut abc: Vec<char> = (0x0400u32..0x0460)
-            .filter_map(char::from_u32)
-            .collect();
+        let mut abc: Vec<char> = (0x0400u32..0x0460).filter_map(char::from_u32).collect();
         abc.extend(
             [
-                'e', 'o', 'u', 'a', 'I', 'i', 'J', 'Ł', ' ', '(', ')', '|',
-                '>', '.', ',', '2', '-', '́', 'ʼ', 'č', 'ž', 'š',
+                'e', 'o', 'u', 'a', 'I', 'i', 'J', 'Ł', ' ', '(', ')', '|', '>', '.', ',', '2',
+                '-', '́', 'ʼ', 'č', 'ž', 'š',
             ]
             .iter()
             .copied(),
         );
         let mut seed = 0x12345678u64;
         let mut next = move || {
-            seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            seed = seed
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
             (seed >> 33) as usize
         };
         for _ in 0..1500 {
@@ -1517,6 +1790,4 @@ mod tests {
             check_ji(input);
         }
     }
-
-
 }

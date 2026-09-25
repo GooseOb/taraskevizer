@@ -42,8 +42,8 @@ pub(crate) fn space_out_punct_sym_digits(text: &str) -> String {
                     break;
                 }
             } else {
-                    let nc = text[j..].chars().next().unwrap_or('\0');
-                    if is_spaced_cluster_char(nc) {
+                let nc = text[j..].chars().next().unwrap_or('\0');
+                if is_spaced_cluster_char(nc) {
                     j += nc.len_utf8();
                 } else {
                     break;
@@ -148,7 +148,10 @@ mod tests {
         // Astral range edges (where table errors would live) plus strided
         // samples across the supplementary planes.
         let mut extra = Vec::new();
-        for &(lo, hi) in super::super::is_punct_or_symbol::PUNCT_SYM_RANGES.iter().filter(|&&(_, hi)| hi >= 0x10000) {
+        for &(lo, hi) in super::super::is_punct_or_symbol::PUNCT_SYM_RANGES
+            .iter()
+            .filter(|&&(_, hi)| hi >= 0x10000)
+        {
             for cp in [lo.saturating_sub(1), lo, hi, (hi + 1).min(0x10FFFF)] {
                 if char::from_u32(cp).is_some() {
                     extra.push(cp);

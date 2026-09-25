@@ -201,10 +201,8 @@ mod tests {
 
     #[test]
     fn test_soften_loop() {
-        let dict = crate::text::FancyDict::new(&[
-            ("пэндзлік", "пэндзлік"),
-            ("дз(?=[еёіюяь])", "дзь"),
-        ]);
+        let dict =
+            crate::text::FancyDict::new(&[("пэндзлік", "пэндзлік"), ("дз(?=[еёіюяь])", "дзь")]);
         assert_eq!(dict.replace_all("пэндзлік"), "пэндзлік");
         assert_eq!(dict.replace_all("дзі"), "дзьі");
     }
@@ -222,10 +220,8 @@ mod tests {
     #[test]
     fn test_order_preserved() {
         // Simulate the ганконг case: regex then literal AC
-        let dict = crate::text::FancyDict::new(&[
-            (" ган(?=к|ак )", " ґан"),
-            ("ґанконг", "ганконґ"),
-        ]);
+        let dict =
+            crate::text::FancyDict::new(&[(" ган(?=к|ак )", " ґан"), ("ґанконг", "ганконґ")]);
         let result = dict.replace_all(" ганконг ");
         assert_eq!(result, " ганконґ ", "got: {result:?}");
     }

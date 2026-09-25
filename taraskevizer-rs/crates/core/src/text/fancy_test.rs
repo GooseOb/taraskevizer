@@ -26,16 +26,11 @@ impl FancyDict {
             if !has_regex_meta(pattern) {
                 // Plain string replacement (no regex metacharacters).
                 let expanded = result.replace("$&", pattern);
-                compiled.push(FancyEntry::Literal(
-                    (*pattern).to_string(),
-                    expanded,
-                ));
+                compiled.push(FancyEntry::Literal((*pattern).to_string(), expanded));
             } else if let Ok(re) = FancyRegex::new(pattern) {
                 compiled.push(FancyEntry::Fancy(re, (*result).to_string()));
             } else {
-                panic!(
-                    "Failed to compile fancy pattern: {pattern:?} (result: {result:?})"
-                );
+                panic!("Failed to compile fancy pattern: {pattern:?} (result: {result:?})");
             }
         }
         Self { entries: compiled }
@@ -65,11 +60,7 @@ impl FancyDict {
 /// Custom `replace_all` that manually expands `$1`, `$2` etc. backreferences
 /// in the replacement string, because `fancy_regex::Regex::replace_all()`
 /// does not properly handle them.
-pub(crate) fn fancy_replace_all(
-    re: &FancyRegex,
-    text: &str,
-    replacement: &str,
-) -> String {
+pub(crate) fn fancy_replace_all(re: &FancyRegex, text: &str, replacement: &str) -> String {
     let mut result = String::with_capacity(text.len());
     let mut last_end = 0;
     for cap in re.captures_iter(text) {

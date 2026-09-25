@@ -43,8 +43,7 @@ pub(crate) fn replace_i_by_j(text: &str, always: bool) -> String {
             && is_i_to_j_vow(bytes[i - 3], bytes[i - 2])
         {
             // `(ў?)`: optional `ў` right after the space.
-            let has_u =
-                i + 5 <= len && bytes[i + 3] == 0xD1 && bytes[i + 4] == 0x9E;
+            let has_u = i + 5 <= len && bytes[i + 3] == 0xD1 && bytes[i + 4] == 0x9E;
             let end = if has_u { i + 5 } else { i + 3 };
             let replace = always || rand::random::<f64>() >= 0.5;
             out.push_str(&text[flush..i]);

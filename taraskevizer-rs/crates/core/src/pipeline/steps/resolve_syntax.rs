@@ -12,7 +12,7 @@ pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
     let no_fix_ph = &ctx.cfg.no_fix_placeholder;
     let abc = ctx.cfg.abc;
 
-    let text = std::mem::take(&mut ctx.text);
+    let text = &ctx.text;
     let mut result = String::with_capacity(text.len());
     let no_fix = &mut ctx.no_fix_arr;
     let mut i = 0;
@@ -62,8 +62,7 @@ pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
                         result.push('>');
                     } else if is_abc {
                         let lowered = apply_abc_lower(&real_content, abc);
-                        let converted =
-                            apply_abc_upper(&lowered, abc).unwrap_or(lowered);
+                        let converted = apply_abc_upper(&lowered, abc).unwrap_or(lowered);
                         no_fix.push(converted);
                         if do_remove {
                             result.push_str(no_fix_ph);
@@ -129,10 +128,8 @@ pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
             // letters like Turkish `İ`).
             let lowered = word.to_lowercase();
             let conv = apply_abc_lower(&lowered, abc);
-            let mut text_words: Vec<String> =
-                conv.split(' ').map(|s| s.to_string()).collect();
-            let orig_words: Vec<String> =
-                word.split(' ').map(|s| s.to_string()).collect();
+            let mut text_words: Vec<String> = conv.split(' ').map(|s| s.to_string()).collect();
+            let orig_words: Vec<String> = word.split(' ').map(|s| s.to_string()).collect();
             restore_case_words(&mut text_words, &orig_words);
             no_fix.push(text_words.join(" "));
             result.push_str(no_fix_ph);
@@ -152,7 +149,7 @@ pub fn step_apply_no_fix(ctx: &mut PipelineContext) {
         return;
     }
     let ph = &ctx.cfg.no_fix_placeholder;
-    let text = std::mem::take(&mut ctx.text);
+    let text = &ctx.text;
     let mut parts = text.split(ph);
     let mut result = String::new();
     if let Some(first) = parts.next() {

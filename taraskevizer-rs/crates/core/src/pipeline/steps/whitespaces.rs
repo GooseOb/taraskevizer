@@ -1,35 +1,32 @@
 use crate::pipeline::PipelineContext;
 
 pub fn step_whitespaces_to_spaces(ctx: &mut PipelineContext) {
-    let text = std::mem::take(&mut ctx.text);
     ctx.spaces.clear();
-    let mut result = String::with_capacity(text.len());
-    let chars: Vec<(usize, char)> = text.char_indices().collect();
-    let mut i = 0;
-    while i < chars.len() {
-        let (_, ch) = chars[i];
+    let mut result = String::with_capacity(ctx.text.len());
+    let mut chars = ctx.text.char_indices().peekable();
+    while let Some((start, ch)) = chars.next() {
         if ch.is_whitespace() {
-            let start = chars[i].0;
-            let mut end = start;
-            while i < chars.len() && chars[i].1.is_whitespace() {
-                end = chars[i].0 + chars[i].1.len_utf8();
-                i += 1;
+            let mut end = start + ch.len_utf8();
+            while let Some(&(next_pos, next_ch)) = chars.peek() {
+                if !next_ch.is_whitespace() {
+                    break;
+                }
+                end = next_pos + next_ch.len_utf8();
+                chars.next();
             }
-            ctx.spaces.push(text[start..end].to_string());
+            ctx.spaces.push(ctx.text[start..end].to_string());
             result.push(' ');
         } else {
             result.push(ch);
-            i += 1;
         }
     }
     ctx.text = result;
 }
 
 pub fn step_restore_whitespaces(ctx: &mut PipelineContext) {
-    let text = std::mem::take(&mut ctx.text);
     ctx.spaces.reverse();
-    let mut result = String::with_capacity(text.len());
-    for ch in text.chars() {
+    let mut result = String::with_capacity(ctx.text.len());
+    for ch in ctx.text.chars() {
         if ch == ' ' {
             if let Some(s) = ctx.spaces.pop() {
                 result.push_str(&s);

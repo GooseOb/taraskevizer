@@ -4,8 +4,7 @@ use crate::{
 };
 
 pub fn step_phonetize(ctx: &mut PipelineContext) {
-    let mut text = std::mem::take(&mut ctx.text);
-    text = soften(&text);
+    let mut text = soften(&ctx.text);
     text = ia_words(&text);
     text = PHONETIC.replace_all(&text);
     text = end_z_soften_and_nia_biaz(&text);

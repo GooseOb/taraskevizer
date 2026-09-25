@@ -505,26 +505,16 @@ fn ar_rest(text: &str) -> String {
                 // `ь`/`Ь` delete.
                 (0xD1, 0x8C) | (0xD0, 0xAC) => Some(""),
                 // Vowels.
-                (0xD0, 0xAF) | (0xD1, 0x8F) | (0xD0, 0x95) | (0xD0, 0xB5) => {
-                    Some("يَ")
-                }
+                (0xD0, 0xAF) | (0xD1, 0x8F) | (0xD0, 0x95) | (0xD0, 0xB5) => Some("يَ"),
                 (0xD0, 0x86) | (0xD1, 0x96) => Some("يِ"),
-                (0xD0, 0x81) | (0xD1, 0x91) | (0xD0, 0xAE) | (0xD1, 0x8E) => {
-                    Some("يُ")
-                }
-                (0xD0, 0x90) | (0xD0, 0xB0) | (0xD0, 0xAD) | (0xD1, 0x8D) => {
-                    Some("َ")
-                }
+                (0xD0, 0x81) | (0xD1, 0x91) | (0xD0, 0xAE) | (0xD1, 0x8E) => Some("يُ"),
+                (0xD0, 0x90) | (0xD0, 0xB0) | (0xD0, 0xAD) | (0xD1, 0x8D) => Some("َ"),
                 // `[ЫыІі]` only ever sees `Ы/ы` here (`І/і` went above).
                 (0xD0, 0xAB) | (0xD1, 0x8B) => Some("ِ"),
-                (0xD0, 0x9E) | (0xD0, 0xBE) | (0xD0, 0xA3) | (0xD1, 0x83) => {
-                    Some("ُ")
-                }
+                (0xD0, 0x9E) | (0xD0, 0xBE) | (0xD0, 0xA3) | (0xD1, 0x83) => Some("ُ"),
                 // Consonants.
                 (0xD0, 0xB1) | (0xD0, 0x91) => Some("ب"),
-                (0xD0, 0xB2) | (0xD0, 0x92) | (0xD0, 0x8E) | (0xD1, 0x9E) => {
-                    Some("و")
-                }
+                (0xD0, 0xB2) | (0xD0, 0x92) | (0xD0, 0x8E) | (0xD1, 0x9E) => Some("و"),
                 (0xD0, 0xB3) | (0xD0, 0x93) => Some("ه"),
                 (0xD0, 0xB9) | (0xD0, 0x99) => Some("ي"),
                 (0xD0, 0xBA) | (0xD0, 0x9A) => Some("ق"),
@@ -560,11 +550,7 @@ fn ar_rest(text: &str) -> String {
             emit!(out, text, flush, i, "؟", 1);
             continue;
         }
-        i += if b < 0x80 {
-            1
-        } else {
-            utf8_char_len(b)
-        };
+        i += if b < 0x80 { 1 } else { utf8_char_len(b) };
     }
     out.push_str(&text[flush..]);
     out
@@ -600,8 +586,8 @@ mod tests {
             inputs.push(char::from_u32(cp).unwrap().to_string());
         }
         for s in [
-            "ʼ", "́", "ł", "Ł", "04", "«»", "—", " ", "\n", "\t", "\u{a0}", "т", "Т",
-            "ز", "ي", "\u{652}", "\u{651}",
+            "ʼ", "́", "ł", "Ł", "04", "«»", "—", " ", "\n", "\t", "\u{a0}", "т", "Т", "ز", "ي",
+            "\u{652}", "\u{651}",
         ] {
             inputs.push(s.to_string());
         }
@@ -622,8 +608,8 @@ mod tests {
     fn shadda_and_sukun() {
         // Doubles of every shadda-class letter, both cases.
         for c in [
-            'б', 'в', 'г', 'д', 'ж', 'з', 'й', 'к', 'л', 'м', 'н', 'п', 'р',
-            'с', 'т', 'ф', 'х', 'ц', 'ч', 'ш', 'ў', 'Б', 'Д', 'Н',
+            'б', 'в', 'г', 'д', 'ж', 'з', 'й', 'к', 'л', 'м', 'н', 'п', 'р', 'с', 'т', 'ф', 'х',
+            'ц', 'ч', 'ш', 'ў', 'Б', 'Д', 'Н',
         ] {
             check(&format!("{c}{c}"));
             check(&format!("{c}{c}{c}"));
@@ -711,15 +697,27 @@ mod tests {
     #[test]
     fn vowels_and_rest() {
         for c in [
-            'Я', 'я', 'Е', 'е', 'І', 'і', 'Ё', 'ё', 'Ю', 'ю', 'А', 'а', 'Э',
-            'э', 'Ы', 'ы', 'О', 'о', 'У', 'у',
+            'Я', 'я', 'Е', 'е', 'І', 'і', 'Ё', 'ё', 'Ю', 'ю', 'А', 'а', 'Э', 'э', 'Ы', 'ы', 'О',
+            'о', 'У', 'у',
         ] {
             check(&c.to_string());
             check(&format!("м{c}"));
         }
         for s in [
-            "д\u{652}ж", "дж", "ДЖ", "Планета", "надзіманне", "Прывет",
-            "ЯЕ", "ее", "ЕЕ", "эІ", "оЁ", "зья", "Ць", "Ее",
+            "д\u{652}ж",
+            "дж",
+            "ДЖ",
+            "Планета",
+            "надзіманне",
+            "Прывет",
+            "ЯЕ",
+            "ее",
+            "ЕЕ",
+            "эІ",
+            "оЁ",
+            "зья",
+            "Ць",
+            "Ее",
         ] {
             check(s);
         }
@@ -729,13 +727,10 @@ mod tests {
     /// Seeded fuzz over a mixed soup (Cyrillic, Arabic, marks, punct).
     #[test]
     fn fuzz_arabic() {
-        let mut abc: Vec<char> = (0x0400u32..0x0460)
-            .filter_map(char::from_u32)
-            .collect();
+        let mut abc: Vec<char> = (0x0400u32..0x0460).filter_map(char::from_u32).collect();
         abc.extend(
             [
-                ' ', '(', ')', '.', ',', '?', '2', '́', 'ْ', 'ّ', 'ز', 'e',
-                'ت', 'ي', 'ا', 'I', 'і',
+                ' ', '(', ')', '.', ',', '?', '2', '́', 'ْ', 'ّ', 'ز', 'e', 'ت', 'ي', 'ا', 'I', 'і',
             ]
             .iter()
             .copied(),

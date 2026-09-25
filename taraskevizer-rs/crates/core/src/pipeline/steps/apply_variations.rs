@@ -6,8 +6,7 @@ use crate::{
 pub fn step_apply_variations(ctx: &mut PipelineContext) {
     let mode = ctx.cfg.variations;
     let wrap = ctx.cfg.wrappers.as_ref().map(|w| &w.variable);
-    let text = std::mem::take(&mut ctx.text);
-    ctx.text = regex_replace_all_with(&text, r"\([^)]*?\)", |caps| {
+    ctx.text = regex_replace_all_with(&ctx.text, r"\([^)]*?\)", |caps| {
         let matched = caps.get(0).map_or("", |m| m.as_str());
         match mode {
             VariationMode::No => {

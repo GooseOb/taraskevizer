@@ -10,8 +10,8 @@ mod is_lu;
 mod is_punct;
 mod is_punct_or_symbol;
 mod is_spaced_cluster_char;
-mod normalize_apostrophes;
 mod nia_biaz;
+mod normalize_apostrophes;
 mod replace_g_apostrophe;
 mod replace_i_by_j;
 mod space_out_punct_sym_digits;
@@ -21,12 +21,12 @@ mod unspace_punct_sym_digits;
 mod utf8_char_len;
 
 pub(crate) use convert_arabic::convert_arabic;
-#[cfg(test)]
-pub(crate) use fancy_test::FancyDict;
 pub(crate) use convert_latin::convert_latin_ji_lower;
 pub(crate) use convert_latin::convert_latin_ji_upper;
 pub(crate) use convert_latin::convert_latin_lower;
 pub(crate) use convert_latin::convert_latin_upper;
+#[cfg(test)]
+pub(crate) use fancy_test::FancyDict;
 pub(crate) use iotacize_ji::iotacize_ji;
 pub(crate) use iotacize_ji::match_iwords_len;
 pub(crate) use iotacize_ji::matches_iwords;
