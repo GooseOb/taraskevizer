@@ -76,7 +76,7 @@ fn main() {
     // Mirrors cli/src/main.rs: nchunks = ceil(len / CHUNK_SIZE); chunks are
     // processed in parallel with rayon when there is more than one chunk.
     let chunk_sizes: &[usize] = &[
-        4_000, 16_000, 32_000, 64_000, 128_000, 256_000, 512_000,
+        4_000, 8_000, 16_000, 32_000, 64_000, 128_000, 256_000, 512_000,
         1_048_576,
         // >= file size ⇒ single sequential chunk (baseline)
     ];

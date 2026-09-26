@@ -537,16 +537,34 @@ fn has_nu_imlau(s: &str) -> bool {
 ///
 /// The regex backtracks the run, so this holds iff an acute sits at
 /// char-index `m` with `1 <= m <= run+1` and a non-`\n` char before it.
+///
+/// Streaming: only chars `0..=run+1` are ever inspected, so this runs in
+/// O(run) time with O(1) memory. (The old version `collect()`ed the whole
+/// remainder into a `Vec<char>` per call — O(chunk²) on `не`-heavy text.)
 fn has_acute(s: &str) -> bool {
-    let chars: Vec<char> = s.chars().collect();
-    let mut run = 0;
-    while run < chars.len() && is_zw_cons(chars[run]) {
-        run += 1;
-    }
-    for m in 1..=run + 1 {
-        if m < chars.len() && chars[m] == '́' && chars[m - 1] != '\n' {
-            return true;
+    let mut run = 0usize;
+    let mut open = true;
+    let mut prev = '\0';
+    for (idx, ch) in s.chars().enumerate() {
+        if idx >= 1 {
+            // While the run is still open, `run == idx`, so the check
+            // below always applies; once closed, `run` is final.
+            let r = if open { idx } else { run };
+            if idx > r + 1 {
+                break;
+            }
+            if ch == '́' && prev != '\n' {
+                return true;
+            }
         }
+        if open {
+            if is_zw_cons(ch) {
+                run += 1;
+            } else {
+                open = false;
+            }
+        }
+        prev = ch;
     }
     false
 }
@@ -611,33 +629,57 @@ fn is_prep(s: &str) -> bool {
 /// `repl`, the captured ` ␣[(]?ALT` is copied verbatim, and scanning
 /// resumes after it (consuming semantics — a later anchor inside the
 /// capture is skipped by this pass, like `replace_all`).
-fn ia_replace(text: &str, head: &str, repl: &str, alt_len: fn(&str) -> Option<usize>) -> String {
-    if !text.contains(head) {
+///
+/// `IA_WORDS` without the regex engine or the JSON file: `не`-entry, then
+/// `без`-entry, like the compiled dict order.
+///
+/// Both entries run in ONE scan: the anchors (` не` vs ` без`) are
+/// disjoint (2nd byte `н` vs `б`), replacements create no new anchors
+/// (` ня`/` бяз` contain neither head), and a match consumes its whole
+/// capture in both orders — so merged == sequential, minus one full
+/// scan plus the intermediate `String`.
+///
+/// At a `не`-before-`без` position the entry order is preserved anyway.
+pub(crate) fn ia_words(text: &str) -> String {
+    const HEADS: &[(&str, &str, fn(&str) -> Option<usize>)] =
+        &[(" не", " ня", ia_ne_alt_len), (" без", " бяз", ia_bez_alt_len)];
+    if !HEADS.iter().any(|(head, _, _)| text.contains(head)) {
         return text.to_string();
     }
     let bytes = text.as_bytes();
     let len = bytes.len();
-    let hlen = head.len();
     let mut out = String::with_capacity(len);
     let mut flush = 0usize;
     let mut i = 0usize;
     while i < len {
-        if bytes[i] == b' ' && text[i..].starts_with(head) {
-            let after = i + hlen;
-            if after < len && bytes[after] == b' ' {
-                let mut p = after + 1;
-                if p < len && bytes[p] == b'(' {
-                    p += 1;
-                }
-                if let Some(n) = alt_len(&text[p..]) {
-                    let end = p + n;
-                    out.push_str(&text[flush..i]);
-                    out.push_str(repl);
-                    out.push_str(&text[after..end]);
-                    flush = end;
-                    i = end;
+        if bytes[i] == b' ' {
+            let mut done = false;
+            for (head, repl, alt_len) in HEADS {
+                if !text[i..].starts_with(head) {
                     continue;
                 }
+                // Disjoint 2nd byte: the other head cannot match at `i`,
+                // so a failed tail means no match here at all.
+                let after = i + head.len();
+                if after < len && bytes[after] == b' ' {
+                    let mut p = after + 1;
+                    if p < len && bytes[p] == b'(' {
+                        p += 1;
+                    }
+                    if let Some(n) = alt_len(&text[p..]) {
+                        let end = p + n;
+                        out.push_str(&text[flush..i]);
+                        out.push_str(repl);
+                        out.push_str(&text[after..end]);
+                        flush = end;
+                        i = end;
+                        done = true;
+                    }
+                }
+                break;
+            }
+            if done {
+                continue;
             }
             i += 1;
             continue;
@@ -650,17 +692,6 @@ fn ia_replace(text: &str, head: &str, repl: &str, alt_len: fn(&str) -> Option<us
     }
     out.push_str(&text[flush..]);
     out
-}
-
-/// `IA_WORDS` without the regex engine or the JSON file: `не`-entry, then
-/// `без`-entry, like the compiled dict order.
-pub(crate) fn ia_words(text: &str) -> String {
-    ia_replace(
-        &ia_replace(text, " не", " ня", ia_ne_alt_len),
-        " без",
-        " бяз",
-        ia_bez_alt_len,
-    )
 }
 
 /// The four generic rules merged into one scan over spaces.
