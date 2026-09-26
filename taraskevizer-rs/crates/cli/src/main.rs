@@ -204,7 +204,7 @@ fn main() {
             String::new()
         };
         if !input.is_empty() {
-            const CHUNK_SIZE: usize = 64_000;
+            const CHUNK_SIZE: usize = 16_000;
             let nchunks = input.len().div_ceil(CHUNK_SIZE);
             let chunks = split_into_chunks(&input, nchunks);
             let nchars = input.len();

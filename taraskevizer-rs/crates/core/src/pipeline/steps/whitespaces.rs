@@ -1,5 +1,3 @@
-use crate::pipeline::PipelineContext;
-
 /// Collapse every maximal run of `char::is_whitespace` into a single `' '`.
 ///
 /// Returns the collapsed text plus one borrowed slice per run, in order.

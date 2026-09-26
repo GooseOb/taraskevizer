@@ -19,6 +19,9 @@ use crate::pipeline::{
 fn is_upper_str(s: &str) -> bool {
     s == s.to_uppercase()
 }
+fn is_upper_char(c: char) -> bool {
+    c.to_uppercase().eq(std::iter::once(c))
+}
 
 pub fn step_restore_case(ctx: &mut PipelineContext) {
     restore_case_words(&mut ctx.text_arr, &ctx.orig_arr);
@@ -45,7 +48,7 @@ pub(crate) fn restore_case_words(text: &mut [String], orig: &[String]) {
             *word = o_word.clone();
             continue;
         }
-        if o_word.is_empty() || !is_upper_str(&o_word.chars().next().unwrap().to_string()) {
+        if o_word.is_empty() || !is_upper_char(o_word.chars().next().unwrap()) {
             continue;
         }
         if word == "зь" {
@@ -56,7 +59,7 @@ pub(crate) fn restore_case_words(text: &mut [String], orig: &[String]) {
             };
         } else {
             let last = o_word.chars().last().unwrap();
-            if is_upper_str(&last.to_string()) {
+            if is_upper_char(last) {
                 *word = word.to_uppercase();
             } else if word.starts_with('(') {
                 *word = initcap_var(word);

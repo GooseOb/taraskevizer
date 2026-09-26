@@ -2,6 +2,7 @@ use crate::config::Alphabet;
 
 use super::SOFTEN;
 
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::{Arc, LazyLock, Mutex};
 
@@ -25,13 +26,15 @@ fn compiled_regex(pattern: &str) -> Arc<regex::Regex> {
     re
 }
 
-/// Manual lower-case alphabet conversion (replaces `apply_alphabet(…, "lower")`).
-pub(crate) fn apply_abc_lower(text: &str, abc: Alphabet) -> String {
+/// Lower-case alphabet conversion, borrowing the input when the alphabet
+/// needs no conversion (cyrillic) so hot call sites pay no allocation.
+/// Converters for other alphabets must build a new string (`Cow::Owned`).
+pub(crate) fn apply_abc_lower(text: &str, abc: Alphabet) -> Cow<'_, str> {
     match abc {
-        Alphabet::Cyrillic => text.to_string(),
-        Alphabet::Latin => crate::text::convert_latin_lower(text),
-        Alphabet::LatinJi => crate::text::convert_latin_ji_lower(text),
-        Alphabet::Arabic => crate::text::convert_arabic(text),
+        Alphabet::Cyrillic => Cow::Borrowed(text),
+        Alphabet::Latin => Cow::Owned(crate::text::convert_latin_lower(text)),
+        Alphabet::LatinJi => Cow::Owned(crate::text::convert_latin_ji_lower(text)),
+        Alphabet::Arabic => Cow::Owned(crate::text::convert_arabic(text)),
     }
 }
 

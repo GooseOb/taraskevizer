@@ -663,6 +663,14 @@ pub(crate) const LU_RANGES: &[(u32, u32)] = &[
 
 /// Whether code point `cp` has Unicode general category Lu (`\p{Lu}`).
 pub(crate) fn is_lu(cp: u32) -> bool {
+    // Fast path: XML-heavy inputs are mostly ASCII; skip the ~700-range
+    // binary search for them. Cyrillic capitals are the next most common.
+    if cp < 128 {
+        return (cp as u8).is_ascii_uppercase();
+    }
+    if (0x410..=0x42F).contains(&cp) || cp == 0x401 || cp == 0x406 || cp == 0x407 {
+        return true;
+    }
     let idx = LU_RANGES.partition_point(|&(lo, _)| lo <= cp);
     idx > 0 && cp <= LU_RANGES[idx - 1].1
 }

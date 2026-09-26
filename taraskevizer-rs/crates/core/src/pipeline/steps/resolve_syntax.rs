@@ -7,45 +7,94 @@ use crate::{
     text::is_lu,
 };
 
+/// Whether `ch` is uppercase (`\p{Lu}`).
+///
+/// ASCII resolves to `is_ascii_uppercase` (exactly `\p{Lu}` below U+0080);
+/// only non-ASCII pays for `is_lu`.
+#[inline]
+fn is_upper(ch: char) -> bool {
+    if ch.is_ascii() {
+        ch.is_ascii_uppercase()
+    } else {
+        is_lu(ch as u32)
+    }
+}
+
+/// Whether `step_resolve_special_syntax` can change `text` at all.
+///
+/// Without `<` there are no tags to resolve; without two consecutive
+/// uppercase chars caps-escape (`do_escape`) has nothing to stash —
+/// otherwise the output is byte-identical input and the whole step
+/// (incl. the `result` allocation) can be skipped.
+fn needs_resolve(text: &str, do_escape: bool) -> bool {
+    // Single-ASCII-char `contains` compiles to a memchr scan.
+    if text.contains('<') {
+        return true;
+    }
+    if !do_escape {
+        return false;
+    }
+    let mut prev_lu = false;
+    let mut i = 0;
+    while i < text.len() {
+        // `i` always sits on a char boundary (see main loop below).
+        let ch = text[i..].chars().next().unwrap();
+        let lu = is_upper(ch);
+        if lu && prev_lu {
+            return true;
+        }
+        prev_lu = lu;
+        i += ch.len_utf8();
+    }
+    false
+}
+
 pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
     let do_escape = ctx.cfg.do_escape_capitalized;
     let no_fix_ph = &ctx.cfg.no_fix_placeholder;
     let abc = ctx.cfg.abc;
 
     let text = &ctx.text;
+    if !needs_resolve(text, do_escape) {
+        return;
+    }
     let mut result = String::with_capacity(text.len());
     let no_fix = &mut ctx.no_fix_arr;
-    let mut i = 0;
-    let chars: Vec<(usize, char)> = text.char_indices().collect();
-    let len = chars.len();
+    // `flush`/`p` are byte offsets that always sit on char boundaries:
+    // every advance is `len_utf8` (or past ASCII, which is 1 byte).
+    // Plain runs between events are copied with one `push_str` (memcpy)
+    // instead of per-char `push` + branch + uppercase check.
+    let mut flush = 0usize;
+    let mut p = 0usize;
 
-    while i < len {
-        let (byte_pos, ch) = chars[i];
+    while p < text.len() {
+        let ch = text[p..].chars().next().unwrap();
 
         if ch == '<' {
-            let rest = &text[byte_pos + ch.len_utf8()..];
+            // `<` is 1 byte, so `p + 1` is a boundary.
+            let rest = &text[p + 1..];
             if let Some(end_rel) = find_unescaped_gt(rest) {
-                let inner_end_byte = byte_pos + 1 + end_rel;
-                let inner = &text[byte_pos + 1..inner_end_byte];
-                let mut clean_inner = String::new();
-                let mut j = 0;
-                let cchars: Vec<(usize, char)> = inner.char_indices().collect();
-                while j < cchars.len() {
-                    let (_, c) = cchars[j];
-                    if c == '\\' && j + 1 < cchars.len() && cchars[j + 1].1 == '>' {
-                        clean_inner.push('>');
-                        j += 2;
+                let inner_end_byte = p + 1 + end_rel;
+                let inner = &text[p + 1..inner_end_byte];
+                result.push_str(&text[flush..p]);
+                // Single pass: unescape `\>` straight into chars (tags are
+                // short, but avoid the old double-collect).
+                let mut ic = Vec::with_capacity(inner.len());
+                let mut inner_chars = inner.chars().peekable();
+                while let Some(c) = inner_chars.next() {
+                    if c == '\\' && inner_chars.peek() == Some(&'>') {
+                        inner_chars.next();
+                        ic.push('>');
                     } else {
-                        clean_inner.push(c);
-                        j += 1;
+                        ic.push(c);
                     }
                 }
-                let ic = clean_inner.chars().collect::<Vec<_>>();
                 if ic.is_empty() {
                     result.push('<');
                     result.push('>');
-                    let inner_end_char_idx = text[..inner_end_byte + 1].chars().count();
-                    i = inner_end_char_idx;
+                    // Skip past `>` (ASCII, 1 byte).
+                    p = inner_end_byte + 1;
+                    flush = p;
                     continue;
                 }
                 let is_abc = ic.first() == Some(&'*');
@@ -62,7 +111,8 @@ pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
                         result.push('>');
                     } else if is_abc {
                         let lowered = apply_abc_lower(&real_content, abc);
-                        let converted = apply_abc_upper(&lowered, abc).unwrap_or(lowered);
+                        let converted =
+                            apply_abc_upper(&lowered, abc).unwrap_or_else(|| lowered.into_owned());
                         no_fix.push(converted);
                         if do_remove {
                             result.push_str(no_fix_ph);
@@ -82,10 +132,24 @@ pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
                         }
                     }
                 }
-                let inner_end_char_idx = text[..inner_end_byte + 1].chars().count();
-                i = inner_end_char_idx;
+                p = inner_end_byte + 1;
+                flush = p;
                 continue;
             }
+            // No closing `>`: literal `<`, stays part of the plain run.
+            p += 1;
+            continue;
+        }
+
+        if !do_escape || !is_upper(ch) {
+            p += ch.len_utf8();
+            continue;
+        }
+        let np = p + ch.len_utf8();
+        let pair = np < text.len() && is_upper(text[np..].chars().next().unwrap());
+        if !pair {
+            p += ch.len_utf8();
+            continue;
         }
 
         // Caps-escape, mirroring the JS
@@ -95,52 +159,67 @@ pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
         // one char when it ends right before `= Lu`. One match is one
         // stash (no resume-inside-match: `У ХХІ` escapes `ХХІ ` whole,
         // never `Х` + `ХІ `).
-        if do_escape && is_lu(ch as u32) && i + 1 < len && is_lu(chars[i + 1].1 as u32) {
-            let start = i;
-            let mut end = i + 2;
-            while end < len && (chars[end].1 == ' ' || is_lu(chars[end].1 as u32)) {
+        result.push_str(&text[flush..p]);
+        let start = p;
+        let second = text[np..].chars().next().unwrap();
+        let mut end = np + second.len_utf8();
+        let mut run_chars = 2usize;
+        let mut last_len = second.len_utf8();
+        while end < text.len() {
+            let ech = text[end..].chars().next().unwrap();
+            if ech == ' ' {
                 end += 1;
+                last_len = 1;
+                run_chars += 1;
+                continue;
             }
-            // `(?!= \p{Lu})`: `=`, space, uppercase right after the run.
-            let cut_off = end < len
-                && chars[end].1 == '='
-                && end + 1 < len
-                && chars[end + 1].1 == ' '
-                && end + 2 < len
-                && is_lu(chars[end + 2].1 as u32);
-            if cut_off {
-                if end == start + 2 {
-                    // Below the two-letter minimum: no match here.
-                    result.push(ch);
-                    i += 1;
-                    continue;
-                }
-                end -= 1;
+            if !is_upper(ech) {
+                break;
             }
-            let word: String = chars[start..end]
-                .iter()
-                .map(|(_, c)| c.to_string())
-                .collect::<Vec<_>>()
-                .join("");
-            // JS `convertAlphavet`: lower + `restoreCase` against the
-            // original (NOT full-upper + `to_uppercase`: restoring copies
-            // the original word on lowercase-equality, preserving
-            // letters like Turkish `İ`).
-            let lowered = word.to_lowercase();
-            let conv = apply_abc_lower(&lowered, abc);
-            let mut text_words: Vec<String> = conv.split(' ').map(|s| s.to_string()).collect();
-            let orig_words: Vec<String> = word.split(' ').map(|s| s.to_string()).collect();
-            restore_case_words(&mut text_words, &orig_words);
-            no_fix.push(text_words.join(" "));
-            result.push_str(no_fix_ph);
-            i = end;
-            continue;
+            end += ech.len_utf8();
+            last_len = ech.len_utf8();
+            run_chars += 1;
         }
-
-        result.push(ch);
-        i += 1;
+        // `(?!= \p{Lu})`: `=`, space, uppercase right after the run.
+        // `=` and ` ` are ASCII, so the offsets below are boundaries.
+        let mut cut_off = false;
+        if end < text.len()
+            && text[end..].starts_with('=')
+            && end + 1 < text.len()
+            && text[end + 1..].starts_with(' ')
+            && end + 2 < text.len()
+        {
+            cut_off = is_upper(text[end + 2..].chars().next().unwrap());
+        }
+        if cut_off {
+            if run_chars == 2 {
+                // Below the two-letter minimum: no match here.
+                result.push_str(&text[p..p + ch.len_utf8()]);
+                p += ch.len_utf8();
+                flush = p;
+                continue;
+            }
+            // Back off one *char* (may be multibyte — hence `last_len`).
+            end -= last_len;
+        }
+        let word: String = text[start..end].to_string();
+        // JS `convertAlphavet`: lower + `restoreCase` against the
+        // original (NOT full-upper + `to_uppercase`: restoring copies
+        // the original word on lowercase-equality, preserving
+        // letters like Turkish `İ`).
+        let lowered = word.to_lowercase();
+        // `Cow`: no clone for the default cyrillic alphabet.
+        let conv = apply_abc_lower(&lowered, abc);
+        let mut text_words: Vec<String> = conv.split(' ').map(|s| s.to_string()).collect();
+        let orig_words: Vec<String> = word.split(' ').map(|s| s.to_string()).collect();
+        restore_case_words(&mut text_words, &orig_words);
+        no_fix.push(text_words.join(" "));
+        result.push_str(no_fix_ph);
+        p = end;
+        flush = end;
     }
 
+    result.push_str(&text[flush..]);
     ctx.text = result;
 }
 
