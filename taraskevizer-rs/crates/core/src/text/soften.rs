@@ -289,12 +289,12 @@ fn fwd_unit(s: &[u8], i: usize) -> (usize, u8, u32) {
 // is present (the common case — zero copy).
 // ---------------------------------------------------------------------------
 
-fn inject_protectors_bytes(text: &str) -> Cow<'_, [u8]> {
+fn inject_protectors_bytes(text: &str) -> (Cow<'_, [u8]>, bool) {
     // Fast path: none of the protector literals present (every protector
     // contains one of these substrings, so this is exact, not heuristic).
     if !text.contains("масфільм") && !text.contains("пэндзлік") && !text.contains("аддз")
     {
-        return Cow::Borrowed(text.as_bytes());
+        return (Cow::Borrowed(text.as_bytes()), false);
     }
     // Occurrences are rare: locate each with `str::find` (SIMD) and splice
     // markers around them, bulk-copying everything between. At one `pos`
@@ -366,7 +366,7 @@ fn inject_protectors_bytes(text: &str) -> Cow<'_, [u8]> {
     // with no protector matching); empty hits simply mean borrowed.
     hits.sort_by(|a, b| a.0.cmp(&b.0).then(b.2.cmp(&a.2)));
     if hits.is_empty() {
-        return Cow::Borrowed(text.as_bytes());
+        return (Cow::Borrowed(text.as_bytes()), false);
     }
     let s = text.as_bytes();
     let mut out = Vec::with_capacity(s.len() + 8);
@@ -382,251 +382,7 @@ fn inject_protectors_bytes(text: &str) -> Cow<'_, [u8]> {
         p = pos + total;
     }
     out.extend_from_slice(&s[p..]);
-    Cow::Owned(out)
-}
-
-// ---------------------------------------------------------------------------
-// Read-only pre-scan (conservative firing check): lets no-op inputs skip
-// all allocation. Markers match nothing, so they need no special-casing.
-// ---------------------------------------------------------------------------
-
-fn has_softening_bytes(s: &[u8]) -> bool {
-    let n = s.len();
-    let mut i = 0usize;
-    while i < n {
-        let (len, class, id) = fwd_unit(s, i);
-        if class == CL_SPACE {
-            // ` (без|бяз|праз|цераз)?з ` — longest first, byte lengths.
-            let rest = &s[i..];
-            let plen = if rest.starts_with(" цераз ".as_bytes()) {
-                12
-            } else if rest.starts_with(" праз ".as_bytes()) {
-                10
-            } else if rest.starts_with(" без ".as_bytes()) || rest.starts_with(" бяз ".as_bytes())
-            {
-                8
-            } else if rest.starts_with(" з ".as_bytes()) {
-                4
-            } else {
-                0
-            };
-            if plen > 0 {
-                let mut q = i + plen;
-                if s.get(q) == Some(&0x28) {
-                    q += 1;
-                }
-                if big_lookahead_fwd_at(s, q) {
-                    return true;
-                }
-            }
-            i += 1;
-            continue;
-        }
-        if class == CL_LNC {
-            // `([лнц])\1(?=[еёіюяь])`: pair + soft vowel.
-            if i + len < n {
-                let (l1, _, id1) = fwd_unit(s, i + len);
-                if id1 == id && i + len + l1 < n {
-                    let (_, _, id2) = fwd_unit(s, i + len + l1);
-                    if is_soft_id(id2) {
-                        return true;
-                    }
-                }
-            }
-            // `ц` falls through to its own rule below; л/н are done.
-            if id != ID_TS {
-                i += len;
-                continue;
-            }
-        }
-        if id == ID_DD {
-            // `дздз` + soft (4 following units) or `ддз` + soft (3).
-            let mut q = i + len;
-            let mut ids = [0u32; 4];
-            let mut cnt = 0usize;
-            while cnt < 4 && q < n {
-                let (l, _, v) = fwd_unit(s, q);
-                ids[cnt] = v;
-                cnt += 1;
-                q += l;
-            }
-            if cnt >= 4
-                && ids[0] == ID_ZZ
-                && ids[1] == ID_DD
-                && ids[2] == ID_ZZ
-                && is_soft_id(ids[3])
-            {
-                return true;
-            }
-            if cnt >= 3 && ids[0] == ID_DD && ids[1] == ID_ZZ && is_soft_id(ids[2]) {
-                return true;
-            }
-            i += len;
-            continue;
-        }
-        if class == CL_Z {
-            if i + len < n {
-                let (l1, _, v1) = fwd_unit(s, i + len);
-                let q1 = i + len + l1;
-                if is_z_cons_id(v1) {
-                    if q1 < n {
-                        let (_, _, v2) = fwd_unit(s, q1);
-                        if is_soft_id(v2) {
-                            return true;
-                        }
-                    }
-                } else if v1 == ID_DD && q1 < n {
-                    let (l2, _, v2) = fwd_unit(s, q1);
-                    if v2 == ID_ZZ {
-                        let q2 = q1 + l2;
-                        if q2 < n {
-                            let (_, _, v3) = fwd_unit(s, q2);
-                            if is_soft_id(v3) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                if v1 == ID_AP && q1 < n {
-                    let (_, _, v2) = fwd_unit(s, q1);
-                    if is_apos_id(v2) {
-                        return true;
-                    }
-                }
-            }
-            i += len;
-            continue;
-        }
-        if class == CL_S {
-            if i + len < n {
-                let (l1, _, v1) = fwd_unit(s, i + len);
-                let q1 = i + len + l1;
-                if is_s_cons_id(v1) && q1 < n {
-                    let (_, _, v2) = fwd_unit(s, q1);
-                    if is_soft_id(v2) {
-                        return true;
-                    }
-                }
-                if v1 == ID_AP && q1 < n {
-                    let (_, _, v2) = fwd_unit(s, q1);
-                    if is_apos_id(v2) {
-                        return true;
-                    }
-                }
-            }
-            i += len;
-            continue;
-        }
-        if id == ID_TS {
-            if i + len < n {
-                let (l1, _, v1) = fwd_unit(s, i + len);
-                if is_c_cons_id(v1) {
-                    let q1 = i + len + l1;
-                    if q1 < n {
-                        let (_, _, v2) = fwd_unit(s, q1);
-                        if is_soft_id(v2) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            i += len;
-            continue;
-        }
-        i += len;
-    }
-    false
-}
-
-/// Original-text big lookahead for the pre-scan: same alternation as the
-/// pass, stepped forward over units.
-fn big_lookahead_fwd_at(s: &[u8], mut q: usize) -> bool {
-    if s.get(q) == Some(&0x28) {
-        q += 1;
-    }
-    if q >= s.len() {
-        return false;
-    }
-    let (l0, _, c0) = fwd_unit(s, q);
-    if is_big_single_id(c0) {
-        return true;
-    }
-    if is_big_cons_id(c0) {
-        let q1 = q + l0;
-        if q1 >= s.len() {
-            return false;
-        }
-        let (_, _, c1) = fwd_unit(s, q1);
-        return is_soft_id(c1);
-    }
-    if c0 == ID_DD {
-        let q1 = q + l0;
-        if q1 >= s.len() {
-            return false;
-        }
-        let (l1, _, c1) = fwd_unit(s, q1);
-        if c1 != ID_ZZ {
-            return false;
-        }
-        let q2 = q1 + l1;
-        if q2 >= s.len() {
-            return false;
-        }
-        let (_, _, c2) = fwd_unit(s, q2);
-        return is_soft_id(c2);
-    }
-    if c0 == ID_II {
-        let q1 = q + l0;
-        if q1 >= s.len() {
-            return false;
-        }
-        let (l1, _, c1) = fwd_unit(s, q1);
-        // `імі? `.
-        if c1 == ID_EM {
-            let q2 = q1 + l1;
-            if q2 < s.len() {
-                let (l2, _, c2) = fwd_unit(s, q2);
-                if c2 == ID_SPACE {
-                    return true;
-                }
-                if c2 == ID_II {
-                    let q3 = q2 + l2;
-                    if q3 < s.len() {
-                        let (_, _, c3) = fwd_unit(s, q3);
-                        if c3 == ID_SPACE {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        // `іх(?:ні)?` needs only the `іх` prefix for a lookahead hit.
-        if c1 == ID_HA {
-            return true;
-        }
-        // `і` + iwords (up to 32 units forward).
-        let mut buf = [0u8; 160];
-        let mut blen = 0usize;
-        let mut qq = q1;
-        for _ in 0..32 {
-            if qq >= s.len() {
-                break;
-            }
-            let l = fwd_len(s, qq);
-            buf[blen..blen + l].copy_from_slice(&s[qq..qq + l]);
-            blen += l;
-            qq += l;
-        }
-        if blen == 0 {
-            return false;
-        }
-        if let Ok(tail) = std::str::from_utf8(&buf[..blen]) {
-            if crate::text::matches_iwords(tail) {
-                return true;
-            }
-        }
-    }
-    false
+    (Cow::Owned(out), true)
 }
 
 // ---------------------------------------------------------------------------
@@ -913,7 +669,7 @@ fn pass_rtl_bytes(s: &[u8]) -> Vec<u8> {
                 }
             } else if lclass == CL_LNC
                 && lid == ID_TS
-                && (rid == ID_VE || rid == ID_EM)
+                && is_c_cons_id(rid)
                 && peek_id(&out, 1).is_some_and(is_soft_id)
             {
                 soft = true;
@@ -939,19 +695,16 @@ pub(crate) fn soften(text: &str) -> String {
     // Protectors injected once up front (like JS `noSoften`); borrowed when
     // absent (zero copy). Markers shift with the text, so the pass needs no
     // guard tracking. One RTL pass closes all cascades — no outer loop.
-    let buf = inject_protectors_bytes(text);
+    let (buf, injected) = inject_protectors_bytes(text);
     let s: &[u8] = &buf;
-    // Fast path: no trigger anywhere — nothing would change, so the
-    // protectors (if any) are irrelevant; just strip pre-existing markers.
-    if !has_softening_bytes(s) {
-        return text.replace('\u{E0FF}', "");
-    }
+    // Always run the single RTL pass (no firing pre-scan — pipeline text
+    // virtually always triggers, so the scan was pure overhead). `injected`
+    // tells whether markers exist, skipping the strip scan otherwise.
     let mut out = pass_rtl_bytes(s);
     out.reverse();
     let result = String::from_utf8(out).expect("soften output is valid UTF-8 by construction");
-    // Strip markers (parity with JS `text.replace(/\ue0ff/g, '')`, which
-    // also removes markers pre-existing in the input, e.g. from fuzzing).
-    if result.contains('\u{E0FF}') {
+
+    if injected {
         result.replace('\u{E0FF}', "")
     } else {
         result
@@ -1044,10 +797,7 @@ mod tests {
             (" з смех", " зь сьмех"),
             ("ХХдздздзе", "ХХдзьдзьдзе"),
             ("наддзіманне", "надзьдзіманьне"),
-            (
-                "сізоцеразддзіуёхцянпд",
-                "сізоцеразьдзьдзіуёхцянпд",
-            ),
+            ("сізоцеразддзіуёхцянпд", "сізоцеразьдзьдзіуёхцянпд"),
             (
                 "коньнікі з бяздоннай цішыні",
                 "коньнікі зь бяздоннай цішыні",
