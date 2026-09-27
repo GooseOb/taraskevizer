@@ -1,6 +1,6 @@
 use crate::config::Alphabet;
 
-use super::SOFTEN;
+pub(crate) use crate::text::soften;
 
 use std::borrow::Cow;
 use std::collections::HashMap;
@@ -46,19 +46,6 @@ pub(crate) fn apply_abc_upper(text: &str, abc: Alphabet) -> Option<String> {
         Alphabet::LatinJi => Some(crate::text::convert_latin_ji_upper(text)),
         Alphabet::Cyrillic | Alphabet::Arabic => None,
     }
-}
-
-pub(crate) fn soften(text: &str) -> String {
-    // Re-scan until stable so cascading soften rules still apply.
-    let mut result = text.to_string();
-    loop {
-        let next = SOFTEN.replace_all(&result);
-        if next == result {
-            break;
-        }
-        result = next;
-    }
-    result.replace('\u{E0FF}', "")
 }
 
 pub(crate) fn find_unescaped_gt(s: &str) -> Option<usize> {

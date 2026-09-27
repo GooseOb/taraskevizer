@@ -433,6 +433,7 @@ version = "10.5.0"
 dependencies = [
  "aho-corasick",
  "fancy-regex",
+ "memchr",
  "rand",
  "rayon",
  "regex",

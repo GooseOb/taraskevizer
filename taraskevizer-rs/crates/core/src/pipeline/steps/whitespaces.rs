@@ -71,7 +71,7 @@ mod tests {
             cases.push(format!("{w}аб{w}"));
         }
         cases.push("а\u{85}б\u{A0}в\u{2009}г".to_string());
-        cases.push("a\u{200B}b⁠c￾x".to_string());
+        cases.push("a\u{200B}b\u{2060}c\u{FFFE}x".to_string());
 
         for text in cases {
             let (collapsed, spaces) = collapse_whitespaces(&text);

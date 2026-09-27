@@ -16,8 +16,6 @@ fn build_dict_matcher(json: &str) -> CompiledDict {
 
 static WORD_LIST: std::sync::LazyLock<CompiledDict> =
     std::sync::LazyLock::new(|| build_dict_matcher(include_str!("../dict/data/wordlist.json")));
-static SOFTEN: std::sync::LazyLock<CompiledDict> =
-    std::sync::LazyLock::new(|| build_dict_matcher(include_str!("../dict/data/soften.json")));
 static PHONETIC: std::sync::LazyLock<CompiledDict> =
     std::sync::LazyLock::new(|| build_dict_matcher(include_str!("../dict/data/phonetic.json")));
 

@@ -14,6 +14,7 @@ mod nia_biaz;
 mod normalize_apostrophes;
 mod replace_g_apostrophe;
 mod replace_i_by_j;
+mod soften;
 mod space_out_punct_sym_digits;
 #[cfg(test)]
 mod test_oracle;
@@ -42,6 +43,7 @@ pub(crate) use nia_biaz::ia_words;
 pub(crate) use normalize_apostrophes::normalize_apostrophes;
 pub(crate) use replace_g_apostrophe::replace_g_apostrophe;
 pub(crate) use replace_i_by_j::replace_i_by_j;
+pub(crate) use soften::soften;
 pub(crate) use space_out_punct_sym_digits::space_out_punct_sym_digits;
 pub(crate) use unspace_punct_sym_digits::unspace_punct_sym_digits;
 pub(crate) use utf8_char_len::utf8_char_len;

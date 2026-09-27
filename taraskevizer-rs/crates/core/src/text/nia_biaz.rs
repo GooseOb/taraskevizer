@@ -640,8 +640,12 @@ fn is_prep(s: &str) -> bool {
 /// scan plus the intermediate `String`.
 ///
 /// At a `не`-before-`без` position the entry order is preserved anyway.
+///
+/// One head entry: (anchor, replacement, tail-length probe).
+type HeadRule<'a> = (&'a str, &'a str, fn(&str) -> Option<usize>);
+
 pub(crate) fn ia_words(text: &str) -> String {
-    const HEADS: &[(&str, &str, fn(&str) -> Option<usize>)] =
+    const HEADS: &[HeadRule<'_>] =
         &[(" не", " ня", ia_ne_alt_len), (" без", " бяз", ia_bez_alt_len)];
     if !HEADS.iter().any(|(head, _, _)| text.contains(head)) {
         return text.to_string();
