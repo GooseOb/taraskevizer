@@ -1,25 +1,10 @@
 use super::utf8_char_len;
 
-/// Whether the 2-byte sequence is in `[аеёіоуыэюя\u0301]`.
-///
-/// All members are 2-byte UTF-8:
-/// а=D0 B0, е=D0 B5, ё=D1 91, і=D1 96, о=D0 BE, у=D1 83,
-/// ы=D1 8B, э=D1 8D, ю=D1 8E, я=D1 8F, ́=CC 81.
-#[inline]
-fn is_vowel_ji(b1: u8, b2: u8) -> bool {
+/// Whether `c` is in `[аеёіоуыэюя\u0301]`.
+fn is_vowel_ji(c: char) -> bool {
     matches!(
-        (b1, b2),
-        (0xD0, 0xB0)
-            | (0xD0, 0xB5)
-            | (0xD1, 0x91)
-            | (0xD1, 0x96)
-            | (0xD0, 0xBE)
-            | (0xD1, 0x83)
-            | (0xD1, 0x8B)
-            | (0xD1, 0x8D)
-            | (0xD1, 0x8E)
-            | (0xD1, 0x8F)
-            | (0xCC, 0x81)
+        c,
+        'а' | 'е' | 'ё' | 'і' | 'о' | 'у' | 'ы' | 'э' | 'ю' | 'я' | '́'
     )
 }
 
@@ -40,22 +25,15 @@ fn is_vowel_ji(b1: u8, b2: u8) -> bool {
 /// `скравец|скрачк|ста |с[нт]ась?ц|сь?ці[нк]|та[р ]|тры|`
 /// `х(ны[хя]?|ную|на[яей])?|ць?він|шыяс`
 pub(crate) fn matches_iwords(s: &str) -> bool {
-    let b = s.as_bytes();
-    if b.len() < 2 {
-        return false;
-    }
-    // ́ U+0301 (CC 81) alone matches.
-    if b[0] == 0xCC && b[1] == 0x81 {
+    // `́` (U+0301) alone matches.
+    if s.starts_with('́') {
         return true;
     }
-    if b[0] != 0xD0 && b[0] != 0xD1 {
-        return false;
-    }
-    match (b[0], b[1]) {
+    match s.chars().next() {
         // біс | бсэн
-        (0xD0, 0xB1) => s.starts_with("біс") || s.starts_with("бсэн"),
+        Some('б') => s.starts_with("біс") || s.starts_with("бсэн"),
         // в[аеоы]␣ | верс | вал[гз]
-        (0xD0, 0xB2) => {
+        Some('в') => {
             s.starts_with("ва ")
                 || s.starts_with("ве ")
                 || s.starts_with("во ")
@@ -65,13 +43,13 @@ pub(crate) fn matches_iwords(s: &str) -> bool {
                 || s.starts_with("валз")
         }
         // гар | грышч | грэк
-        (0xD0, 0xB3) => s.starts_with("гар") || s.starts_with("грышч") || s.starts_with("грэк"),
+        Some('г') => s.starts_with("гар") || s.starts_with("грышч") || s.starts_with("грэк"),
         // дал | дыш
-        (0xD0, 0xB4) => s.starts_with("дал") || s.starts_with("дыш"),
+        Some('д') => s.starts_with("дал") || s.starts_with("дыш"),
         // жыц
-        (0xD0, 0xB6) => s.starts_with("жыц"),
+        Some('ж') => s.starts_with("жыц"),
         // канапіс | кань?н | ка[цўл] | каў[кц] | кл(… )␣ | ксі
-        (0xD0, 0xBA) => {
+        Some('к') => {
             s.starts_with("канапіс")
                 || s.starts_with("канн")
                 || s.starts_with("каньн")
@@ -91,7 +69,7 @@ pub(crate) fn matches_iwords(s: &str) -> bool {
                 || s.starts_with("ксі")
         }
         // леус | л(іст|␣) | лістас | льк
-        (0xD0, 0xBB) => {
+        Some('л') => {
             s.starts_with("леус")
                 || s.starts_with("ліст")
                 || s.starts_with("л ")
@@ -99,7 +77,7 @@ pub(crate) fn matches_iwords(s: &str) -> bool {
                 || s.starts_with("льк")
         }
         // м␣ | мант | мась?ц | мбры[кч] | менна␣ | мідж | мпар[тц] | мпульс[аеуы]
-        (0xD0, 0xBC) => {
+        Some('м') => {
             s.starts_with("м ")
                 || s.starts_with("мант")
                 || s.starts_with("масц")
@@ -117,7 +95,7 @@ pub(crate) fn matches_iwords(s: &str) -> bool {
         }
         // нахадз | нды(…) | ндэкс(…) | н[еі][ейяю] | нк(…) | нтэрым |
         // нфікс | нфімум | ншась?ц | нш(… )␣
-        (0xD0, 0xBD) => {
+        Some('н') => {
             s.starts_with("нахадз")
                 || s.starts_with("ндыі ")
                 || s.starts_with("ндый ")
@@ -164,9 +142,9 @@ pub(crate) fn matches_iwords(s: &str) -> bool {
                 || s.starts_with("ншыя ")
         }
         // псілан
-        (0xD0, 0xBF) => s.starts_with("псілан"),
+        Some('п') => s.starts_with("псілан"),
         // р(… )␣ | рад | рбіс | рмас | рха | рыс␣
-        (0xD1, 0x80) => {
+        Some('р') => {
             s.starts_with("ра ")
                 || s.starts_with("ры ")
                 || s.starts_with("ру ")
@@ -183,7 +161,7 @@ pub(crate) fn matches_iwords(s: &str) -> bool {
                 || s.starts_with("рыс ")
         }
         // скарк | скарак | скра… | ста␣ | с[нт]ась?ц | сь?ці[нк]
-        (0xD1, 0x81) => {
+        Some('с') => {
             s.starts_with("скарк")
                 || s.starts_with("скарак")
                 || s.starts_with("скра")
@@ -200,13 +178,13 @@ pub(crate) fn matches_iwords(s: &str) -> bool {
                 || s.starts_with("сьцік")
         }
         // та[р␣] | тры
-        (0xD1, 0x82) => s.starts_with("тар") || s.starts_with("та ") || s.starts_with("тры"),
+        Some('т') => s.starts_with("тар") || s.starts_with("та ") || s.starts_with("тры"),
         // х(ны[хя]?|ную|на[яей])? — bare "х" alone matches.
-        (0xD1, 0x85) => true,
+        Some('х') => true,
         // ць?він
-        (0xD1, 0x86) => s.starts_with("цвін") || s.starts_with("цьвін"),
+        Some('ц') => s.starts_with("цвін") || s.starts_with("цьвін"),
         // шыяс
-        (0xD1, 0x88) => s.starts_with("шыяс"),
+        Some('ш') => s.starts_with("шыяс"),
         _ => false,
     }
 }
@@ -400,7 +378,7 @@ fn iotacize_vowel_ji(text: &str) -> String {
     iotacize_opt_space_ji(&iotacize_sp_ji(&iotacize_sp_u_ji(text)))
 }
 
-/// Entry 0: `(V )і ў` → `$1й у` (`V␣і␣ў`, 2+1+2+1+2 bytes).
+/// Entry 0: `(V )і ў` → `$1й у` (`V` + ` і ў`).
 fn iotacize_sp_u_ji(text: &str) -> String {
     if !text.contains('і') {
         return text.to_string();
@@ -410,23 +388,27 @@ fn iotacize_sp_u_ji(text: &str) -> String {
     let mut out = String::with_capacity(len + 16);
     let mut flush_from = 0usize;
     let mut i = 0usize;
+    // Trailer ` і ў` is space + `і` + space + `ў` (6 bytes).
+    const TRAILER: &str = " і ў";
     while i < len {
-        if i + 8 <= len
-            && is_vowel_ji(bytes[i], bytes[i + 1])
-            && bytes[i + 2] == b' '
-            && bytes[i + 3] == 0xD1
-            && bytes[i + 4] == 0x96
-            && bytes[i + 5] == b' '
-            && bytes[i + 6] == 0xD1
-            && bytes[i + 7] == 0x9E
-        {
-            out.push_str(&text[flush_from..i + 3]);
-            out.push('й');
-            out.push(' ');
-            out.push('у');
-            flush_from = i + 8;
-            i += 8;
+        let b = bytes[i];
+        // `V` is non-ASCII: ASCII bytes never start a match.
+        if b.is_ascii() {
+            i += 1;
             continue;
+        }
+        if let Some(v) = text[i..].chars().next() {
+            if is_vowel_ji(v) && text[i + v.len_utf8()..].starts_with(TRAILER) {
+                // `V` + space kept, then `й у`.
+                let v_end = i + v.len_utf8() + 1;
+                out.push_str(&text[flush_from..v_end]);
+                out.push('й');
+                out.push(' ');
+                out.push('у');
+                flush_from = i + v.len_utf8() + TRAILER.len();
+                i = flush_from;
+                continue;
+            }
         }
         i += if bytes[i] < 0x80 {
             1
@@ -438,7 +420,7 @@ fn iotacize_sp_u_ji(text: &str) -> String {
     out
 }
 
-/// Entry 1: `(V )і␣` → `$1й␣` (`V␣і␣`, trailing space consumed).
+/// Entry 1: `(V )і␣` → `$1й␣` (`V` + ` і `, trailing space consumed).
 fn iotacize_sp_ji(text: &str) -> String {
     if !text.contains('і') {
         return text.to_string();
@@ -448,20 +430,25 @@ fn iotacize_sp_ji(text: &str) -> String {
     let mut out = String::with_capacity(len + 16);
     let mut flush_from = 0usize;
     let mut i = 0usize;
+    // Trailer ` і ` is space + `і` + space (4 bytes).
+    const TRAILER: &str = " і ";
     while i < len {
-        if i + 6 <= len
-            && is_vowel_ji(bytes[i], bytes[i + 1])
-            && bytes[i + 2] == b' '
-            && bytes[i + 3] == 0xD1
-            && bytes[i + 4] == 0x96
-            && bytes[i + 5] == b' '
-        {
-            out.push_str(&text[flush_from..i + 3]);
-            out.push('й');
-            out.push(' ');
-            flush_from = i + 6;
-            i += 6;
+        let b = bytes[i];
+        // `V` is non-ASCII: ASCII bytes never start a match.
+        if b.is_ascii() {
+            i += 1;
             continue;
+        }
+        if let Some(v) = text[i..].chars().next() {
+            if is_vowel_ji(v) && text[i + v.len_utf8()..].starts_with(TRAILER) {
+                let v_end = i + v.len_utf8() + 1;
+                out.push_str(&text[flush_from..v_end]);
+                out.push('й');
+                out.push(' ');
+                flush_from = i + v.len_utf8() + TRAILER.len();
+                i = flush_from;
+                continue;
+            }
         }
         i += if bytes[i] < 0x80 {
             1
@@ -484,18 +471,26 @@ fn iotacize_opt_space_ji(text: &str) -> String {
     let mut flush_from = 0usize;
     let mut i = 0usize;
     while i < len {
-        if i + 2 <= len && is_vowel_ji(bytes[i], bytes[i + 1]) {
-            let mut j = i + 2;
-            if j < len && bytes[j] == b' ' {
-                j += 1;
-            }
-            if j + 2 <= len && bytes[j] == 0xD1 && bytes[j + 1] == 0x96 {
-                out.push_str(&text[flush_from..j]);
-                out.push('й');
-                out.push('і');
-                flush_from = j + 2;
-                i = j + 2;
-                continue;
+        let b = bytes[i];
+        // `V` is non-ASCII: ASCII bytes never start a match.
+        if b.is_ascii() {
+            i += 1;
+            continue;
+        }
+        if let Some(v) = text[i..].chars().next() {
+            if is_vowel_ji(v) {
+                let mut j = i + v.len_utf8();
+                if text[j..].starts_with(' ') {
+                    j += 1;
+                }
+                if text[j..].starts_with('і') {
+                    out.push_str(&text[flush_from..j]);
+                    out.push('й');
+                    out.push('і');
+                    flush_from = j + 'і'.len_utf8();
+                    i = flush_from;
+                    continue;
+                }
             }
         }
         i += if bytes[i] < 0x80 {
@@ -521,13 +516,15 @@ fn iotacize_iwords(text: &str) -> String {
     let mut out = String::with_capacity(len + 16);
     let mut flush_from = 0usize;
     let mut i = 0usize;
+    // ` і` is space(1) + `і`(2).
     while i < len {
-        if bytes[i] == b' '
-            && i + 3 <= len
-            && bytes[i + 1] == 0xD1
-            && bytes[i + 2] == 0x96
-            && matches_iwords(&text[i + 3..])
-        {
+        let b = bytes[i];
+        // The pattern starts with a space.
+        if b != b' ' {
+            i += if b.is_ascii() { 1 } else { utf8_char_len(b) };
+            continue;
+        }
+        if text[i..].starts_with(" і") && matches_iwords(&text[i + 3..]) {
             out.push_str(&text[flush_from..i + 1]);
             out.push('й');
             out.push('і');

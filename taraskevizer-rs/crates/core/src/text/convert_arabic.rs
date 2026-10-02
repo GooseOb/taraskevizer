@@ -10,7 +10,7 @@
 //! Case handling is exactly like the JSON (case-sensitive: the JS `gi`
 //! flags were dropped by the JSON export, a pre-existing deviation kept).
 
-use super::utf8_char_len;
+use super::{byte_pair, utf8_char_len};
 
 /// Advance-bytes helper: copy `text[flush..i]` then skip `n` bytes.
 macro_rules! emit {
@@ -22,63 +22,106 @@ macro_rules! emit {
     }};
 }
 
+// ---------------------------------------------------------------------------
+// Byte patterns spelled with the character literals (`byte_pair` /
+// `as_bytes` are const): the hot loops below read as characters but compile
+// to the same raw byte compares as hand-written hex — no per-position
+// decoding or `Pattern` overhead (measured parity with hex literals).
+// ---------------------------------------------------------------------------
+
+/// `(lead, second)` byte pair of a 2-byte literal: `P_A` is `('А' as bytes)`.
+macro_rules! pairs {
+    ($($name:ident = $lit:literal;)*) => {
+        $(const $name: (u8, u8) = byte_pair($lit);)*
+    };
+}
+
+pairs! {
+    P_A_UP = "А"; P_A_LO = "а"; P_YA_UP = "Я"; P_YA_LO = "я";
+    P_YE_UP = "Е"; P_YE_LO = "е"; P_E_UP = "Э"; P_E_LO = "э";
+    P_YERU_UP = "Ы"; P_YERU_LO = "ы"; P_U_UP = "У"; P_U_LO = "у";
+    P_O_UP = "О"; P_O_LO = "о"; P_YO_UP = "Ё"; P_YO_LO = "ё";
+    P_YU_UP = "Ю"; P_YU_LO = "ю"; P_II_UP = "І"; P_II_LO = "і";
+    P_L_UP = "Л"; P_L_LO = "л";
+    P_BE_LO = "б"; P_VE_LO = "в"; P_GHE_LO = "г"; P_DE_LO = "д";
+    P_ZHE_LO = "ж"; P_ZE_LO = "з"; P_JOT_LO = "й"; P_KA_LO = "к";
+    P_EL_LO = "л"; P_EM_LO = "м"; P_EN_LO = "н"; P_PE_LO = "п";
+    P_ER_LO = "р"; P_ES_LO = "с"; P_TE_LO = "т"; P_EF_LO = "ф";
+    P_KHA_LO = "х"; P_TSE_LO = "ц"; P_CHE_LO = "ч"; P_SHA_LO = "ш";
+    P_USHORT_LO = "ў"; P_SOFT_LO = "ь";
+    P_BE_UP = "Б"; P_VE_UP = "В"; P_GHE_UP = "Г"; P_DE_UP = "Д";
+    P_ZHE_UP = "Ж"; P_ZE_UP = "З"; P_JOT_UP = "Й"; P_KA_UP = "К";
+    P_EM_UP = "М"; P_EN_UP = "Н"; P_PE_UP = "П";
+    P_ER_UP = "Р"; P_ES_UP = "С"; P_TE_UP = "Т"; P_EF_UP = "Ф";
+    P_KHA_UP = "Х"; P_TSE_UP = "Ц"; P_CHE_UP = "Ч"; P_SHA_UP = "Ш";
+    P_USHORT_UP = "Ў"; P_SOFT_UP = "Ь";
+    P_TA_AR = "ت"; P_ZA_AR = "ز"; P_THA_AR = "ث"; P_KAF_AR = "ك";
+    P_APOS_MOD = "ʼ"; P_GHE_DESC_UP = "Ґ"; P_GHE_DESC_LO = "ґ";
+}
+
+/// Fixed multi-byte patterns as byte slices (slice `starts_with` is a plain
+/// `memcmp`, unlike `str` `Pattern` matching).
+const S_DZHE_SUKUN: &[u8] = "д\u{652}ж".as_bytes();
+const S_SUKUN: &[u8] = "ْ".as_bytes();
+const P_SUKUN: (u8, u8) = byte_pair("ْ");
+const S_SHADDA: &[u8] = "ّ".as_bytes();
+const S_DZ_SOFT: &[u8] = "ࢮ".as_bytes();
+const S_SPACE_I_LAT: &[u8] = " I ".as_bytes();
+const S_SPACE_I_CYR: &[u8] = " і ".as_bytes();
+
 /// Shadda/sukun consonant `[БбВвГгДдЖжЗзЙйКкЛлМмНнПпРрСсТтФфХхЦцЧчШшЎў]`
 /// (both cases, no `ь`).
 fn is_ar_cons(b0: u8, b1: u8) -> bool {
     matches!(
         (b0, b1),
-        // Lowercase.
-        (0xD0, 0xB1) // б
-            | (0xD0, 0xB2) // в
-            | (0xD0, 0xB3) // г
-            | (0xD0, 0xB4) // д
-            | (0xD0, 0xB6) // ж
-            | (0xD0, 0xB7) // з
-            | (0xD0, 0xB9) // й
-            | (0xD0, 0xBA) // к
-            | (0xD0, 0xBB) // л
-            | (0xD0, 0xBC) // м
-            | (0xD0, 0xBD) // н
-            | (0xD0, 0xBF) // п
-            | (0xD1, 0x80) // р
-            | (0xD1, 0x81) // с
-            | (0xD1, 0x82) // т
-            | (0xD1, 0x84) // ф
-            | (0xD1, 0x85) // х
-            | (0xD1, 0x86) // ц
-            | (0xD1, 0x87) // ч
-            | (0xD1, 0x88) // ш
-            | (0xD1, 0x9E) // ў
-            // Uppercase.
-            | (0xD0, 0x91) // Б
-            | (0xD0, 0x92) // В
-            | (0xD0, 0x93) // Г
-            | (0xD0, 0x94) // Д
-            | (0xD0, 0x96) // Ж
-            | (0xD0, 0x97) // З
-            | (0xD0, 0x99) // Й
-            | (0xD0, 0x9A) // К
-            | (0xD0, 0x9B) // Л
-            | (0xD0, 0x9C) // М
-            | (0xD0, 0x9D) // Н
-            | (0xD0, 0x9F) // П
-            | (0xD0, 0xA0) // Р
-            | (0xD0, 0xA1) // С
-            | (0xD0, 0xA2) // Т
-            | (0xD0, 0xA4) // Ф
-            | (0xD0, 0xA5) // Х
-            | (0xD0, 0xA6) // Ц
-            | (0xD0, 0xA7) // Ч
-            | (0xD0, 0xA8) // Ш
-            | (0xD0, 0x8E) // Ў
+        P_BE_LO
+            | P_VE_LO
+            | P_GHE_LO
+            | P_DE_LO
+            | P_ZHE_LO
+            | P_ZE_LO
+            | P_JOT_LO
+            | P_KA_LO
+            | P_EL_LO
+            | P_EM_LO
+            | P_EN_LO
+            | P_PE_LO
+            | P_ER_LO
+            | P_ES_LO
+            | P_TE_LO
+            | P_EF_LO
+            | P_KHA_LO
+            | P_TSE_LO
+            | P_CHE_LO
+            | P_SHA_LO
+            | P_USHORT_LO
+            | P_BE_UP
+            | P_VE_UP
+            | P_GHE_UP
+            | P_DE_UP
+            | P_ZHE_UP
+            | P_ZE_UP
+            | P_JOT_UP
+            | P_KA_UP
+            | P_L_UP
+            | P_EM_UP
+            | P_EN_UP
+            | P_PE_UP
+            | P_ER_UP
+            | P_ES_UP
+            | P_TE_UP
+            | P_EF_UP
+            | P_KHA_UP
+            | P_TSE_UP
+            | P_CHE_UP
+            | P_SHA_UP
+            | P_USHORT_UP
     )
 }
 
 /// Lam-alif vowel `[АаЯя]` at `i` (2 bytes)? Returns 2 when present.
 fn lam_vow_len(b: &[u8], i: usize) -> usize {
-    if i + 2 <= b.len()
-        && ((b[i] == 0xD0 && matches!(b[i + 1], 0x90 | 0xB0 | 0xAF))
-            || (b[i] == 0xD1 && b[i + 1] == 0x8F))
+    if i + 2 <= b.len() && matches!((b[i], b[i + 1]), P_A_UP | P_A_LO | P_YA_UP | P_YA_LO)
     {
         2
     } else {
@@ -97,22 +140,20 @@ fn ar_lam(text: &str) -> String {
     while i < len {
         if bytes[i] == b' '
             && i + 5 <= len
-            && bytes[i + 1] == 0xD0
-            && matches!(bytes[i + 2], 0x9B | 0xBB)
+            && matches!((bytes[i + 1], bytes[i + 2]), P_L_UP | P_L_LO)
             && lam_vow_len(bytes, i + 3) == 2
         {
             emit!(out, text, flush, i, " لا", 5);
             continue;
         }
         if i + 4 <= len
-            && bytes[i] == 0xD0
-            && matches!(bytes[i + 1], 0x9B | 0xBB)
+            && matches!((bytes[i], bytes[i + 1]), P_L_UP | P_L_LO)
             && lam_vow_len(bytes, i + 2) == 2
         {
             emit!(out, text, flush, i, "ـلا", 4);
             continue;
         }
-        i += if bytes[i] < 0x80 {
+        i += if bytes[i].is_ascii() {
             1
         } else {
             utf8_char_len(bytes[i])
@@ -142,10 +183,11 @@ fn ar_shadda(text: &str) -> String {
                 continue;
             }
             // `д[зж]` digraph double (exact bytes, like `\1`).
-            let pair = bytes[i] == 0xD0
-                && matches!(bytes[i + 1], 0xB4 | 0x94)
-                && bytes[i + 2] == 0xD0
-                && matches!(bytes[i + 3], 0xB7 | 0x97 | 0xB6 | 0x96);
+            let pair = matches!((bytes[i], bytes[i + 1]), P_DE_LO | P_DE_UP)
+                && matches!(
+                    (bytes[i + 2], bytes[i + 3]),
+                    P_ZE_LO | P_ZE_UP | P_ZHE_LO | P_ZHE_UP
+                );
             if pair
                 && i + 8 <= len
                 && bytes[i + 4] == bytes[i]
@@ -161,7 +203,7 @@ fn ar_shadda(text: &str) -> String {
                 continue;
             }
         }
-        i += if bytes[i] < 0x80 {
+        i += if bytes[i].is_ascii() {
             1
         } else {
             utf8_char_len(bytes[i])
@@ -187,7 +229,7 @@ fn ar_sukun(text: &str) -> String {
             i += 2;
             continue;
         }
-        i += if bytes[i] < 0x80 {
+        i += if bytes[i].is_ascii() {
             1
         } else {
             utf8_char_len(bytes[i])
@@ -205,11 +247,11 @@ fn ar_alif_a(text: &str) -> String {
     let mut flush = 0usize;
     let mut i = 0usize;
     while i < len {
-        if i + 2 <= len && bytes[i] == 0xD0 && matches!(bytes[i + 1], 0x90 | 0xB0) {
+        if i + 2 <= len && matches!((bytes[i], bytes[i + 1]), P_A_UP | P_A_LO) {
             emit!(out, text, flush, i, "اа", 2);
             continue;
         }
-        i += if bytes[i] < 0x80 {
+        i += if bytes[i].is_ascii() {
             1
         } else {
             utf8_char_len(bytes[i])
@@ -227,30 +269,34 @@ fn ar_space_alif(text: &str) -> String {
     let mut flush = 0usize;
     let mut i = 0usize;
     while i < len {
-        if bytes[i] == b' '
-            && i + 3 <= len
+        // Only a space can start this pattern.
+        if bytes[i] != b' ' {
+            i += if bytes[i].is_ascii() {
+                1
+            } else {
+                utf8_char_len(bytes[i])
+            };
+            continue;
+        }
+        if i + 3 <= len
             && matches!(
                 (bytes[i + 1], bytes[i + 2]),
-                (0xD0, 0x95)
-                    | (0xD0, 0xB5)
-                    | (0xD0, 0xAD)
-                    | (0xD1, 0x8D)
-                    | (0xD0, 0xAB)
-                    | (0xD1, 0x8B)
-                    | (0xD0, 0xA3)
-                    | (0xD1, 0x83)
-                    | (0xD0, 0x9E)
-                    | (0xD0, 0xBE)
+                P_YE_UP
+                    | P_YE_LO
+                    | P_E_UP
+                    | P_E_LO
+                    | P_YERU_UP
+                    | P_YERU_LO
+                    | P_U_UP
+                    | P_U_LO
+                    | P_O_UP
+                    | P_O_LO
             )
         {
             emit!(out, text, flush, i, " ا", 1);
             continue;
         }
-        i += if bytes[i] < 0x80 {
-            1
-        } else {
-            utf8_char_len(bytes[i])
-        };
+        i += 1;
     }
     out.push_str(&text[flush..]);
     out
@@ -258,10 +304,7 @@ fn ar_space_alif(text: &str) -> String {
 
 /// Softening lookahead `[еёіюяь]` (lowercase only, like the JSON).
 fn is_soft_look(b0: u8, b1: u8) -> bool {
-    matches!(
-        (b0, b1),
-        (0xD0, 0xB5) | (0xD1, 0x91) | (0xD1, 0x96) | (0xD1, 0x8E) | (0xD1, 0x8F) | (0xD1, 0x8C)
-    )
+    matches!((b0, b1), P_YE_LO | P_YO_LO | P_II_LO | P_YU_LO | P_YA_LO | P_SOFT_LO)
 }
 
 /// Entries 6–10 fused: `д\u{652}з\u{652}(?=look)→ࢮ`, `з/к/с/т\u{652}(?=look)`
@@ -273,17 +316,14 @@ fn ar_soft(text: &str) -> String {
     let mut out = String::with_capacity(len + 16);
     let mut flush = 0usize;
     let mut i = 0usize;
+    // `ْ` is U+0652; all heads here are 2-byte non-ASCII.
     while i < len {
         // `д\u{652}з\u{652}(?=[еёіюяь])` → `ࢮ` (before lone `з`, dict order).
         if i + 10 <= len
-            && bytes[i] == 0xD0
-            && bytes[i + 1] == 0xB4
-            && bytes[i + 2] == 0xD9
-            && bytes[i + 3] == 0x92
-            && bytes[i + 4] == 0xD0
-            && bytes[i + 5] == 0xB7
-            && bytes[i + 6] == 0xD9
-            && bytes[i + 7] == 0x92
+            && matches!((bytes[i], bytes[i + 1]), P_DE_LO)
+            && matches!((bytes[i + 2], bytes[i + 3]), P_SUKUN)
+            && matches!((bytes[i + 4], bytes[i + 5]), P_ZE_LO)
+            && matches!((bytes[i + 6], bytes[i + 7]), P_SUKUN)
             && is_soft_look(bytes[i + 8], bytes[i + 9])
         {
             emit!(out, text, flush, i, "ࢮ", 8);
@@ -291,15 +331,14 @@ fn ar_soft(text: &str) -> String {
         }
         // `з/к/с/т\u{652}(?=[еёіюяь])`.
         if i + 6 <= len
-            && bytes[i + 2] == 0xD9
-            && bytes[i + 3] == 0x92
+            && matches!((bytes[i + 2], bytes[i + 3]), P_SUKUN)
             && is_soft_look(bytes[i + 4], bytes[i + 5])
         {
             let rep = match (bytes[i], bytes[i + 1]) {
-                (0xD0, 0xB7) => Some("ز"),
-                (0xD0, 0xBA) => Some("ك"),
-                (0xD1, 0x81) => Some("ث"),
-                (0xD1, 0x82) => Some("ت"),
+                P_ZE_LO => Some("ز"),
+                P_KA_LO => Some("ك"),
+                P_ES_LO => Some("ث"),
+                P_TE_LO => Some("ت"),
                 _ => None,
             };
             if let Some(r) = rep {
@@ -307,7 +346,7 @@ fn ar_soft(text: &str) -> String {
                 continue;
             }
         }
-        i += if bytes[i] < 0x80 {
+        i += if bytes[i].is_ascii() {
             1
         } else {
             utf8_char_len(bytes[i])
@@ -326,15 +365,17 @@ fn ar_tzii(text: &str) -> String {
     let mut i = 0usize;
     while i < len {
         if i + 4 <= len
-            && ((bytes[i] == 0xD8 && matches!(bytes[i + 1], 0xAA | 0xB2 | 0xAB))
-                || (bytes[i] == 0xD9 && bytes[i + 1] == 0x83))
-            && ((bytes[i + 2] == 0xD0 && bytes[i + 3] == 0x86)
-                || (bytes[i + 2] == 0xD1 && bytes[i + 3] == 0x96))
+            && matches!(
+                (bytes[i], bytes[i + 1]),
+                P_TA_AR | P_ZA_AR | P_THA_AR | P_KAF_AR
+            )
+            && matches!((bytes[i + 2], bytes[i + 3]), P_II_UP | P_II_LO)
         {
+            // Both sides are 2 bytes: 2 + 2.
             emit!(out, text, flush, i, "ы", 4);
             continue;
         }
-        i += if bytes[i] < 0x80 {
+        i += if bytes[i].is_ascii() {
             1
         } else {
             utf8_char_len(bytes[i])
@@ -344,41 +385,23 @@ fn ar_tzii(text: &str) -> String {
     out
 }
 
-/// Byte length of a presoft head `[تزكثࢮбвгджзйклмнпрстфхцчшў]` at `i`
-/// (lowercase Cyrillic only, like the JSON): 3 for `ࢮ`, 2 else, 0 if none.
+/// Presoft head `[تزكثࢮбвгджзйклмнпрстфхцчшў]` at `b[i]`
+/// (lowercase Cyrillic only, like the JSON): byte length, 0 if none.
+/// `ࢮ` is 3 bytes, everything else is 2 bytes.
 fn presoft_head_len(b: &[u8], i: usize) -> usize {
-    if i + 3 <= b.len() && b[i] == 0xE0 && b[i + 1] == 0xA2 && b[i + 2] == 0xAE {
-        return 3;
+    // `ࢮ` first: its lead differs from every 2-byte head.
+    if i + S_DZ_SOFT.len() <= b.len() && b[i..].starts_with(S_DZ_SOFT) {
+        return S_DZ_SOFT.len();
     }
     if i + 2 > b.len() {
         return 0;
     }
     match (b[i], b[i + 1]) {
-        // Arabic `ت ز ث ك`.
-        (0xD8, 0xAA) | (0xD8, 0xB2) | (0xD8, 0xAB) | (0xD9, 0x83) => 2,
-        // Lowercase `бвгджзйклмнп`.
-        (0xD0, 0xB1)
-        | (0xD0, 0xB2)
-        | (0xD0, 0xB3)
-        | (0xD0, 0xB4)
-        | (0xD0, 0xB6)
-        | (0xD0, 0xB7)
-        | (0xD0, 0xB9)
-        | (0xD0, 0xBA)
-        | (0xD0, 0xBB)
-        | (0xD0, 0xBC)
-        | (0xD0, 0xBD)
-        | (0xD0, 0xBF) => 2,
-        // Lowercase `рстфхцчшў`.
-        (0xD1, 0x80)
-        | (0xD1, 0x81)
-        | (0xD1, 0x82)
-        | (0xD1, 0x84)
-        | (0xD1, 0x85)
-        | (0xD1, 0x86)
-        | (0xD1, 0x87)
-        | (0xD1, 0x88)
-        | (0xD1, 0x9E) => 2,
+        P_TA_AR | P_ZA_AR | P_THA_AR | P_KAF_AR => 2,
+        P_BE_LO | P_VE_LO | P_GHE_LO | P_DE_LO | P_ZHE_LO | P_ZE_LO | P_JOT_LO | P_KA_LO
+        | P_L_LO | P_EM_LO | P_EN_LO | P_PE_LO => 2,
+        P_ER_LO | P_ES_LO | P_TE_LO | P_EF_LO | P_KHA_LO | P_TSE_LO | P_CHE_LO | P_SHA_LO
+        | P_USHORT_LO => 2,
         _ => 0,
     }
 }
@@ -387,9 +410,9 @@ fn presoft_head_len(b: &[u8], i: usize) -> usize {
 /// `[оёую]→damma`.
 fn presoft_mark(b0: u8, b1: u8) -> Option<&'static str> {
     Some(match (b0, b1) {
-        (0xD0, 0xB0) | (0xD1, 0x8F) | (0xD1, 0x8D) | (0xD0, 0xB5) => "َ",
-        (0xD1, 0x96) | (0xD1, 0x8B) => "ِ",
-        (0xD0, 0xBE) | (0xD1, 0x91) | (0xD1, 0x83) | (0xD1, 0x8E) => "ُ",
+        P_A_LO | P_YA_LO | P_E_LO | P_YE_LO => "َ",
+        P_II_LO | P_YERU_LO => "ِ",
+        P_O_LO | P_YO_LO | P_U_LO | P_YU_LO => "ُ",
         _ => return None,
     })
 }
@@ -408,21 +431,22 @@ fn ar_presoft(text: &str) -> String {
         let hl = presoft_head_len(bytes, i);
         if hl > 0 {
             let mut j = i + hl;
-            // Optional sukun, consumed like `ْ?`.
-            if j + 2 <= len && bytes[j] == 0xD9 && bytes[j + 1] == 0x92 {
-                j += 2;
+            // Optional sukun (`ْ` U+0652), consumed like `ْ?`.
+            if bytes[j..].starts_with(S_SUKUN) {
+                j += S_SUKUN.len();
             }
-            // Optional shadda, preserved like `(\u{651}?)`.
+            // Optional shadda (`ّ` U+0651), preserved like `(\u{651}?)`.
             let mut sh = 0usize;
-            if j + 2 <= len && bytes[j] == 0xD9 && bytes[j + 1] == 0x91 {
-                sh = 2;
+            if bytes[j..].starts_with(S_SHADDA) {
+                sh = S_SHADDA.len();
             }
             if j + sh + 2 <= len {
                 if let Some(m) = presoft_mark(bytes[j + sh], bytes[j + sh + 1]) {
+                    // All presoft vowels are 2 bytes.
                     out.push_str(&text[flush..i]);
                     out.push_str(&text[i..i + hl]);
                     if sh > 0 {
-                        out.push_str(&text[j..j + 2]);
+                        out.push_str(&text[j..j + sh]);
                     }
                     out.push_str(m);
                     flush = j + sh + 2;
@@ -431,7 +455,7 @@ fn ar_presoft(text: &str) -> String {
                 }
             }
         }
-        i += if bytes[i] < 0x80 {
+        i += if bytes[i].is_ascii() {
             1
         } else {
             utf8_char_len(bytes[i])
@@ -449,18 +473,23 @@ fn ar_space_i(text: &str) -> String {
     let mut flush = 0usize;
     let mut i = 0usize;
     while i < len {
-        if bytes[i] == b' ' && i + 3 <= len {
-            let ilen = if bytes[i + 1] == 0x49 {
+        // Both patterns start with a space.
+        if bytes[i] != b' ' {
+            i += if bytes[i].is_ascii() {
                 1
-            } else if bytes[i + 1] == 0xD1 && i + 4 <= len && bytes[i + 2] == 0x96 {
-                2
             } else {
-                0
+                utf8_char_len(bytes[i])
             };
-            if ilen > 0 && bytes[i + 1 + ilen] == b' ' {
-                emit!(out, text, flush, i, " اِ ", 2 + ilen);
-                continue;
-            }
+            continue;
+        }
+        // ` I ` is 3 bytes, ` і ` is 4 bytes (`і` is 2 bytes).
+        if bytes[i..].starts_with(S_SPACE_I_LAT) {
+            emit!(out, text, flush, i, " اِ ", 3);
+            continue;
+        }
+        if bytes[i..].starts_with(S_SPACE_I_CYR) {
+            emit!(out, text, flush, i, " اِ ", 4);
+            continue;
         }
         i += if bytes[i] < 0x80 {
             1
@@ -483,57 +512,63 @@ fn ar_rest(text: &str) -> String {
     let mut i = 0usize;
     while i < len {
         let b = bytes[i];
-        // `ʼ` (U+02BC) → `ع`.
-        if i + 2 <= len && b == 0xCA && bytes[i + 1] == 0xBC {
+        if b.is_ascii() {
+            // Only `,`/`?` match ASCII here; everything else passes through.
+            if b == b',' {
+                emit!(out, text, flush, i, "،", 1);
+                continue;
+            }
+            if b == b'?' {
+                emit!(out, text, flush, i, "؟", 1);
+                continue;
+            }
+            i += 1;
+            continue;
+        }
+        // `ʼ` → `ع`.
+        if i + 2 <= len && (b, bytes[i + 1]) == P_APOS_MOD {
             emit!(out, text, flush, i, "ع", 2);
             continue;
         }
+        // `д\u{652}ж` → `ج` before bare `д/Д→د`.
+        if bytes[i..].starts_with(S_DZHE_SUKUN) {
+            emit!(out, text, flush, i, "ج", 6);
+            continue;
+        }
         if i + 2 <= len {
-            // `д\u{652}ж` → `ج` before bare `Д→د`.
-            if b == 0xD0
-                && bytes[i + 1] == 0xB4
-                && i + 6 <= len
-                && bytes[i + 2] == 0xD9
-                && bytes[i + 3] == 0x92
-                && bytes[i + 4] == 0xD0
-                && bytes[i + 5] == 0xB6
-            {
-                emit!(out, text, flush, i, "ج", 6);
-                continue;
-            }
             let rep: Option<&'static str> = match (b, bytes[i + 1]) {
                 // `ь`/`Ь` delete.
-                (0xD1, 0x8C) | (0xD0, 0xAC) => Some(""),
+                P_SOFT_LO | P_SOFT_UP => Some(""),
                 // Vowels.
-                (0xD0, 0xAF) | (0xD1, 0x8F) | (0xD0, 0x95) | (0xD0, 0xB5) => Some("يَ"),
-                (0xD0, 0x86) | (0xD1, 0x96) => Some("يِ"),
-                (0xD0, 0x81) | (0xD1, 0x91) | (0xD0, 0xAE) | (0xD1, 0x8E) => Some("يُ"),
-                (0xD0, 0x90) | (0xD0, 0xB0) | (0xD0, 0xAD) | (0xD1, 0x8D) => Some("َ"),
+                P_YA_UP | P_YA_LO | P_YE_UP | P_YE_LO => Some("يَ"),
+                P_II_UP | P_II_LO => Some("يِ"),
+                P_YO_UP | P_YO_LO | P_YU_UP | P_YU_LO => Some("يُ"),
+                P_A_UP | P_A_LO | P_E_UP | P_E_LO => Some("َ"),
                 // `[ЫыІі]` only ever sees `Ы/ы` here (`І/і` went above).
-                (0xD0, 0xAB) | (0xD1, 0x8B) => Some("ِ"),
-                (0xD0, 0x9E) | (0xD0, 0xBE) | (0xD0, 0xA3) | (0xD1, 0x83) => Some("ُ"),
+                P_YERU_UP | P_YERU_LO => Some("ِ"),
+                P_O_UP | P_O_LO | P_U_UP | P_U_LO => Some("ُ"),
                 // Consonants.
-                (0xD0, 0xB1) | (0xD0, 0x91) => Some("ب"),
-                (0xD0, 0xB2) | (0xD0, 0x92) | (0xD0, 0x8E) | (0xD1, 0x9E) => Some("و"),
-                (0xD0, 0xB3) | (0xD0, 0x93) => Some("ه"),
-                (0xD0, 0xB9) | (0xD0, 0x99) => Some("ي"),
-                (0xD0, 0xBA) | (0xD0, 0x9A) => Some("ق"),
-                (0xD0, 0xBB) | (0xD0, 0x9B) => Some("ل"),
-                (0xD0, 0xBC) | (0xD0, 0x9C) => Some("م"),
-                (0xD0, 0xBD) | (0xD0, 0x9D) => Some("ن"),
-                (0xD0, 0xBF) | (0xD0, 0x9F) => Some("پ"),
-                (0xD1, 0x80) | (0xD0, 0xA0) => Some("ر"),
-                (0xD1, 0x81) | (0xD0, 0xA1) => Some("ص"),
-                (0xD1, 0x82) | (0xD0, 0xA2) => Some("ط"),
-                (0xD1, 0x84) | (0xD0, 0xA4) => Some("ف"),
-                (0xD1, 0x85) | (0xD0, 0xA5) => Some("ح"),
-                (0xD1, 0x86) | (0xD0, 0xA6) => Some("ࢯ"),
-                (0xD1, 0x87) | (0xD0, 0xA7) => Some("چ"),
-                (0xD1, 0x88) | (0xD0, 0xA8) => Some("ش"),
-                (0xD0, 0xB4) | (0xD0, 0x94) => Some("د"),
-                (0xD0, 0xB6) | (0xD0, 0x96) => Some("ژ"),
-                (0xD0, 0xB7) | (0xD0, 0x97) => Some("ض"),
-                (0xD2, 0x90) | (0xD2, 0x91) => Some("غ"),
+                P_BE_LO | P_BE_UP => Some("ب"),
+                P_VE_LO | P_VE_UP | P_USHORT_UP | P_USHORT_LO => Some("و"),
+                P_GHE_LO | P_GHE_UP => Some("ه"),
+                P_JOT_LO | P_JOT_UP => Some("ي"),
+                P_KA_LO | P_KA_UP => Some("ق"),
+                P_L_LO | P_L_UP => Some("ل"),
+                P_EM_LO | P_EM_UP => Some("م"),
+                P_EN_LO | P_EN_UP => Some("ن"),
+                P_PE_LO | P_PE_UP => Some("پ"),
+                P_ER_LO | P_ER_UP => Some("ر"),
+                P_ES_LO | P_ES_UP => Some("ص"),
+                P_TE_LO | P_TE_UP => Some("ط"),
+                P_EF_LO | P_EF_UP => Some("ف"),
+                P_KHA_LO | P_KHA_UP => Some("ح"),
+                P_TSE_LO | P_TSE_UP => Some("ࢯ"),
+                P_CHE_LO | P_CHE_UP => Some("چ"),
+                P_SHA_LO | P_SHA_UP => Some("ش"),
+                P_DE_LO | P_DE_UP => Some("د"),
+                P_ZHE_LO | P_ZHE_UP => Some("ژ"),
+                P_ZE_LO | P_ZE_UP => Some("ض"),
+                P_GHE_DESC_UP | P_GHE_DESC_LO => Some("غ"),
                 _ => None,
             };
             if let Some(r) = rep {
@@ -541,16 +576,7 @@ fn ar_rest(text: &str) -> String {
                 continue;
             }
         }
-        // `,` → `،`, `?` → `؟`.
-        if b == b',' {
-            emit!(out, text, flush, i, "،", 1);
-            continue;
-        }
-        if b == b'?' {
-            emit!(out, text, flush, i, "؟", 1);
-            continue;
-        }
-        i += if b < 0x80 { 1 } else { utf8_char_len(b) };
+        i += utf8_char_len(b);
     }
     out.push_str(&text[flush..]);
     out

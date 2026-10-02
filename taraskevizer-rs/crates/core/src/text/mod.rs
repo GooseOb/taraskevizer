@@ -46,4 +46,5 @@ pub(crate) use replace_i_by_j::replace_i_by_j;
 pub(crate) use soften::soften;
 pub(crate) use space_out_punct_sym_digits::space_out_punct_sym_digits;
 pub(crate) use unspace_punct_sym_digits::unspace_punct_sym_digits;
+pub(crate) use utf8_char_len::byte_pair;
 pub(crate) use utf8_char_len::utf8_char_len;

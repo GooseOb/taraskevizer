@@ -37,23 +37,13 @@ fn is_zw_vow(ch: char) -> bool {
     )
 }
 
-/// Byte length of one cluster consonant at `b[i]`, or 0 when absent.
+/// Byte length of one cluster consonant at the start of `s`, or 0 when absent.
 ///
-/// `ʼ` (U+02BC) is 2 bytes (CA BC); every Cyrillic member is 2 bytes.
-fn cons_char_len(b: &[u8], i: usize) -> usize {
-    if i >= b.len() {
-        return 0;
-    }
-    match b[i] {
-        0xCA if i + 2 <= b.len() && b[i + 1] == 0xBC => 2,
-        0xD0 if i + 1 < b.len() => match b[i + 1] {
-            0xB1 | 0xB2 | 0xB3 | 0xB4 | 0xB6 | 0xB7 | 0xB9 | 0xBA | 0xBB | 0xBC | 0xBD | 0xBF => 2,
-            _ => 0,
-        },
-        0xD1 if i + 1 < b.len() => match b[i + 1] {
-            0x80 | 0x81 | 0x82 | 0x84 | 0x85 | 0x86 | 0x87 | 0x88 | 0x9E | 0x8C => 2,
-            _ => 0,
-        },
+/// `ʼ` (U+02BC) is 2 bytes; every Cyrillic member is 2 bytes.
+fn cons_char_len(s: &str) -> usize {
+    match s.chars().next() {
+        Some('б' | 'в' | 'г' | 'д' | 'ж' | 'з' | 'й' | 'к' | 'л' | 'м' | 'н' | 'п' | 'р'
+        | 'с' | 'т' | 'ф' | 'х' | 'ц' | 'ч' | 'ш' | 'ў' | 'ь' | 'ʼ') => 2,
         _ => 0,
     }
 }
@@ -64,15 +54,12 @@ fn cons_char_len(b: &[u8], i: usize) -> usize {
 /// run extends to the first non-cluster char, which must be `о`/`ё` (an
 /// empty run matches bare `о`/`ё`, like the regex).
 fn cons_o_len(s: &str) -> Option<usize> {
-    let b = s.as_bytes();
     let mut i = 0;
-    while cons_char_len(b, i) > 0 {
-        i += cons_char_len(b, i);
+    while cons_char_len(&s[i..]) > 0 {
+        i += cons_char_len(&s[i..]);
     }
-    if i + 2 <= b.len()
-        && ((b[i] == 0xD0 && b[i + 1] == 0xBE) || (b[i] == 0xD1 && b[i + 1] == 0x91))
-    {
-        Some(i + 2)
+    if s[i..].starts_with('о') || s[i..].starts_with('ё') {
+        Some(i + 'о'.len_utf8())
     } else {
         None
     }
@@ -385,17 +372,13 @@ fn ia_ne_alt_len(s: &str) -> Option<usize> {
     if let Some(n) = cons_o_len(s) {
         return Some(n);
     }
-    let b = s.as_bytes();
-    if b.len() < 2 {
-        return None;
-    }
-    match (b[0], b[1]) {
-        (0xD0, 0xB1) => prefix_len(s, NE_D0B1),
-        (0xD0, 0xB2) => prefix_len(s, NE_D0B2),
-        (0xD0, 0xB3) => prefix_len(s, NE_D0B3),
-        (0xD0, 0xB4) => prefix_len(s, NE_D0B4),
-        (0xD0, 0xB7) => prefix_len(s, NE_D0B7),
-        (0xD0, 0xBA) => {
+    match s.chars().next() {
+        Some('б') => prefix_len(s, NE_D0B1),
+        Some('в') => prefix_len(s, NE_D0B2),
+        Some('г') => prefix_len(s, NE_D0B3),
+        Some('д') => prefix_len(s, NE_D0B4),
+        Some('з') => prefix_len(s, NE_D0B7),
+        Some('к') => {
             // Pattern-ordered before literals, but disjoint from them
             // (3rd byte т/п vs ш/л/н/с/б/д/е/я), so position is free.
             if let Some(n) = kartmap_len(s) {
@@ -403,8 +386,8 @@ fn ia_ne_alt_len(s: &str) -> Option<usize> {
             }
             prefix_len(s, NE_D0BA)
         }
-        (0xD0, 0xBB) => prefix_len(s, NE_D0BB),
-        (0xD0, 0xBC) => {
+        Some('л') => prefix_len(s, NE_D0BB),
+        Some('м') => {
             // Pattern-ordered before literals, but disjoint from them
             // (3rd byte т/п vs ш/л/н/с/б/д/е/я), so position is free.
             if let Some(n) = kartmap_len(s) {
@@ -412,18 +395,18 @@ fn ia_ne_alt_len(s: &str) -> Option<usize> {
             }
             prefix_len(s, NE_D0BC)
         }
-        (0xD0, 0xBD) => prefix_len(s, NE_D0BD),
-        (0xD0, 0xBF) => prefix_len(s, NE_D0BF),
-        (0xD1, 0x80) => prefix_len(s, NE_D180),
-        (0xD1, 0x81) => prefix_len(s, NE_D181),
-        (0xD1, 0x82) => prefix_len(s, NE_D182),
-        (0xD1, 0x84) => prefix_len(s, NE_D184),
-        (0xD1, 0x87) => prefix_len(s, NE_D187),
-        (0xD1, 0x8F) => prefix_len(s, NE_D18F),
-        (0xD1, 0x96) => prefix_len(s, NE_D196),
-        (0xD1, 0x9E) => prefix_len(s, NE_D19E),
+        Some('н') => prefix_len(s, NE_D0BD),
+        Some('п') => prefix_len(s, NE_D0BF),
+        Some('р') => prefix_len(s, NE_D180),
+        Some('с') => prefix_len(s, NE_D181),
+        Some('т') => prefix_len(s, NE_D182),
+        Some('ф') => prefix_len(s, NE_D184),
+        Some('ч') => prefix_len(s, NE_D187),
+        Some('я') => prefix_len(s, NE_D18F),
+        Some('і') => prefix_len(s, NE_D196),
+        Some('ў') => prefix_len(s, NE_D19E),
         // Latin `i` + iwords (last branch of the pattern).
-        (0x69, _) => {
+        Some('i') => {
             if let Some(n) = match_iwords_len(&s[1..]) {
                 return Some(1 + n);
             }
@@ -441,17 +424,13 @@ fn ia_bez_alt_len(s: &str) -> Option<usize> {
     if let Some(n) = cons_o_len(s) {
         return Some(n);
     }
-    let b = s.as_bytes();
-    if b.len() < 2 {
-        return None;
-    }
-    match (b[0], b[1]) {
-        (0xD0, 0xB1) => prefix_len(s, BEZ_D0B1),
-        (0xD0, 0xB2) => prefix_len(s, BEZ_D0B2),
-        (0xD0, 0xB3) => prefix_len(s, BEZ_D0B3),
-        (0xD0, 0xB4) => prefix_len(s, BEZ_D0B4),
-        (0xD0, 0xB5) => prefix_len(s, BEZ_D0B5),
-        (0xD0, 0xBA) => {
+    match s.chars().next() {
+        Some('б') => prefix_len(s, BEZ_D0B1),
+        Some('в') => prefix_len(s, BEZ_D0B2),
+        Some('г') => prefix_len(s, BEZ_D0B3),
+        Some('д') => prefix_len(s, BEZ_D0B4),
+        Some('е') => prefix_len(s, BEZ_D0B5),
+        Some('к') => {
             // Pattern-ordered before literals, but disjoint from them
             // (3rd byte т/п vs ш/л/н/с/б/д/е/я), so position is free.
             if let Some(n) = kartmap_len(s) {
@@ -459,8 +438,8 @@ fn ia_bez_alt_len(s: &str) -> Option<usize> {
             }
             prefix_len(s, BEZ_D0BA)
         }
-        (0xD0, 0xBB) => prefix_len(s, BEZ_D0BB),
-        (0xD0, 0xBC) => {
+        Some('л') => prefix_len(s, BEZ_D0BB),
+        Some('м') => {
             // Pattern-ordered before literals, but disjoint from them
             // (3rd byte т/п vs ш/л/н/с/б/д/е/я), so position is free.
             if let Some(n) = kartmap_len(s) {
@@ -468,20 +447,20 @@ fn ia_bez_alt_len(s: &str) -> Option<usize> {
             }
             prefix_len(s, BEZ_D0BC)
         }
-        (0xD0, 0xBD) => prefix_len(s, BEZ_D0BD),
-        (0xD0, 0xBF) => prefix_len(s, BEZ_D0BF),
-        (0xD1, 0x80) => prefix_len(s, BEZ_D180),
-        (0xD1, 0x81) => prefix_len(s, BEZ_D181),
-        (0xD1, 0x82) => prefix_len(s, BEZ_D182),
-        (0xD1, 0x84) => prefix_len(s, BEZ_D184),
-        (0xD1, 0x86) => prefix_len(s, BEZ_D186),
-        (0xD1, 0x87) => prefix_len(s, BEZ_D187),
-        (0xD1, 0x88) => prefix_len(s, BEZ_D188),
-        (0xD1, 0x8F) => prefix_len(s, BEZ_D18F),
-        (0xD1, 0x96) => prefix_len(s, BEZ_D196),
-        (0xD1, 0x9E) => prefix_len(s, BEZ_D19E),
+        Some('н') => prefix_len(s, BEZ_D0BD),
+        Some('п') => prefix_len(s, BEZ_D0BF),
+        Some('р') => prefix_len(s, BEZ_D180),
+        Some('с') => prefix_len(s, BEZ_D181),
+        Some('т') => prefix_len(s, BEZ_D182),
+        Some('ф') => prefix_len(s, BEZ_D184),
+        Some('ц') => prefix_len(s, BEZ_D186),
+        Some('ч') => prefix_len(s, BEZ_D187),
+        Some('ш') => prefix_len(s, BEZ_D188),
+        Some('я') => prefix_len(s, BEZ_D18F),
+        Some('і') => prefix_len(s, BEZ_D196),
+        Some('ў') => prefix_len(s, BEZ_D19E),
         // Latin `i` + iwords (last branch of the pattern).
-        (0x69, _) => {
+        Some('i') => {
             if let Some(n) = match_iwords_len(&s[1..]) {
                 return Some(1 + n);
             }
@@ -511,19 +490,19 @@ fn has_nu_imlau(s: &str) -> bool {
     if s.starts_with("ну ") {
         return true;
     }
-    let b = s.as_bytes();
-    if b.len() < 4 || b[0] != b' ' || b[1] != 0xD1 || b[2] != 0x96 {
+    if !s.starts_with(" і") {
         return false;
     }
-    let mut i = 3;
-    while i < b.len() {
+    // After ` і` (space + 2-byte `і`): scan a non-whitespace run for `[ая]ў`.
+    let mut i = 1 + 'і'.len_utf8();
+    while i < s.len() {
         let ch = s[i..].chars().next().unwrap_or('\0');
         if ch.is_whitespace() {
             break;
         }
         if ch == 'а' || ch == 'я' {
             let j = i + ch.len_utf8();
-            if j + 2 <= b.len() && b[j] == 0xD1 && b[j + 1] == 0x9E {
+            if s[j..].starts_with('ў') {
                 return true;
             }
         }
@@ -724,40 +703,31 @@ fn explicit_pass(text: &str) -> String {
             continue;
         }
         // ` не ` → ` ня ` with phonetic lookahead + preposition guard.
-        if i + 6 <= len
-            && bytes[i + 1] == 0xD0
-            && bytes[i + 2] == 0xBD
-            && bytes[i + 3] == 0xD0
-            && bytes[i + 4] == 0xB5
-            && bytes[i + 5] == b' '
-            && (has_acute(&text[i + 6..]) || has_phonetic_word(&text[i + 6..]))
-            && !is_prep(&text[i + 6..])
-        {
-            out.push_str(&text[flush..i]);
-            out.push_str(" ня ");
-            flush = i + 6;
-            i += 6;
-            continue;
+        // ` не ` is space(1) + `н`(2) + `е`(2) + space(1) = 6 bytes.
+        if text[i..].starts_with(" не ") {
+            let after = i + " не ".len();
+            if (has_acute(&text[after..]) || has_phonetic_word(&text[after..]))
+                && !is_prep(&text[after..])
+            {
+                out.push_str(&text[flush..i]);
+                out.push_str(" ня ");
+                flush = after;
+                i = after;
+                continue;
+            }
         }
         // ` без` / ` бяз` (+ optional `ь` for `без`).
-        if i + 7 <= len
-            && bytes[i + 1] == 0xD0
-            && bytes[i + 2] == 0xB1
-            && bytes[i + 5] == 0xD0
-            && bytes[i + 6] == 0xB7
-            && ((bytes[i + 3] == 0xD0 && bytes[i + 4] == 0xB5)
-                || (bytes[i + 3] == 0xD1 && bytes[i + 4] == 0x8F))
-        {
-            let is_bez = bytes[i + 3] == 0xD0;
-            let after = i + 7;
+        // Both heads are space(1) + 3×2 bytes = 7 bytes.
+        if text[i..].starts_with(" без") || text[i..].starts_with(" бяз") {
+            let is_bez = text[i..].starts_with(" без");
+            let after = i + " без".len();
             if is_bez {
                 // ` без(?=ь? (?:acute|phonetic))` → ` бяз`, then chain `бязь`.
                 let mut p = after;
-                if p + 2 <= len && bytes[p] == 0xD1 && bytes[p + 1] == 0x8C {
-                    p += 2;
+                if text[p..].starts_with('ь') {
+                    p += 'ь'.len_utf8();
                 }
-                if p < len
-                    && bytes[p] == b' '
+                if text[p..].starts_with(' ')
                     && (has_acute(&text[p + 1..]) || has_phonetic_word(&text[p + 1..]))
                 {
                     out.push_str(&text[flush..i]);
@@ -780,32 +750,12 @@ fn explicit_pass(text: &str) -> String {
             }
         }
         // ` (?:пра|цера)?з(?= і\S*[ая]ў|ну )` → `$0ь`.
-        let zlen = if i + 11 <= len
-            && bytes[i + 1] == 0xD1
-            && bytes[i + 2] == 0x86
-            && bytes[i + 3] == 0xD0
-            && bytes[i + 4] == 0xB5
-            && bytes[i + 5] == 0xD1
-            && bytes[i + 6] == 0x80
-            && bytes[i + 7] == 0xD0
-            && bytes[i + 8] == 0xB0
-            && bytes[i + 9] == 0xD0
-            && bytes[i + 10] == 0xB7
-        {
-            11 // ` цераз`
-        } else if i + 9 <= len
-            && bytes[i + 1] == 0xD0
-            && bytes[i + 2] == 0xBF
-            && bytes[i + 3] == 0xD1
-            && bytes[i + 4] == 0x80
-            && bytes[i + 5] == 0xD0
-            && bytes[i + 6] == 0xB0
-            && bytes[i + 7] == 0xD0
-            && bytes[i + 8] == 0xB7
-        {
-            9 // ` праз`
-        } else if i + 3 <= len && bytes[i + 1] == 0xD0 && bytes[i + 2] == 0xB7 {
-            3 // ` з`
+        let zlen = if text[i..].starts_with(" цераз") {
+            " цераз".len() // 11
+        } else if text[i..].starts_with(" праз") {
+            " праз".len() // 9
+        } else if text[i..].starts_with(" з") {
+            " з".len() // 3
         } else {
             0
         };

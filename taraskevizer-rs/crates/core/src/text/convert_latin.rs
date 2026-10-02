@@ -18,7 +18,7 @@
 //!   capture `$1` echoes output context (e.g. `АЕЁ` → `AJEJO`), so the four
 //!   capture vowels stay four passes.
 
-use super::{is_decimal_number, is_ll, is_lu, is_punct, utf8_char_len};
+use super::{byte_pair, is_decimal_number, is_ll, is_lu, is_punct, utf8_char_len};
 
 // ---------- shared: jefication (`е→je` after vowels etc.) ----------
 
@@ -210,7 +210,7 @@ fn lower_pass(text: &str, rule5: bool, jef: bool) -> String {
                 push_rule5_ctx(&mut out, ch);
                 out.push_str(&text[i + cl..end]);
                 out.push_str("ji");
-                flush = end + 2; // `і` = D1 96
+                flush = end + 'і'.len_utf8();
                 prev = Some('і');
                 i = flush;
                 continue;
@@ -218,12 +218,12 @@ fn lower_pass(text: &str, rule5: bool, jef: bool) -> String {
         }
         if ch == 'ʼ' {
             let after = i + cl;
-            if after + 2 <= len && bytes[after] == 0xD1 && bytes[after + 1] == 0x96 {
+            if text[after..].starts_with('і') {
                 // `ʼі → ji` (latin only; latinJi is covered by rule5 above).
                 if !rule5 {
                     out.push_str(&text[flush..i]);
                     out.push_str("ji");
-                    flush = after + 2;
+                    flush = after + 'і'.len_utf8();
                     prev = Some('і');
                     i = flush;
                     continue;
@@ -241,7 +241,7 @@ fn lower_pass(text: &str, rule5: bool, jef: bool) -> String {
         if matches!(ch, 'ц' | 'з' | 'с' | 'н' | 'л') {
             let mut j = i + cl;
             while text[j..].starts_with('ʼ') {
-                j += 2; // `ʼ` = U+02BC (CA BC)
+                j += 'ʼ'.len_utf8();
             }
             if j < len {
                 let c2 = text[j..].chars().next().unwrap();
@@ -249,7 +249,7 @@ fn lower_pass(text: &str, rule5: bool, jef: bool) -> String {
                     if let Some(rep) = soft_cluster(ch) {
                         out.push_str(&text[flush..i]);
                         out.push_str(rep);
-                        flush = j + 2; // `ь` = D1 8C
+                        flush = j + 'ь'.len_utf8();
                         prev = Some('ь');
                         i = flush;
                         continue;
@@ -272,7 +272,7 @@ fn lower_pass(text: &str, rule5: bool, jef: bool) -> String {
                         out.push_str(rep);
                         out.push_str(&text[c2pos + c2.len_utf8()..rend]);
                         out.push_str("ji");
-                        flush = rend + 2; // `і` = D1 96
+                        flush = rend + 'і'.len_utf8();
                         prev = Some('і');
                         i = flush;
                         continue;
@@ -347,15 +347,15 @@ fn push_rule5_ctx(out: &mut String, c: char) {
     }
 }
 
-/// End (byte index past `і`) of a rule5 match starting at context `i`,
-/// or `None`: class char at `i`, then ` *`, then `і` (D1 96).
+/// End (byte index of `і`) of a rule5 match starting at context `i`,
+/// or `None`: class char at `i`, then ` *`, then `і`.
 fn rule5_end(text: &str, i: usize) -> Option<usize> {
     let bytes = text.as_bytes();
     let mut j = i + text[i..].chars().next().unwrap().len_utf8();
     while j < bytes.len() && bytes[j] == b' ' {
         j += 1;
     }
-    if j + 2 <= bytes.len() && bytes[j] == 0xD1 && bytes[j + 1] == 0x96 {
+    if text[j..].starts_with('і') {
         Some(j)
     } else {
         None
@@ -364,42 +364,41 @@ fn rule5_end(text: &str, i: usize) -> Option<usize> {
 
 // ---------- latinJi/lower: Vow + iwords pass ----------
 
-/// Whether the 2-byte sequence is in `[аеёіоуыэюяАЕЁІОУЫЭЮЯ]`
+/// Whether `c` is in `[аеёіоуыэюяАЕЁІОУЫЭЮЯ]`
 /// (the latinJi `V` — note: no `ў`/`Ў`, no acute, unlike iotacize).
 #[inline]
-fn is_ji_vow(b0: u8, b1: u8) -> bool {
+fn is_ji_vow(c: char) -> bool {
     matches!(
-        (b0, b1),
-        (0xD0, 0xB0)
-            | (0xD0, 0xB5)
-            | (0xD1, 0x91)
-            | (0xD1, 0x96)
-            | (0xD0, 0xBE)
-            | (0xD1, 0x83)
-            | (0xD1, 0x8B)
-            | (0xD1, 0x8D)
-            | (0xD1, 0x8E)
-            | (0xD1, 0x8F)
-            | (0xD0, 0x90)
-            | (0xD0, 0x95)
-            | (0xD0, 0x81)
-            | (0xD0, 0x86)
-            | (0xD0, 0x9E)
-            | (0xD0, 0xA3)
-            | (0xD0, 0xAB)
-            | (0xD0, 0xAD)
-            | (0xD0, 0xAE)
-            | (0xD0, 0xAF)
+        c,
+        'а' | 'е'
+            | 'ё'
+            | 'і'
+            | 'о'
+            | 'у'
+            | 'ы'
+            | 'э'
+            | 'ю'
+            | 'я'
+            | 'А'
+            | 'Е'
+            | 'Ё'
+            | 'І'
+            | 'О'
+            | 'У'
+            | 'Ы'
+            | 'Э'
+            | 'Ю'
+            | 'Я'
     )
 }
 
 /// Uppercase `iwords` alternation (`iwords.toUpperCase()` in JS), bool only.
 /// Rare path (uppercase `І`): flat prefix scan in pattern order.
 fn matches_iwords_upper(s: &str) -> bool {
-    if s.len() >= 2 && s.as_bytes()[0] == 0xCC && s.as_bytes()[1] == 0x81 && s.starts_with("́") {
+    if s.starts_with('́') {
         return true;
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x91 {
+    if s.starts_with('Б') {
         if s.starts_with("БІС") {
             return true;
         }
@@ -407,7 +406,7 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x92 {
+    if s.starts_with('В') {
         if s.starts_with("ВА ") {
             return true;
         }
@@ -430,7 +429,7 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x93 {
+    if s.starts_with('Г') {
         if s.starts_with("ГАР") {
             return true;
         }
@@ -441,7 +440,7 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x94 {
+    if s.starts_with('Д') {
         if s.starts_with("ДАЛ") {
             return true;
         }
@@ -449,11 +448,10 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x96 && s.starts_with("ЖЫЦ")
-    {
+    if s.starts_with("ЖЫЦ") {
         return true;
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x9A {
+    if s.starts_with('К') {
         if s.starts_with("КАНАПІС") {
             return true;
         }
@@ -506,7 +504,7 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x9B {
+    if s.starts_with('Л') {
         if s.starts_with("ЛЕУС") {
             return true;
         }
@@ -523,7 +521,7 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x9C {
+    if s.starts_with('М') {
         if s.starts_with("М ") {
             return true;
         }
@@ -567,7 +565,7 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x9D {
+    if s.starts_with('Н') {
         if s.starts_with("НАХАДЗ") {
             return true;
         }
@@ -701,11 +699,10 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0x9F && s.starts_with("ПСІЛАН")
-    {
+    if s.starts_with("ПСІЛАН") {
         return true;
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA0 {
+    if s.starts_with('Р') {
         if s.starts_with("РА ") {
             return true;
         }
@@ -749,7 +746,7 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA1 {
+    if s.starts_with('С') {
         if s.starts_with("СКАРК") {
             return true;
         }
@@ -793,7 +790,7 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA2 {
+    if s.starts_with('Т') {
         if s.starts_with("ТАР") {
             return true;
         }
@@ -804,7 +801,7 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA5 {
+    if s.starts_with('Х') {
         if s.starts_with("ХНЫХ") {
             return true;
         }
@@ -830,7 +827,7 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA6 {
+    if s.starts_with('Ц') {
         if s.starts_with("ЦЬВІН") {
             return true;
         }
@@ -838,8 +835,7 @@ fn matches_iwords_upper(s: &str) -> bool {
             return true;
         }
     }
-    if s.len() >= 2 && s.as_bytes()[0] == 0xD0 && s.as_bytes()[1] == 0xA8 && s.starts_with("ШЫЯС")
-    {
+    if s.starts_with("ШЫЯС") {
         return true;
     }
     false
@@ -858,40 +854,49 @@ fn ji_trailers(text: &str) -> String {
     let mut i = 0usize;
     while i < len {
         let b = bytes[i];
-        // `V␣і` / `V␣І`?
-        if i + 5 <= len && is_ji_vow(b, bytes[i + 1]) && bytes[i + 2] == b' ' {
-            let ii = i + 3;
-            let is_lower = ii + 2 <= len && bytes[ii] == 0xD1 && bytes[ii + 1] == 0x96;
-            let is_upper = ii + 2 <= len && bytes[ii] == 0xD0 && bytes[ii + 1] == 0x86;
-            if is_lower || is_upper {
-                let j = ii + 2; // after `і`/`І`
-                                // Trailer ` Ў` / ` ў` / ` ` (dict order).
-                let trailer: Option<&str> = if j + 3 <= len
-                    && bytes[j] == b' '
-                    && bytes[j + 1] == 0xD0
-                    && bytes[j + 2] == 0x8E
-                {
-                    Some(" U")
-                } else if j + 3 <= len
-                    && bytes[j] == b' '
-                    && bytes[j + 1] == 0xD1
-                    && bytes[j + 2] == 0x9E
-                {
-                    Some(" u")
-                } else if j < len && bytes[j] == b' ' {
-                    Some(" ")
-                } else {
-                    None
-                };
-                if let Some(t) = trailer {
-                    out.push_str(&text[flush..i + 3]);
-                    out.push(if is_lower { 'j' } else { 'J' });
-                    out.push_str(t);
-                    // Consumed: V(2) + space + і(2) + trailer(space + Ў/ў?/space).
-                    let end = if t == " " { j + 1 } else { j + 3 };
-                    flush = end;
-                    i = end;
-                    continue;
+        // No trailer starts with ASCII (`V` is always 2-byte Cyrillic).
+        if b < 0x80 {
+            i += 1;
+            continue;
+        }
+        // `V␣і` / `V␣І`? `V` is 2 bytes, so offsets below stay on boundaries.
+        if let Some(v) = text[i..].chars().next() {
+            if is_ji_vow(v)
+                && (text[i + v.len_utf8()..].starts_with(" і")
+                    || text[i + v.len_utf8()..].starts_with(" І"))
+            {
+                // Re-decode to learn which `і` case matched (both 2 bytes).
+                let after_v = &text[i + v.len_utf8() + 1..];
+                let is_lower = after_v.starts_with('і');
+                let is_upper = after_v.starts_with('І');
+                if is_lower || is_upper {
+                    // After `і`/`І` (2 bytes): trailer ` Ў` / ` ў` / ` `.
+                    let after_i = &after_v[2..];
+                    let trailer: Option<&str> = if after_i.starts_with(" Ў") {
+                        Some(" U")
+                    } else if after_i.starts_with(" ў") {
+                        Some(" u")
+                    } else if after_i.starts_with(' ') {
+                        Some(" ")
+                    } else {
+                        None
+                    };
+                    if let Some(t) = trailer {
+                        // `V`(2) + space(1): copy through, then `j`/`J` + trailer.
+                        let v_end = i + v.len_utf8() + 1;
+                        out.push_str(&text[flush..v_end]);
+                        out.push(if is_lower { 'j' } else { 'J' });
+                        out.push_str(t);
+                        // Consumed: V(2) + space + і(2) + trailer(1 or 3).
+                        let end = if t == " " {
+                            v_end + 'і'.len_utf8() + 1
+                        } else {
+                            v_end + 'і'.len_utf8() + 3
+                        };
+                        flush = end;
+                        i = end;
+                        continue;
+                    }
                 }
             }
         }
@@ -912,20 +917,20 @@ fn ji_iwords(text: &str) -> String {
     let mut i = 0usize;
     while i < len {
         let b = bytes[i];
-        // ` і` + iwords lookahead.
-        if b == b' '
-            && i + 3 <= len
-            && bytes[i + 1] == 0xD1
-            && bytes[i + 2] == 0x96
-            && crate::text::matches_iwords(&text[i + 3..])
-        {
+        // Both patterns start with a space.
+        if b != b' ' {
+            i += if b.is_ascii() { 1 } else { utf8_char_len(b) };
+            continue;
+        }
+        // ` і` + iwords lookahead (` і` is space + 2-byte `і`).
+        if text[i..].starts_with(" і") && crate::text::matches_iwords(&text[i + 3..]) {
             out.push_str(&text[flush..i + 1]);
             out.push_str("ji");
             flush = i + 3;
             i += 3;
             continue;
         }
-        if b == b' ' && i + 3 <= len && bytes[i + 1] == 0xD0 && bytes[i + 2] == 0x86 {
+        if text[i..].starts_with(" І") {
             if crate::text::matches_iwords(&text[i + 3..]) {
                 out.push_str(&text[flush..i + 1]);
                 out.push_str("Ji");
@@ -1015,17 +1020,21 @@ fn has_lower_after(s: &str) -> bool {
 /// Separate passes in dict order (Е Ё Ю Я): later vowels' lookaheads see
 /// earlier passes' output (`А Ю. Е. t`: ` Е` → ` Je` first, then ` Ю`
 /// + `Je` lookahead → ` Ju`).
-fn spaced_vow_upper(text: &str, vow_second: u8, je: &'static str) -> String {
+///
+/// `vow` is the vowel's byte pair — `byte_pair("Е")` at the call site, so
+/// the source reads as the character while the loop compares immediates.
+/// All four vowels are 2-byte Cyrillic, hence the literal `3` below.
+fn spaced_vow_upper(text: &str, vow: (u8, u8), je: &'static str) -> String {
     let bytes = text.as_bytes();
     let len = bytes.len();
     let mut out = String::with_capacity(len + 16);
     let mut flush = 0usize;
     let mut i = 0usize;
     while i < len {
+        // ` ${vow}`: space + 2-byte vowel.
         if bytes[i] == b' '
             && i + 3 <= len
-            && bytes[i + 1] == 0xD0
-            && bytes[i + 2] == vow_second
+            && (bytes[i + 1], bytes[i + 2]) == vow
             && has_lower_after(&text[i + 3..])
         {
             out.push_str(&text[flush..i]);
@@ -1034,7 +1043,7 @@ fn spaced_vow_upper(text: &str, vow_second: u8, je: &'static str) -> String {
             i += 3;
             continue;
         }
-        i += if bytes[i] < 0x80 {
+        i += if bytes[i].is_ascii() {
             1
         } else {
             utf8_char_len(bytes[i])
@@ -1048,25 +1057,18 @@ fn spaced_vow_upper(text: &str, vow_second: u8, je: &'static str) -> String {
 
 /// Byte length of the `$1` class char ending at byte `end` (a boundary),
 /// or 0: 1-byte ASCII (` |` + Latin extras) or 2-byte Cyrillic base.
-/// Lead-byte checks keep every slice on a char boundary.
 fn cap_class_len(text: &str, end: usize, extra: &[char]) -> usize {
-    let b = text.as_bytes();
-    if end >= 1 {
-        let c0 = b[end - 1];
-        if c0 == b' ' || c0 == b'|' || extra.contains(&(c0 as char)) {
-            return 1;
-        }
+    let Some(c) = text[..end].chars().next_back() else {
+        return 0;
+    };
+    if c == ' ' || c == '|' || extra.contains(&c) {
+        return c.len_utf8();
     }
-    if end >= 2 {
-        let (c0, c1) = (b[end - 2], b[end - 1]);
-        if c0 == 0xD0
-            && matches!(
-                c1,
-                0x90 | 0x95 | 0x81 | 0x86 | 0x9E | 0xA3 | 0x8E | 0xAB | 0xAD | 0xAE | 0xAF | 0xAC
-            )
-        {
-            return 2;
-        }
+    if matches!(
+        c,
+        'А' | 'Е' | 'Ё' | 'І' | 'О' | 'У' | 'Ў' | 'Ы' | 'Э' | 'Ю' | 'Я' | 'Ь'
+    ) {
+        return c.len_utf8();
     }
     0
 }
@@ -1075,9 +1077,12 @@ fn cap_class_len(text: &str, end: usize, extra: &[char]) -> usize {
 /// is echoed from the scanned text, so behind-context is exact — which is
 /// why the four vowels stay four passes (`АЕЁ` → `AJEJO`: the second `$1`
 /// is the first pass's output `E`).
+///
+/// `vow` is the vowel's byte pair (`byte_pair("Е")` at the call site).
+/// All four vowels are 2-byte Cyrillic, hence the literal `2` below.
 fn capture_upper_pass(
     text: &str,
-    vow_second: u8,
+    vow: (u8, u8),
     extra_latin: &[char],
     je: &'static str,
 ) -> String {
@@ -1087,7 +1092,7 @@ fn capture_upper_pass(
     let mut flush = 0usize;
     let mut i = 0usize;
     while i < len {
-        if i + 2 <= len && bytes[i] == 0xD0 && bytes[i + 1] == vow_second {
+        if i + 2 <= len && (bytes[i], bytes[i + 1]) == vow {
             // `$1` = class char, with an optional `(` between it and VOWEL.
             let mut k = i;
             if k >= 1 && bytes[k - 1] == b'(' {
@@ -1122,6 +1127,11 @@ fn capture_upper_pass(
 
 // ---------- upper: latinJi `І` rules (own passes, dict order) ----------
 
+/// `І` as a byte pair (spelled with the literal; hot loops compare bytes).
+const II_PAIR: (u8, u8) = byte_pair("І");
+/// `І` length (all uses below are 2-byte).
+const II_LEN: usize = 2;
+
 /// `([eoua] *)І(?=[ \p{P}\d]*\p{Lu}?\p{Ll})` → `$1Ji` (latinJi only).
 fn eoua_i_upper(text: &str) -> String {
     let bytes = text.as_bytes();
@@ -1130,11 +1140,7 @@ fn eoua_i_upper(text: &str) -> String {
     let mut flush = 0usize;
     let mut i = 0usize;
     while i < len {
-        if i + 2 <= len
-            && bytes[i] == 0xD0
-            && bytes[i + 1] == 0x86
-            && has_lower_after(&text[i + 2..])
-        {
+        if i + II_LEN <= len && (bytes[i], bytes[i + 1]) == II_PAIR && has_lower_after(&text[i + II_LEN..]) {
             let mut k = i;
             while k > 0 && bytes[k - 1] == b' ' {
                 k -= 1;
@@ -1142,14 +1148,14 @@ fn eoua_i_upper(text: &str) -> String {
             if k > 0 && matches!(bytes[k - 1], b'e' | b'o' | b'u' | b'a') {
                 let start = k - 1;
                 if start < flush {
-                    i += 2;
+                    i += II_LEN;
                     continue;
                 }
                 out.push_str(&text[flush..start]);
                 out.push_str(&text[start..i]);
                 out.push_str("Ji");
-                flush = i + 2;
-                i += 2;
+                flush = i + II_LEN;
+                i += II_LEN;
                 continue;
             }
         }
@@ -1171,34 +1177,35 @@ fn aoeu_i_upper(text: &str) -> String {
     let mut flush = 0usize;
     let mut i = 0usize;
     while i < len {
-        if i + 2 <= len && bytes[i] == 0xD0 && bytes[i + 1] == 0x86 {
+        if i + II_LEN <= len && (bytes[i], bytes[i + 1]) == II_PAIR {
             let mut k = i;
             while k > 0 && (bytes[k - 1] == b'(' || bytes[k - 1] == b' ') {
                 k -= 1;
             }
             let start = if k >= 1 && matches!(bytes[k - 1], b'A' | b'O' | b'E' | b'U') {
                 Some(k - 1)
-            } else if k >= 2
-                && bytes[k - 2] == 0xD0
-                && matches!(
-                    bytes[k - 1],
-                    0x90 | 0x95 | 0x81 | 0x86 | 0x9E | 0xA3 | 0x8E | 0xAB | 0xAD | 0xAE | 0xAF
-                )
-            {
-                Some(k - 2)
+            } else if let Some(c) = text[..k].chars().next_back() {
+                if matches!(
+                    c,
+                    'А' | 'Е' | 'Ё' | 'І' | 'О' | 'У' | 'Ў' | 'Ы' | 'Э' | 'Ю' | 'Я'
+                ) {
+                    Some(k - c.len_utf8())
+                } else {
+                    None
+                }
             } else {
                 None
             };
             if let Some(s) = start {
                 if s < flush {
-                    i += 2;
+                    i += II_LEN;
                     continue;
                 }
                 out.push_str(&text[flush..s]);
                 out.push_str(&text[s..i]);
                 out.push_str("JI");
-                flush = i + 2;
-                i += 2;
+                flush = i + II_LEN;
+                i += II_LEN;
                 continue;
             }
         }
@@ -1249,6 +1256,27 @@ fn latin_single_upper(c: char) -> Option<&'static str> {
     })
 }
 
+/// Lead byte of 2-byte Cyrillic (`А`–`я`, `Ё`… — all `D0`/`D1` block chars
+/// used here share it except `Ґ`), spelled with the literal.
+const LEAD_D0: u8 = "А".as_bytes()[0];
+/// Lead byte of `Ґ`/`ґ` (the only `D2`-lead letter used here).
+const LEAD_D2: u8 = "Ґ".as_bytes()[0];
+/// Second bytes of the `ЕЁЮЯ` singles and the `ЦЗСНЛ` soft heads below —
+/// each spelled with its character, so the matches read as characters.
+const YE_2ND: u8 = "Е".as_bytes()[1];
+const YO_2ND: u8 = "Ё".as_bytes()[1];
+const YU_2ND: u8 = "Ю".as_bytes()[1];
+const YA_2ND: u8 = "Я".as_bytes()[1];
+const TSE_2ND: u8 = "Ц".as_bytes()[1];
+const ZE_2ND: u8 = "З".as_bytes()[1];
+const ES_2ND: u8 = "С".as_bytes()[1];
+const EN_2ND: u8 = "Н".as_bytes()[1];
+const EL_2ND: u8 = "Л".as_bytes()[1];
+/// ` Х`, `Ь`, `ь`, `Ґ` as byte slices for `memcmp`-style matching.
+const KHA_SP: &[u8] = " Х".as_bytes();
+const SOFT_UPPER: &[u8] = "Ь".as_bytes();
+const SOFT_LOWER: &[u8] = "ь".as_bytes();
+
 /// Upper singles/clusters/`Х` in dict order: `ЕЁЮЯ`, `Ц[Ьь]`…`Л[Ьь]`,
 /// `А`…`Э`, ` Х(?=[\p{Ll} ])` before `Х`, then `ЦЧШЫЭ`.
 fn upper_singles(text: &str) -> String {
@@ -1259,36 +1287,51 @@ fn upper_singles(text: &str) -> String {
     let mut i = 0usize;
     while i < len {
         let b = bytes[i];
-        // ` Х(?=[\p{Ll} ])` → ` Ch` (before bare `Х`).
-        if b == b' ' && i + 3 <= len && bytes[i + 1] == 0xD0 && bytes[i + 2] == 0xA5 {
-            let after = i + 3;
-            let ll = if after < len {
-                if bytes[after] == b' ' {
-                    true
-                } else {
-                    match text[after..].chars().next() {
-                        Some(ch) => is_ll(ch as u32),
-                        None => false,
-                    }
-                }
-            } else {
-                false
-            };
-            if ll {
-                out.push_str(&text[flush..i]);
-                out.push_str(" Ch");
-                flush = after;
-                i = after;
+        if b.is_ascii() {
+            // Only ` Х` starts with ASCII here (a space).
+            if b != b' ' {
+                i += 1;
                 continue;
             }
+            // ` Х` is space(1) + `Х`(2).
+            if bytes[i..].starts_with(KHA_SP) {
+                let after = i + KHA_SP.len();
+                let ll = if after < len {
+                    if bytes[after] == b' ' {
+                        true
+                    } else {
+                        match text[after..].chars().next() {
+                            Some(ch) => is_ll(ch as u32),
+                            None => false,
+                        }
+                    }
+                } else {
+                    false
+                };
+                if ll {
+                    out.push_str(&text[flush..i]);
+                    out.push_str(" Ch");
+                    flush = after;
+                    i = after;
+                    continue;
+                }
+            }
+            i += 1;
+            continue;
         }
-        if b == 0xD0 && i + 2 <= len {
+        // All remaining singles are `D0`/`D2`-lead 2-byte Cyrillic:
+        // anything else advances untouched.
+        if (b != LEAD_D0 && b != LEAD_D2) || i + 2 > len {
+            i += utf8_char_len(b);
+            continue;
+        }
+        if b == LEAD_D0 {
             // `ЕЁЮЯ` singles.
             let rep: Option<&'static str> = match bytes[i + 1] {
-                0x95 => Some("IE"),
-                0x81 => Some("IO"),
-                0xAE => Some("IU"),
-                0xAF => Some("IA"),
+                YE_2ND => Some("IE"),
+                YO_2ND => Some("IO"),
+                YU_2ND => Some("IU"),
+                YA_2ND => Some("IA"),
                 _ => None,
             };
             if let Some(r) = rep {
@@ -1300,17 +1343,16 @@ fn upper_singles(text: &str) -> String {
             }
             // `Ц[Ьь]` etc.: soft sign either case (dict order Ц З С Н Л).
             let soft: Option<&'static str> = match bytes[i + 1] {
-                0xA6 => Some("Ć"),
-                0x97 => Some("Ź"),
-                0xA1 => Some("Ś"),
-                0x9D => Some("Ń"),
-                0x9B => Some("L"),
+                TSE_2ND => Some("Ć"),
+                ZE_2ND => Some("Ź"),
+                ES_2ND => Some("Ś"),
+                EN_2ND => Some("Ń"),
+                EL_2ND => Some("L"),
                 _ => None,
             };
             if let Some(r) = soft {
-                if i + 4 <= len
-                    && ((bytes[i + 2] == 0xD0 && bytes[i + 3] == 0xAC)
-                        || (bytes[i + 2] == 0xD1 && bytes[i + 3] == 0x8C))
+                let after_head = &bytes[i + 2..];
+                if after_head.starts_with(SOFT_UPPER) || after_head.starts_with(SOFT_LOWER)
                 {
                     out.push_str(&text[flush..i]);
                     out.push_str(r);
@@ -1322,21 +1364,26 @@ fn upper_singles(text: &str) -> String {
             // Plain uppercase singles (incl. `Х→CH` fallback here).
             if let Some(ch) = text[i..].chars().next() {
                 if let Some(r) = latin_single_upper(ch) {
+                    let cl = ch.len_utf8();
                     out.push_str(&text[flush..i]);
                     out.push_str(r);
-                    flush = i + ch.len_utf8();
-                    i += ch.len_utf8();
+                    flush = i + cl;
+                    i += cl;
                     continue;
                 }
             }
-        }
-        if b == 0xD2 && i + 2 <= len && bytes[i + 1] == 0x90 {
-            // `Ґ` (U+0490, the only D2-lead uppercase letter here).
-            out.push_str(&text[flush..i]);
-            out.push('G');
-            flush = i + 2;
-            i += 2;
-            continue;
+        } else {
+            // `D2` lead: only `Ґ` (handled by the singles table).
+            if let Some(ch) = text[i..].chars().next() {
+                if let Some(r) = latin_single_upper(ch) {
+                    let cl = ch.len_utf8();
+                    out.push_str(&text[flush..i]);
+                    out.push_str(r);
+                    flush = i + cl;
+                    i += cl;
+                    continue;
+                }
+            }
         }
         i += if b < 0x80 { 1 } else { utf8_char_len(b) };
     }
@@ -1345,6 +1392,15 @@ fn upper_singles(text: &str) -> String {
 }
 
 // ---------- upper: `Ł` fixes (+ latinJi ` JIŁ -`) ----------
+
+/// ` JIŁ -` fix pattern as bytes (spelled with the literal).
+const JI_LFIX: &[u8] = " JIŁ -".as_bytes();
+/// ` IŁ -` replacement (same length as the pattern).
+const I_LFIX: &str = " IŁ -";
+/// `Ł` as a byte pair (spelled with the literal).
+const STROKE_PAIR: (u8, u8) = byte_pair("Ł");
+/// `Ł` length (all uses below are 2-byte).
+const STROKE_LEN: usize = 2;
 
 /// `Ł[Ii](?=[AEOUaeou])` → `L`, `Ł(?=[Ii])` → `L`; latinJi additionally
 /// ` JIŁ -` → ` IŁ -`. Runs after the singles pass (needs converted `Ł`).
@@ -1355,48 +1411,51 @@ fn sharp_l_fix(text: &str, ji_fix: bool) -> String {
     let mut flush = 0usize;
     let mut i = 0usize;
     while i < len {
-        // `Ł` = U+0141 (C5 81).
-        if i + 2 <= len && bytes[i] == 0xC5 && bytes[i + 1] == 0x81 {
-            let next = if i + 2 < len { bytes[i + 2] } else { 0 };
+        let b = bytes[i];
+        if b.is_ascii() {
+            // Only ` JIŁ -` starts with ASCII here (a space).
+            if b == b' ' && ji_fix && bytes[i..].starts_with(JI_LFIX) {
+                out.push_str(&text[flush..i]);
+                out.push_str(I_LFIX);
+                flush = i + JI_LFIX.len();
+                i += JI_LFIX.len();
+                continue;
+            }
+            i += 1;
+            continue;
+        }
+        // `Ł` is 2-byte: anything else (ASCII included) advances.
+        if i + STROKE_LEN > len || (bytes[i], bytes[i + 1]) != STROKE_PAIR {
+            i += if b.is_ascii() { 1 } else { utf8_char_len(b) };
+            continue;
+        }
+        {
+            let next = bytes.get(i + STROKE_LEN).copied().unwrap_or(0);
             if next == b'I' || next == b'i' {
-                let foll = if i + 3 < len { bytes[i + 3] } else { 0 };
-                if matches!(foll, b'A' | b'E' | b'O' | b'U' | b'a' | b'e' | b'o' | b'u') {
+                let foll = bytes
+                    .get(i + STROKE_LEN + 1)
+                    .copied()
+                    .unwrap_or(0);
+                if matches!(
+                    foll,
+                    b'A' | b'E' | b'O' | b'U' | b'a' | b'e' | b'o' | b'u'
+                ) {
                     // Fix 1 consumes `ŁI`/`Łi`.
                     out.push_str(&text[flush..i]);
                     out.push('L');
-                    flush = i + 3;
-                    i += 3;
+                    flush = i + STROKE_LEN + 1;
+                    i += STROKE_LEN + 1;
                     continue;
                 }
                 // Fix 2 consumes only `Ł`.
                 out.push_str(&text[flush..i]);
                 out.push('L');
-                flush = i + 2;
-                i += 2;
+                flush = i + STROKE_LEN;
+                i += STROKE_LEN;
                 continue;
             }
+            i += STROKE_LEN;
         }
-        if ji_fix
-            && i + 7 <= len
-            && bytes[i] == b' '
-            && bytes[i + 1] == b'J'
-            && bytes[i + 2] == b'I'
-            && bytes[i + 3] == 0xC5
-            && bytes[i + 4] == 0x81
-            && bytes[i + 5] == b' '
-            && bytes[i + 6] == b'-'
-        {
-            out.push_str(&text[flush..i]);
-            out.push_str(" IŁ -");
-            flush = i + 7;
-            i += 7;
-            continue;
-        }
-        i += if bytes[i] < 0x80 {
-            1
-        } else {
-            utf8_char_len(bytes[i])
-        };
     }
     out.push_str(&text[flush..]);
     out
@@ -1406,28 +1465,28 @@ fn sharp_l_fix(text: &str, ji_fix: bool) -> String {
 
 /// latin lower → upper (dict order: spaced-`ЕЁЮЯ`, captures, singles, `Ł`-fix).
 pub(crate) fn convert_latin_upper(text: &str) -> String {
-    let t = spaced_vow_upper(text, 0x95, " Je");
-    let t = spaced_vow_upper(&t, 0x81, " Jo");
-    let t = spaced_vow_upper(&t, 0xAE, " Ju");
-    let t = spaced_vow_upper(&t, 0xAF, " Ja");
-    let t = capture_upper_pass(&t, 0x95, &[], "JE");
-    let t = capture_upper_pass(&t, 0x81, &['E'], "JO");
-    let t = capture_upper_pass(&t, 0xAE, &['E', 'O'], "JU");
-    let t = capture_upper_pass(&t, 0xAF, &['E', 'O', 'U'], "JA");
+    let t = spaced_vow_upper(text, byte_pair("Е"), " Je");
+    let t = spaced_vow_upper(&t, byte_pair("Ё"), " Jo");
+    let t = spaced_vow_upper(&t, byte_pair("Ю"), " Ju");
+    let t = spaced_vow_upper(&t, byte_pair("Я"), " Ja");
+    let t = capture_upper_pass(&t, byte_pair("Е"), &[], "JE");
+    let t = capture_upper_pass(&t, byte_pair("Ё"), &['E'], "JO");
+    let t = capture_upper_pass(&t, byte_pair("Ю"), &['E', 'O'], "JU");
+    let t = capture_upper_pass(&t, byte_pair("Я"), &['E', 'O', 'U'], "JA");
     sharp_l_fix(&upper_singles(&t), false)
 }
 
 /// latinJi lower → upper (+ `І` rules and the ` JIŁ -` fix).
 pub(crate) fn convert_latin_ji_upper(text: &str) -> String {
-    let t = spaced_vow_upper(text, 0x95, " Je");
-    let t = spaced_vow_upper(&t, 0x81, " Jo");
-    let t = spaced_vow_upper(&t, 0xAE, " Ju");
-    let t = spaced_vow_upper(&t, 0xAF, " Ja");
+    let t = spaced_vow_upper(text, byte_pair("Е"), " Je");
+    let t = spaced_vow_upper(&t, byte_pair("Ё"), " Jo");
+    let t = spaced_vow_upper(&t, byte_pair("Ю"), " Ju");
+    let t = spaced_vow_upper(&t, byte_pair("Я"), " Ja");
     let t = eoua_i_upper(&t);
-    let t = capture_upper_pass(&t, 0x95, &[], "JE");
-    let t = capture_upper_pass(&t, 0x81, &['E'], "JO");
-    let t = capture_upper_pass(&t, 0xAE, &['E', 'O'], "JU");
-    let t = capture_upper_pass(&t, 0xAF, &['E', 'O', 'U'], "JA");
+    let t = capture_upper_pass(&t, byte_pair("Е"), &[], "JE");
+    let t = capture_upper_pass(&t, byte_pair("Ё"), &['E'], "JO");
+    let t = capture_upper_pass(&t, byte_pair("Ю"), &['E', 'O'], "JU");
+    let t = capture_upper_pass(&t, byte_pair("Я"), &['E', 'O', 'U'], "JA");
     let t = aoeu_i_upper(&t);
     sharp_l_fix(&upper_singles(&t), true)
 }

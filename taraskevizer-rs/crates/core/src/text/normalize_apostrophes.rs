@@ -18,11 +18,13 @@ pub(crate) fn normalize_apostrophes(text: &str) -> String {
     // char boundary (`&str` is valid UTF-8), so all slicing is safe.
     while i < len {
         let b = bytes[i];
-        // (quote, byte length): `'` = 27, `` ` `` = 60, `’` = E2 80 99.
-        let qlen = if b == 0x27 || b == 0x60 {
+        // (quote, byte length): `'` / `` ` `` are 1 byte, `’` is 3 bytes.
+        // The 3-byte check runs only for 3-byte chars, so ASCII/Cyrillic
+        // positions pay just the two comparisons above.
+        let qlen = if b == b'\'' || b == b'`' {
             1
-        } else if b == 0xE2 && i + 3 <= len && bytes[i + 1] == 0x80 && bytes[i + 2] == 0x99 {
-            3
+        } else if utf8_char_len(b) == 3 && text[i..].starts_with('’') {
+            '’'.len_utf8()
         } else {
             i += utf8_char_len(b);
             continue;

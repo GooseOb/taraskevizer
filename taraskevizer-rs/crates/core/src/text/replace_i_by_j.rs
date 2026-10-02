@@ -6,24 +6,24 @@
 //! against the original text, like the regex engine does: leftmost scan,
 //! no rescan past matches.
 
-use super::utf8_char_len;
+use super::{byte_pair, utf8_char_len};
 
-/// `V` of the `(?<=[аеёіоуыэюя] )` lookbehind: `аеёіоуыэюя`, all 2-byte.
-fn is_i_to_j_vow(b0: u8, b1: u8) -> bool {
-    matches!(
-        (b0, b1),
-        (0xD0, 0xB0) // а
-            | (0xD0, 0xB5) // е
-            | (0xD1, 0x91) // ё
-            | (0xD1, 0x96) // і
-            | (0xD0, 0xBE) // о
-            | (0xD1, 0x83) // у
-            | (0xD1, 0x8B) // ы
-            | (0xD1, 0x8D) // э
-            | (0xD1, 0x8E) // ю
-            | (0xD1, 0x8F) // я
-    )
-}
+/// Byte patterns (`(lead, second)` pairs and fixed slices) spelled with the
+/// character literals, so the hot loop below reads as characters but runs
+/// as raw byte compares — no per-position decoding or `Pattern` overhead.
+const A_PAIR: (u8, u8) = byte_pair("а");
+const YE_PAIR: (u8, u8) = byte_pair("е");
+const YO_PAIR: (u8, u8) = byte_pair("ё");
+const II_PAIR: (u8, u8) = byte_pair("і");
+const O_PAIR: (u8, u8) = byte_pair("о");
+const U_PAIR: (u8, u8) = byte_pair("у");
+const Y_PAIR: (u8, u8) = byte_pair("ы");
+const E_PAIR: (u8, u8) = byte_pair("э");
+const YU_PAIR: (u8, u8) = byte_pair("ю");
+const YA_PAIR: (u8, u8) = byte_pair("я");
+/// `і ` (pattern head) and ` ў` (trailer) as byte slices.
+const II_SP: &[u8] = "і ".as_bytes();
+const U_SHORT: &[u8] = "ў".as_bytes();
 
 /// Replace `V␣і␣(ў?)` with `й␣`/`й␣у`; `always = false` keeps the match
 /// on a coin flip, like `Math.random() >= 0.5` in JS.
@@ -33,18 +33,32 @@ pub(crate) fn replace_i_by_j(text: &str, always: bool) -> String {
     let mut out = String::with_capacity(len);
     let mut flush = 0usize;
     let mut i = 0usize;
+    // ` і ` is space(1) + `і`(2) + space(1); ` ў` trailer adds `ў`(2).
     while i < len {
-        if i + 3 <= len
-            && bytes[i] == 0xD1
-            && bytes[i + 1] == 0x96
-            && bytes[i + 2] == b' '
+        let b = bytes[i];
+        // The pattern starts with non-ASCII `і`: ASCII bytes never match.
+        if b.is_ascii() {
+            i += 1;
+            continue;
+        }
+        // `V` of the `(?<=[аеёіоуыэюя] )` lookbehind is always 2 bytes,
+        // ending right before the space at `i - 1`.
+        if bytes[i..].starts_with(II_SP)
             && i >= 3
             && bytes[i - 1] == b' '
-            && is_i_to_j_vow(bytes[i - 3], bytes[i - 2])
+            && matches!(
+                (bytes[i - 3], bytes[i - 2]),
+                A_PAIR | YE_PAIR | YO_PAIR | II_PAIR | O_PAIR | U_PAIR | Y_PAIR | E_PAIR
+                    | YU_PAIR | YA_PAIR
+            )
         {
             // `(ў?)`: optional `ў` right after the space.
-            let has_u = i + 5 <= len && bytes[i + 3] == 0xD1 && bytes[i + 4] == 0x9E;
-            let end = if has_u { i + 5 } else { i + 3 };
+            let has_u = bytes[i + II_SP.len()..].starts_with(U_SHORT);
+            let end = if has_u {
+                i + II_SP.len() + U_SHORT.len()
+            } else {
+                i + II_SP.len()
+            };
             let replace = always || rand::random::<f64>() >= 0.5;
             out.push_str(&text[flush..i]);
             if replace {
@@ -56,11 +70,7 @@ pub(crate) fn replace_i_by_j(text: &str, always: bool) -> String {
             i = end;
             continue;
         }
-        i += if bytes[i] < 0x80 {
-            1
-        } else {
-            utf8_char_len(bytes[i])
-        };
+        i += utf8_char_len(b);
     }
     out.push_str(&text[flush..]);
     out

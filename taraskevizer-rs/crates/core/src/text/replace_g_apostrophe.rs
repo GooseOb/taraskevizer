@@ -2,44 +2,31 @@
 ///
 /// Equivalent to `/г'(?![еёіюя])/g`, but without the regex engine:
 /// single pass over the input, one allocation (output is never longer
-/// than the input: 3 bytes `D0 B3 27` shrink to 2 bytes `D2 91`),
-/// SIMD-accelerated scanning via `str::find('\'')`, and a byte-level
-/// lookahead (`е`=D0 B5, `ё`=D1 91, `і`=D1 96, `ю`=D1 8E, `я`=D1 8F).
+/// than the input: `г'` shrinks to `ґ`), SIMD-accelerated scanning via
+/// `str::find('\'')`, and a `starts_with` lookahead for `[еёіюя]`.
 pub(crate) fn replace_g_apostrophe(text: &str) -> String {
-    let bytes = text.as_bytes();
     let mut out = String::with_capacity(text.len());
     let mut flush_from = 0usize;
     let mut search_from = 0usize;
     // `'` is rare, so jumping between apostrophes with the vectorized
     // `find` keeps the hot loop in SIMD `memchr` instead of a per-byte
     // branch. Slicing is safe: `search_from`/`flush_from` always follow
-    // an ASCII `'` (or 0), and `pos - 2` points at a `0xD0` lead byte,
-    // which in valid UTF-8 can only start a char.
+    // an ASCII `'` (or 0), and `pos - 'г'.len_utf8()` points at a `г`
+    // char boundary in valid UTF-8.
     while let Some(rel) = text[search_from..].find('\'') {
         let pos = search_from + rel; // byte index of `'`
         search_from = pos + 1;
-        // Must be preceded by `г` (D0 B3).
-        if pos < 2 || bytes[pos - 2] != 0xD0 || bytes[pos - 1] != 0xB3 {
+        // Must be preceded by `г` (byte `memcmp`, no decoding).
+        if !text[..pos].ends_with("г") {
             continue;
         }
         // Negative lookahead for [еёіюя].
-        let after = pos + 1;
-        let keep = if after >= bytes.len() {
-            false
-        } else {
-            let b1 = bytes[after];
-            if b1 == 0xD0 {
-                after + 1 < bytes.len() && bytes[after + 1] == 0xB5
-            } else if b1 == 0xD1 {
-                after + 1 < bytes.len() && matches!(bytes[after + 1], 0x91 | 0x96 | 0x8E | 0x8F)
-            } else {
-                false
-            }
-        };
-        if keep {
+        let after = &text[pos + 1..];
+        let look = after.chars().next();
+        if matches!(look, Some('е' | 'ё' | 'і' | 'ю' | 'я')) {
             continue;
         }
-        out.push_str(&text[flush_from..pos - 2]);
+        out.push_str(&text[flush_from..pos - 'г'.len_utf8()]);
         out.push('ґ');
         flush_from = pos + 1;
     }
