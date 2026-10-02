@@ -6,18 +6,24 @@ pub use self::steps::*;
 
 use crate::{
     config::TaraskConfig,
-    dict::{CompiledDict, DictEntry},
+    dict::{CompiledDict, PHONETIC as PHONETIC_ENTRIES, WORD_LIST as WORD_LIST_ENTRIES},
 };
 
-fn build_dict_matcher(json: &str) -> CompiledDict {
-    let entries: Vec<DictEntry> = serde_json::from_str(json).unwrap();
+fn build_dict_matcher(entries: &[(&'static str, &'static str)]) -> CompiledDict {
+    let entries: Vec<crate::dict::DictEntry> = entries
+        .iter()
+        .map(|(pattern, result)| crate::dict::DictEntry {
+            pattern: (*pattern).to_string(),
+            result: (*result).to_string(),
+        })
+        .collect();
     CompiledDict::new(&entries)
 }
 
 static WORD_LIST: std::sync::LazyLock<CompiledDict> =
-    std::sync::LazyLock::new(|| build_dict_matcher(include_str!("../dict/data/wordlist.json")));
+    std::sync::LazyLock::new(|| build_dict_matcher(WORD_LIST_ENTRIES));
 static PHONETIC: std::sync::LazyLock<CompiledDict> =
-    std::sync::LazyLock::new(|| build_dict_matcher(include_str!("../dict/data/phonetic.json")));
+    std::sync::LazyLock::new(|| build_dict_matcher(PHONETIC_ENTRIES));
 
 pub struct PipelineContext<'a> {
     pub text: String,
