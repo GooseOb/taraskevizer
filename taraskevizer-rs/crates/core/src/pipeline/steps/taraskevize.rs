@@ -4,8 +4,9 @@ use crate::{
 };
 
 pub fn step_taraskevize(ctx: &mut PipelineContext) {
-    let mut text = WORD_LIST.replace_all(&ctx.text);
-    text = soften(&text);
+    // Borrowed when the 100+ batch dict is a no-op (no per-batch clones).
+    let dict = WORD_LIST.replace_all_cow(&ctx.text);
+    let mut text = soften(dict.as_ref());
     text = end_z_soften_and_nia_biaz(&text);
     ctx.text = text;
 }

@@ -18,13 +18,77 @@ static WORD_LIST: std::sync::LazyLock<CompiledDict> =
 static PHONETIC: std::sync::LazyLock<CompiledDict> =
     std::sync::LazyLock::new(|| build_batched_dict_matcher(PHONETIC_ENTRIES));
 
+/// One working word: either a byte range into the backing buffer (no
+/// allocation) or an owned replacement for words changed by
+/// `restore_case` / `highlight_diff` / `escape` (copy-on-write).
+///
+/// Spans borrow `PipelineContext::text`, which is stable from
+/// `step_store_splitted_text` until `step_join_splitted_text` overwrites it.
+/// Stored as offsets (not `&str`) so the struct stays non-self-referential.
+#[derive(Debug, Clone)]
+pub enum TextWord {
+    Span(u32, u32),
+    Owned(String),
+}
+
+impl TextWord {
+    /// Resolve to `&str` via the backing buffer (`buf` is `ctx.text`, or the
+    /// local `conv`/`word` string at the caps-escape call site).
+    pub fn as_str<'x>(&'x self, buf: &'x str) -> &'x str {
+        match self {
+            TextWord::Span(s, e) => &buf[*s as usize..*e as usize],
+            TextWord::Owned(o) => o.as_str(),
+        }
+    }
+}
+
+/// `words.join(" ")` over resolved spans (single exact-sized allocation).
+pub fn join_text_words(words: &[TextWord], buf: &str) -> String {
+    let mut len = 0usize;
+    for (i, w) in words.iter().enumerate() {
+        if i > 0 {
+            len += 1;
+        }
+        len += w.as_str(buf).len();
+    }
+    let mut out = String::with_capacity(len);
+    for (i, w) in words.iter().enumerate() {
+        if i > 0 {
+            out.push(' ');
+        }
+        out.push_str(w.as_str(buf));
+    }
+    out
+}
+
+/// Split `buf` on `' '` into span words (one `Vec` allocation, no per-word
+/// `String`s). Mirrors `buf.split(' ')` exactly, including leading/trailing
+/// empty parts from padding spaces.
+pub fn split_text_words(buf: &str) -> Vec<TextWord> {
+    // Exact reserve via SIMD space count: `split(' ')` yields spaces + 1.
+    let n = memchr::memchr_iter(b' ', buf.as_bytes()).count() + 1;
+    let mut out = Vec::with_capacity(n);
+    let mut start = 0u32;
+    for (i, _) in buf.match_indices(' ') {
+        debug_assert!(i <= u32::MAX as usize);
+        out.push(TextWord::Span(start, i as u32));
+        start = i as u32 + 1;
+    }
+    debug_assert!(buf.len() <= u32::MAX as usize);
+    out.push(TextWord::Span(start, buf.len() as u32));
+    out
+}
+
 pub struct PipelineContext<'a> {
     pub text: String,
     pub cfg: &'a TaraskConfig,
     pub trim_before: String,
     pub trim_after: String,
-    pub text_arr: Vec<String>,
-    pub orig_arr: Vec<String>,
+    pub text_arr: Vec<TextWord>,
+    /// ABC-converted original text; word-split lazily (`split(' ')` borrows,
+    /// no per-word allocation) by `step_restore_case` / `step_highlight_diff`.
+    /// Replaces the old `orig_arr: Vec<String>` (one `String` alloc per word).
+    pub orig_text: String,
     pub no_fix_arr: Vec<String>,
 }
 
@@ -36,7 +100,7 @@ impl<'a> PipelineContext<'a> {
             trim_before: String::new(),
             trim_after: String::new(),
             text_arr: Vec::new(),
-            orig_arr: Vec::new(),
+            orig_text: String::new(),
             no_fix_arr: Vec::new(),
         }
     }

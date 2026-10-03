@@ -4,7 +4,11 @@
 /// The slices borrow `src`, so the caller must keep it alive until
 /// [`restore_whitespaces`] has run.
 pub fn collapse_whitespaces(src: &str) -> (String, Vec<&str>) {
-    let mut spaces = Vec::new();
+    // Pre-size the runs vector to skip the early reallocs (a chunk holds far
+    // more than a handful of runs; the growth beyond this stays amortized).
+    // Kept fixed rather than proportional so whitespace deserts can't cause
+    // a huge over-reserve.
+    let mut spaces: Vec<&str> = Vec::with_capacity(256);
     let mut result = String::with_capacity(src.len());
     let mut chars = src.char_indices().peekable();
     while let Some((start, ch)) = chars.next() {

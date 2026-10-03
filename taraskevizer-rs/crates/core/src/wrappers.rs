@@ -5,7 +5,7 @@
 //! so they can be shared and referenced from a predefined configuration.
 
 use crate::config::{TaraskConfig, VariationWrappers, Wrappers};
-use std::fmt::Display;
+use std::{borrow::Cow, fmt::Display};
 
 // ── ANSI color wrappers (mirror `ansiColor` in `src/wrappers.ts`) ──
 
@@ -17,16 +17,16 @@ fn ansi_letter_h<T: Display>(s: T) -> String {
     format!("\x1b[35m{s}\x1b[0m")
 }
 
-fn ansi_var_all(s: &str) -> String {
-    ansi_letter_h(s)
+fn ansi_var_all(s: &str) -> Cow<'_, str> {
+    Cow::Owned(ansi_letter_h(s))
 }
 
-fn ansi_var_first(s: &str) -> String {
-    ansi_letter_h(variation_first(s))
+fn ansi_var_first(s: &str) -> Cow<'_, str> {
+    Cow::Owned(ansi_letter_h(variation_first(s)))
 }
 
-fn ansi_var_no(s: &str) -> String {
-    ansi_letter_h(variation_no(s))
+fn ansi_var_no(s: &str) -> Cow<'_, str> {
+    Cow::Owned(ansi_letter_h(variation_no(s)))
 }
 
 // ── HTML wrappers (mirror `html` in `src/wrappers.ts`) ──────────
@@ -39,19 +39,19 @@ fn html_letter_h(ch: char) -> String {
     format!("<tarH>{ch}</tarH>")
 }
 
-fn html_var_all(s: &str) -> String {
+fn html_var_all(s: &str) -> Cow<'_, str> {
     let inner = &s[1..s.len().saturating_sub(1)];
     let parts: Vec<&str> = inner.split('|').collect();
     let main = parts.first().unwrap_or(&"");
     let data: Vec<&str> = parts.iter().skip(1).copied().collect();
     if data.is_empty() {
-        main.to_string()
+        Cow::Borrowed(main)
     } else {
-        format!("<tarL data-l='{}'>{main}</tarL>", data.join(","))
+        Cow::Owned(format!("<tarL data-l='{}'>{main}</tarL>", data.join(",")))
     }
 }
 
-fn html_var_first(s: &str) -> String {
+fn html_var_first(s: &str) -> Cow<'_, str> {
     let inner = &s[1..s.len().saturating_sub(1)];
     let parts: Vec<&str> = inner.split('|').collect();
     if parts.len() >= 2 {
@@ -60,21 +60,21 @@ fn html_var_first(s: &str) -> String {
         let rest: Vec<&str> = parts.iter().skip(2).copied().collect();
         let mut data = rest;
         data.push(first);
-        format!("<tarL data-l='{}'>{main}</tarL>", data.join(","))
+        Cow::Owned(format!("<tarL data-l='{}'>{main}</tarL>", data.join(",")))
     } else {
         html_var_all(s)
     }
 }
 
-fn html_var_no(s: &str) -> String {
+fn html_var_no(s: &str) -> Cow<'_, str> {
     variation_no(s)
 }
 
 /// Shared variation helpers (mirror `defaultVariation` in the reference).
-pub fn variation_no(s: &str) -> String {
+pub fn variation_no(s: &str) -> Cow<'_, str> {
     let after_paren = s.trim_start_matches('(');
     let end = after_paren.find(['|', ')']).unwrap_or(after_paren.len());
-    after_paren[..end].to_string()
+    Cow::Borrowed(&after_paren[..end])
 }
 
 pub fn variation_first(s: &str) -> String {

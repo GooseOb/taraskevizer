@@ -46,10 +46,9 @@ pub fn split_into_chunks(text: &str, n: usize) -> Vec<(usize, usize)> {
             _ => {}
         }
         let after = pos + c.len_utf8();
-        if after - start >= MAX_CHUNK {
-            chunks.push((start, after));
-            start = after;
-        } else if pos >= start + target && depth == 0 && is_chunk_delimiter(c) {
+        if after - start >= MAX_CHUNK
+            || pos >= start + target && depth == 0 && is_chunk_delimiter(c)
+        {
             chunks.push((start, after));
             start = after;
         }

@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{borrow::Cow, fmt};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Alphabet {
@@ -49,9 +49,9 @@ impl Clone for Wrappers {
 }
 
 pub struct VariationWrappers {
-    pub all: fn(&str) -> String,
-    pub first: fn(&str) -> String,
-    pub no: fn(&str) -> String,
+    pub all: fn(&str) -> Cow<str>,
+    pub first: fn(&str) -> Cow<str>,
+    pub no: fn(&str) -> Cow<str>,
 }
 
 impl fmt::Debug for VariationWrappers {

@@ -60,10 +60,13 @@ pub(crate) fn find_unescaped_gt(s: &str) -> Option<usize> {
     None
 }
 
+/// `regex`-based replace where the callback appends directly to the output
+/// buffer instead of returning an intermediate `String` (one alloc saved per
+/// match — the variations step can have hundreds per chunk).
 pub(crate) fn regex_replace_all_with(
     text: &str,
     pattern: &str,
-    mut callback: impl FnMut(&regex::Captures) -> String,
+    mut callback: impl FnMut(&regex::Captures, &mut String),
 ) -> String {
     let re = compiled_regex(pattern);
     let mut result = String::with_capacity(text.len());
@@ -74,7 +77,7 @@ pub(crate) fn regex_replace_all_with(
             None => continue,
         };
         result.push_str(&text[last_end..m.start()]);
-        result.push_str(&callback(&cap));
+        callback(&cap, &mut result);
         last_end = m.end();
     }
     result.push_str(&text[last_end..]);
@@ -109,14 +112,14 @@ pub(crate) fn initcap(word: &str) -> String {
     let mut chars = word.chars();
     match chars.next() {
         None => String::new(),
-        Some(c) => c.to_uppercase().to_string() + chars.as_str(),
+        Some(c) => c.to_uppercase().chain(chars).collect(),
     }
 }
 
 pub(crate) fn initcap_var(word: &str) -> String {
-    regex_replace_all_with(word, r"[^(|)]*[|)]", |caps| {
+    regex_replace_all_with(word, r"[^(|)]*[|)]", |caps, out| {
         let m = caps.get(0).map(|m| m.as_str()).unwrap_or("");
-        initcap(m)
+        out.push_str(&initcap(m))
     })
 }
 
@@ -127,11 +130,11 @@ pub fn apply_highlight_diff(
     fix: &dyn Fn(&str) -> String,
 ) -> String {
     let word_h = if is_cyrillic {
-        replace_g_str(word)
+        &replace_g_str(word)
     } else {
-        word.to_string()
+        word
     };
-    highlight_diff_word(word, o_word, &word_h, is_cyrillic, fix)
+    highlight_diff_word(word, o_word, word_h, is_cyrillic, fix)
 }
 
 pub(crate) fn highlight_diff_word(

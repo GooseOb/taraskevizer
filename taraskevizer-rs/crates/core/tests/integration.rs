@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use taraskevizer_core::{
     alphabetic, apply_highlight_diff, config::*, html_config_options, phonetic, tarask,
     HTML_WRAPPERS,
@@ -30,19 +32,21 @@ fn test_phonetic_cases(cfg: &TaraskConfig, cases: &[(&str, &str)]) {
 
 // --- Wrapper helpers for highlighting / HTML tests ---
 
-fn def_var_no(s: &str) -> String {
-    s.strip_prefix('(')
-        .and_then(|s| s.split('|').next())
-        .map(|s| s.to_string())
-        .unwrap_or_else(|| s.to_string())
+fn def_var_no(s: &str) -> Cow<str> {
+    Cow::Borrowed(
+        s.strip_prefix('(')
+            .and_then(|s| s.split('|').next())
+            .unwrap_or(s),
+    )
 }
 
-fn def_var_first(s: &str) -> String {
-    s.strip_prefix('(')
-        .and_then(|s| s.strip_suffix(')'))
-        .and_then(|s| s.split('|').nth(1))
-        .map(|s| s.to_string())
-        .unwrap_or_else(|| s.to_string())
+fn def_var_first(s: &str) -> Cow<str> {
+    Cow::Borrowed(
+        s.strip_prefix('(')
+            .and_then(|s| s.strip_suffix(')'))
+            .and_then(|s| s.split('|').nth(1))
+            .unwrap_or(s),
+    )
 }
 
 // JS highlighting test applies highlightDiff as a SEPARATE step after tarask()
@@ -52,7 +56,7 @@ fn highlight_wrappers() -> Wrappers {
         fix: Some(|s| format!("[{s}]")),
         letter_h: None,
         variable: VariationWrappers {
-            all: |s| s.to_string(),
+            all: |s| Cow::Borrowed(s),
             first: def_var_first,
             no: def_var_no,
         },

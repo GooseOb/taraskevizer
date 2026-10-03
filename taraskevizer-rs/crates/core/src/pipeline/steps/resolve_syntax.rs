@@ -2,7 +2,7 @@ use crate::{
     pipeline::{
         helpers::{apply_abc_lower, apply_abc_upper, find_unescaped_gt},
         steps::restore_case::restore_case_words,
-        PipelineContext,
+        PipelineContext, {join_text_words, split_text_words},
     },
     text::is_lu,
 };
@@ -210,10 +210,11 @@ pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
         let lowered = word.to_lowercase();
         // `Cow`: no clone for the default cyrillic alphabet.
         let conv = apply_abc_lower(&lowered, abc);
-        let mut text_words: Vec<String> = conv.split(' ').map(|s| s.to_string()).collect();
-        let orig_words: Vec<String> = word.split(' ').map(|s| s.to_string()).collect();
-        restore_case_words(&mut text_words, &orig_words);
-        no_fix.push(text_words.join(" "));
+        // Copy-on-write spans over `conv` (no per-word alloc); `word` splits
+        // lazily inside `restore_case_words`.
+        let mut text_words = split_text_words(&conv);
+        restore_case_words(&mut text_words, &conv, &word);
+        no_fix.push(join_text_words(&text_words, &conv));
         result.push_str(no_fix_ph);
         p = end;
         flush = end;

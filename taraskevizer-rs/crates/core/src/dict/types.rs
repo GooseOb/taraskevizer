@@ -1,5 +1,6 @@
 use regex::Regex;
 use serde::Deserialize;
+use std::borrow::Cow;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DictEntry {
@@ -70,17 +71,22 @@ impl RegexBatch {
         Self { re, alternatives }
     }
 
-    fn replace_all(&self, text: &str) -> String {
+    /// Borrowed when nothing matches (no allocation); owned otherwise.
+    /// Expansion writes directly into the output buffer (no per-match
+    /// intermediate `String`).
+    fn replace_all_cow<'t>(&self, text: &'t str) -> Cow<'t, str> {
         if !self.re.is_match(text) {
-            return text.to_string();
+            return Cow::Borrowed(text);
         }
         let mut result = String::with_capacity(text.len());
         let mut last_end = 0;
+        let mut matched = false;
         for cap in self.re.captures_iter(text) {
             let m = match cap.get(0) {
                 Some(m) => m,
                 None => continue,
             };
+            matched = true;
             result.push_str(&text[last_end..m.start()]);
             // Exactly one wrapper participates; first hit wins (dict order).
             let mut dispatched: Option<&str> = None;
@@ -91,15 +97,20 @@ impl RegexBatch {
                 }
             }
             if let Some(tpl) = dispatched {
-                result.push_str(&expand_replacement_std(tpl, &cap));
+                expand_replacement_std_into(tpl, &cap, &mut result);
             } else {
                 // Should be unreachable; copy the match verbatim to stay total.
                 result.push_str(m.as_str());
             }
             last_end = m.end();
         }
+        if !matched {
+            // `is_match` said yes but no match materialized (unreachable in
+            // practice); borrow instead of returning an identical copy.
+            return Cow::Borrowed(text);
+        }
         result.push_str(&text[last_end..]);
-        result
+        Cow::Owned(result)
     }
 }
 
@@ -176,15 +187,36 @@ impl CompiledDict {
     /// the sequential tail runs per-entry. Short-circuits non-matching
     /// batches/passes like the old loop did.
     pub fn replace_all(&self, text: &str) -> String {
-        let mut result = text.to_string();
+        self.replace_all_cow(text).into_owned()
+    }
+
+    /// Borrowed when the whole dictionary is a no-op (no allocation, not
+    /// even the historical initial `text.to_string()`); owned otherwise.
+    /// Intermediate batches reuse one buffer instead of cloning per batch.
+    pub fn replace_all_cow<'t>(&self, text: &'t str) -> Cow<'t, str> {
+        // `buf` is `None` until the first actual change; `cur` borrows either
+        // `text` or `buf`. This keeps the common no-match case at zero
+        // allocations across all ~100 single-pass batches.
+        let mut buf: Option<String> = None;
+        let mut cur: &str = text;
         for batch in &self.single_pass {
-            result = batch.replace_all(&result);
+            if let Cow::Owned(s) = batch.replace_all_cow(cur) {
+                buf = Some(s);
+                cur = buf.as_ref().expect("just set");
+            }
         }
         for entry in &self.sequential {
             match entry {
                 SequentialEntry::Literal(pattern, replacement) => {
-                    if result.contains(pattern) {
-                        result = result.replace(pattern, replacement);
+                    if cur.contains(pattern.as_str()) {
+                        // Borrow of `cur` (possibly into `buf`) ends before
+                        // the assignment below.
+                        let next: String = cur.replace(pattern, replacement);
+                        match &mut buf {
+                            Some(owned) => *owned = next,
+                            None => buf = Some(next),
+                        }
+                        cur = buf.as_ref().expect("just set");
                     }
                 }
                 SequentialEntry::Std(re, result_tpl) => {
@@ -194,13 +226,26 @@ impl CompiledDict {
                     // immediately followed by another letter (e.g. `$1JI` -> ""),
                     // silently dropping characters. Expand manually instead so
                     // `$N` + literal text works correctly.
-                    if re.is_match(&result) {
-                        result = replace_all_std(re, &result, result_tpl);
+                    if re.is_match(cur) {
+                        let next = replace_all_std(re, cur, result_tpl);
+                        match &mut buf {
+                            Some(owned) => {
+                                *owned = next;
+                                cur = buf.as_ref().expect("just set");
+                            }
+                            None => {
+                                buf = Some(next);
+                                cur = buf.as_ref().expect("just set");
+                            }
+                        }
                     }
                 }
             }
         }
-        result
+        match buf {
+            Some(s) => Cow::Owned(s),
+            None => Cow::Borrowed(text),
+        }
     }
 
     pub fn has_entries(&self) -> bool {
@@ -333,15 +378,17 @@ fn replace_all_std(re: &Regex, text: &str, replacement: &str) -> String {
             None => continue,
         };
         result.push_str(&text[last_end..m.start()]);
-        result.push_str(&expand_replacement_std(replacement, &cap));
+        expand_replacement_std_into(replacement, &cap, &mut result);
         last_end = m.end();
     }
     result.push_str(&text[last_end..]);
     result
 }
 
-fn expand_replacement_std(replacement: &str, cap: &regex::Captures) -> String {
-    let mut result = String::new();
+/// Append the expanded replacement to `out` (no intermediate `String` per
+/// match — the old version allocated one `String` per dict hit).
+fn expand_replacement_std_into(replacement: &str, cap: &regex::Captures, out: &mut String) {
+    let result = out;
     let mut chars = replacement.chars().peekable();
     while let Some(ch) = chars.next() {
         if ch == '$' {
@@ -357,16 +404,15 @@ fn expand_replacement_std(replacement: &str, cap: &regex::Captures) -> String {
                     chars.next();
                 }
                 Some('0'..='9') => {
-                    let mut num = String::new();
+                    let mut idx: usize = 0;
                     while let Some(d) = chars.peek() {
                         if d.is_ascii_digit() {
-                            num.push(*d);
+                            idx = idx * 10 + (*d as usize - '0' as usize);
                             chars.next();
                         } else {
                             break;
                         }
                     }
-                    let idx: usize = num.parse().unwrap_or(0);
                     if let Some(m) = cap.get(idx) {
                         result.push_str(m.as_str());
                     }
@@ -387,7 +433,6 @@ fn expand_replacement_std(replacement: &str, cap: &regex::Captures) -> String {
             result.push(ch);
         }
     }
-    result
 }
 
 /// Check if a pattern string contains regex metacharacters.
