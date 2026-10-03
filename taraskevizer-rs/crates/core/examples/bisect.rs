@@ -48,7 +48,10 @@ fn to_batches(entries: &[(&'static str, &'static str)], cuts: &[usize]) -> Vec<V
         batches.push(
             entries[w[0]..w[1]]
                 .iter()
-                .map(|(p, r)| DictEntry { pattern: p.to_string(), result: r.to_string() })
+                .map(|(p, r)| DictEntry {
+                    pattern: p.to_string(),
+                    result: r.to_string(),
+                })
                 .collect(),
         );
     }
@@ -76,11 +79,7 @@ fn dict_for(entries: &[(&'static str, &'static str)], cuts: &[usize]) -> Compile
 /// oracle can never drift from it again.
 ///
 /// Candidate partition matches the reference on every production chunk.
-fn matches_reference(
-    dict: &CompiledDict,
-    chunks: &[String],
-    reference_chunks: &[String],
-) -> bool {
+fn matches_reference(dict: &CompiledDict, chunks: &[String], reference_chunks: &[String]) -> bool {
     for (chunk, expected) in chunks.iter().zip(reference_chunks.iter()) {
         if dict.replace_all(chunk) != *expected {
             return false;
@@ -135,7 +134,9 @@ fn combine(accepted: &[(usize, usize)]) -> Vec<usize> {
         bounds.insert(*a);
         bounds.insert(*b);
     }
-    for b in [101, 145, 257, 400, 534, 612, 916, 983, 1048, 1268, 1271, 1302, 1329, 1415] {
+    for b in [
+        101, 145, 257, 400, 534, 612, 916, 983, 1048, 1268, 1271, 1302, 1329, 1415,
+    ] {
         bounds.insert(b);
     }
     let acc_set: BTreeSet<(usize, usize)> = accepted.iter().cloned().collect();
@@ -198,7 +199,10 @@ fn verify(dump: &str, reference_path: &str) {
     let input = String::from_utf8_lossy(&bytes).into_owned();
     const CHUNK_SIZE: usize = 16_000;
     let ranges = split_into_chunks(&input, input.len().div_ceil(CHUNK_SIZE));
-    log(&format!("verifying {} chunks against reference...", ranges.len()));
+    log(&format!(
+        "verifying {} chunks against reference...",
+        ranges.len()
+    ));
     let mut out = String::with_capacity(input.len());
     for &(s, e) in &ranges {
         out.push_str(&tarask(&input[s..e], &cfg));
@@ -210,7 +214,9 @@ fn verify(dump: &str, reference_path: &str) {
     } else {
         let a = out.lines().count();
         let b = expected.lines().count();
-        log(&format!("VERIFY: DIFFERENT (got {a} lines, want {b} lines)"));
+        log(&format!(
+            "VERIFY: DIFFERENT (got {a} lines, want {b} lines)"
+        ));
         std::process::exit(1);
     }
 }
@@ -230,8 +236,7 @@ fn refinalize(entries: &[(&'static str, &'static str)], log_path: &str, dump: &s
         .map(|s| s.parse().expect("int"))
         .collect();
     assert!(nums.len() % 2 == 0, "pairs");
-    let mut accepted: Vec<(usize, usize)> =
-        nums.chunks_exact(2).map(|c| (c[0], c[1])).collect();
+    let mut accepted: Vec<(usize, usize)> = nums.chunks_exact(2).map(|c| (c[0], c[1])).collect();
     // Pre-proven safe (each merged alone with zero diffs; also baked into
     // every candidate test): keep them merged in the final file.
     for t in [(1268, 1271), (1271, 1302), (1329, 1415)] {
@@ -252,10 +257,13 @@ fn refinalize(entries: &[(&'static str, &'static str)], log_path: &str, dump: &s
     let ranges = split_into_chunks(&input, input.len().div_ceil(CHUNK_SIZE));
     let wl_inputs = wordlist_inputs(&input, &ranges, &cfg);
     let ref_dict = dict_for(entries, &safe_baseline_cuts());
-    let reference_chunks: Vec<String> =
-        wl_inputs.iter().map(|c| ref_dict.replace_all(c)).collect();
+    let reference_chunks: Vec<String> = wl_inputs.iter().map(|c| ref_dict.replace_all(c)).collect();
     let got_ok = matches_reference(&dict_for(entries, &cuts), &wl_inputs, &reference_chunks);
-    log(if got_ok { "FINAL: IDENTICAL" } else { "FINAL: DIFFERENT" });
+    log(if got_ok {
+        "FINAL: IDENTICAL"
+    } else {
+        "FINAL: DIFFERENT"
+    });
     if !got_ok {
         std::process::exit(1);
     }
@@ -288,8 +296,24 @@ fn bisect(
     }
     log(&format!("{pad}  differs, splitting"));
     let mid = (rs + re) / 2;
-    bisect(entries, chunks, reference_chunks, accepted, rs, mid, depth + 1);
-    bisect(entries, chunks, reference_chunks, accepted, mid, re, depth + 1);
+    bisect(
+        entries,
+        chunks,
+        reference_chunks,
+        accepted,
+        rs,
+        mid,
+        depth + 1,
+    );
+    bisect(
+        entries,
+        chunks,
+        reference_chunks,
+        accepted,
+        mid,
+        re,
+        depth + 1,
+    );
 }
 
 fn main() {
@@ -298,7 +322,10 @@ fn main() {
     let dump = args.get(2).map(|s| s.as_str()).unwrap_or(DEFAULT_DUMP);
 
     let entries = flat_entries();
-    log(&format!("flattened {} entries from WORD_LIST", entries.len()));
+    log(&format!(
+        "flattened {} entries from WORD_LIST",
+        entries.len()
+    ));
 
     if mode == "restore" {
         write_wordlist(&entries, &safe_baseline_cuts());
@@ -322,10 +349,10 @@ fn main() {
 
     if mode == "verify" {
         let dump = args.get(2).map(|s| s.as_str()).unwrap_or(DEFAULT_DUMP);
-        let reference = args
-            .get(3)
-            .map(|s| s.as_str())
-            .unwrap_or(concat!(env!("CARGO_MANIFEST_DIR"), "/../../output.reference.txt"));
+        let reference = args.get(3).map(|s| s.as_str()).unwrap_or(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../output.reference.txt"
+        ));
         verify(dump, reference);
         return;
     }
@@ -358,7 +385,10 @@ fn main() {
     }
 
     if mode == "refinalize" {
-        let log_path = args.get(2).map(|s| s.as_str()).unwrap_or("/tmp/bisect_rs.log");
+        let log_path = args
+            .get(2)
+            .map(|s| s.as_str())
+            .unwrap_or("/tmp/bisect_rs.log");
         let dump = args.get(3).map(|s| s.as_str()).unwrap_or(DEFAULT_DUMP);
         refinalize(&entries, log_path, dump);
         return;
@@ -372,18 +402,26 @@ fn main() {
     let input = String::from_utf8_lossy(&bytes).into_owned();
     const CHUNK_SIZE: usize = 16_000;
     let ranges = split_into_chunks(&input, input.len().div_ceil(CHUNK_SIZE));
-    log(&format!("input {} bytes in {} chunks", input.len(), ranges.len()));
+    log(&format!(
+        "input {} bytes in {} chunks",
+        input.len(),
+        ranges.len()
+    ));
     let wl_inputs = wordlist_inputs(&input, &ranges, &cfg);
     log("compiling reference dict...");
     let ref_dict = dict_for(&entries, &safe_baseline_cuts());
-    let reference_chunks: Vec<String> =
-        wl_inputs.iter().map(|c| ref_dict.replace_all(c)).collect();
+    let reference_chunks: Vec<String> = wl_inputs.iter().map(|c| ref_dict.replace_all(c)).collect();
     log("reference chunks ready");
 
     // Pre-proven safe merges (each merged alone with zero diffs): kept, and
     // the tail ones are also baked into every candidate test.
-    let mut accepted: Vec<(usize, usize)> =
-        vec![(0, 101), (916, 983), (1268, 1271), (1271, 1302), (1329, 1415)];
+    let mut accepted: Vec<(usize, usize)> = vec![
+        (0, 101),
+        (916, 983),
+        (1268, 1271),
+        (1271, 1302),
+        (1329, 1415),
+    ];
     let regions = [
         (101usize, 145usize),
         (145, 257),
@@ -397,7 +435,15 @@ fn main() {
     ];
     for (rs, re) in regions {
         log(&format!("=== region [{rs}..{re}) ==="));
-        bisect(&entries, &wl_inputs, &reference_chunks, &mut accepted, rs, re, 0);
+        bisect(
+            &entries,
+            &wl_inputs,
+            &reference_chunks,
+            &mut accepted,
+            rs,
+            re,
+            0,
+        );
     }
     accepted.sort();
     log(&format!("ACCEPTED: {accepted:?}"));
@@ -409,7 +455,11 @@ fn main() {
     // In-process final verification.
     let final_dict = dict_for(&entries, &cuts);
     let ok = matches_reference(&final_dict, &wl_inputs, &reference_chunks);
-    log(if ok { "FINAL: IDENTICAL" } else { "FINAL: DIFFERENT" });
+    log(if ok {
+        "FINAL: IDENTICAL"
+    } else {
+        "FINAL: DIFFERENT"
+    });
     if !ok {
         std::process::exit(1);
     }

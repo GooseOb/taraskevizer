@@ -42,8 +42,10 @@ fn is_zw_vow(ch: char) -> bool {
 /// `ʼ` (U+02BC) is 2 bytes; every Cyrillic member is 2 bytes.
 fn cons_char_len(s: &str) -> usize {
     match s.chars().next() {
-        Some('б' | 'в' | 'г' | 'д' | 'ж' | 'з' | 'й' | 'к' | 'л' | 'м' | 'н' | 'п' | 'р'
-        | 'с' | 'т' | 'ф' | 'х' | 'ц' | 'ч' | 'ш' | 'ў' | 'ь' | 'ʼ') => 2,
+        Some(
+            'б' | 'в' | 'г' | 'д' | 'ж' | 'з' | 'й' | 'к' | 'л' | 'м' | 'н' | 'п' | 'р' | 'с' | 'т'
+            | 'ф' | 'х' | 'ц' | 'ч' | 'ш' | 'ў' | 'ь' | 'ʼ',
+        ) => 2,
         _ => 0,
     }
 }
@@ -624,8 +626,10 @@ fn is_prep(s: &str) -> bool {
 type HeadRule<'a> = (&'a str, &'a str, fn(&str) -> Option<usize>);
 
 pub(crate) fn ia_words(text: &str) -> String {
-    const HEADS: &[HeadRule<'_>] =
-        &[(" не", " ня", ia_ne_alt_len), (" без", " бяз", ia_bez_alt_len)];
+    const HEADS: &[HeadRule<'_>] = &[
+        (" не", " ня", ia_ne_alt_len),
+        (" без", " бяз", ia_bez_alt_len),
+    ];
     if !HEADS.iter().any(|(head, _, _)| text.contains(head)) {
         return text.to_string();
     }

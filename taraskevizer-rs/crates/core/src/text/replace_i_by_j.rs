@@ -48,8 +48,16 @@ pub(crate) fn replace_i_by_j(text: &str, always: bool) -> String {
             && bytes[i - 1] == b' '
             && matches!(
                 (bytes[i - 3], bytes[i - 2]),
-                A_PAIR | YE_PAIR | YO_PAIR | II_PAIR | O_PAIR | U_PAIR | Y_PAIR | E_PAIR
-                    | YU_PAIR | YA_PAIR
+                A_PAIR
+                    | YE_PAIR
+                    | YO_PAIR
+                    | II_PAIR
+                    | O_PAIR
+                    | U_PAIR
+                    | Y_PAIR
+                    | E_PAIR
+                    | YU_PAIR
+                    | YA_PAIR
             )
         {
             // `(ў?)`: optional `ў` right after the space.

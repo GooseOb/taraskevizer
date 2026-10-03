@@ -1,13 +1,5 @@
-//! Serialization of dictionary entries back to the `{p, r}` JSON format.
-//!
-//! The layout matches the JSON emitted by the TypeScript build
-//! (`generate-dict-json.mjs`): a tab-indented array, one entry per line,
-//! with entries wider than the 80-column budget expanded over several lines.
-
-/// Width of one indentation level, in columns.
-const INDENT_WIDTH: usize = 2;
-/// Maximum width of a line before an object gets expanded.
-const LINE_WIDTH: usize = 80;
+//! Serialization of dictionary entries back to JSON as compact
+//! `["pattern", "result"]` pairs.
 
 fn escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len() + 2);
@@ -31,74 +23,31 @@ fn escape(s: &str) -> String {
     out
 }
 
-/// Render a flat batch as JSON: `[{"p": ..., "r": ...}, ...]`.
-/// Kept for tests; production dicts serialize with [`to_json_batches`].
-pub fn to_json(entries: &[(&str, &str)]) -> String {
-    let mut out = String::from("[\n");
-    for (i, (pattern, result)) in entries.iter().enumerate() {
-        let one_line = format!(
-            "\t{{ \"p\": {}, \"r\": {} }}",
-            escape(pattern),
-            escape(result)
-        );
-        // The leading tab is worth INDENT_WIDTH columns, like the TS formatter.
-        if one_line.chars().count() + INDENT_WIDTH - 1 <= LINE_WIDTH {
-            out.push_str(&one_line);
-        } else {
-            out.push_str(&format!(
-                "\t{{\n\t\t\"p\": {},\n\t\t\"r\": {}\n\t}}",
-                escape(pattern),
-                escape(result)
-            ));
-        }
-        if i + 1 < entries.len() {
-            out.push(',');
-        }
-        out.push('\n');
-    }
-    out.push_str("]\n");
-    out
-}
-
-/// Render batched entries as JSON: `[[{"p": ..., "r": ...}, ...], ...]`.
+/// Render batched entries as compact JSON: `[[["p", "r"], ...], ...]`.
 ///
 /// Outer array = batches in execution order; the LAST inner array holds the
-/// sequential tail, all preceding arrays are single-pass batches. Layout is
-/// the tab-indented sibling of [`to_json`]: each batch opens with `\t[`,
-/// entries sit one level deeper (`\t\t{…}`), long entries expand with one
-/// extra indent level.
+/// sequential tail, all preceding arrays are single-pass batches. No
+/// whitespace is emitted: entries are `["pattern", "result"]` pairs.
 pub fn to_json_batches(batches: &[&[(&str, &str)]]) -> String {
-    let mut out = String::from("[\n");
+    let mut out = String::from("[");
     for (bi, batch) in batches.iter().enumerate() {
-        out.push_str("\t[\n");
-        for (i, (pattern, result)) in batch.iter().enumerate() {
-            let one_line = format!(
-                "\t\t{{ \"p\": {}, \"r\": {} }}",
-                escape(pattern),
-                escape(result)
-            );
-            // Two leading tabs count as 2*INDENT_WIDTH columns.
-            if one_line.chars().count() + 2 * INDENT_WIDTH - 2 <= LINE_WIDTH {
-                out.push_str(&one_line);
-            } else {
-                out.push_str(&format!(
-                    "\t\t{{\n\t\t\t\"p\": {},\n\t\t\t\"r\": {}\n\t\t}}",
-                    escape(pattern),
-                    escape(result)
-                ));
-            }
-            if i + 1 < batch.len() {
-                out.push(',');
-            }
-            out.push('\n');
-        }
-        out.push_str("\t]");
-        if bi + 1 < batches.len() {
+        if bi > 0 {
             out.push(',');
         }
-        out.push('\n');
+        out.push('[');
+        for (i, (pattern, result)) in batch.iter().enumerate() {
+            if i > 0 {
+                out.push(',');
+            }
+            out.push('[');
+            out.push_str(&escape(pattern));
+            out.push(',');
+            out.push_str(&escape(result));
+            out.push(']');
+        }
+        out.push(']');
     }
-    out.push_str("]\n");
+    out.push(']');
     out
 }
 
@@ -107,59 +56,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn empty() {
-        assert_eq!(to_json(&[]), "[\n]\n");
-    }
-
-    #[test]
-    fn single_entry() {
-        assert_eq!(
-            to_json(&[("сш", "шш")]),
-            "[\n\t{ \"p\": \"сш\", \"r\": \"шш\" }\n]\n"
-        );
-    }
-
-    #[test]
-    fn escapes() {
-        assert_eq!(
-            to_json(&[(r"(\S\S[дт])р ", " $1\u{e0ff}р ")]),
-            "[\n\t{ \"p\": \"(\\\\S\\\\S[дт])р \", \"r\": \" $1р \" }\n]\n"
-        );
-        assert_eq!(
-            to_json(&[("a\nb", "q\"q")]),
-            "[\n\t{ \"p\": \"a\\nb\", \"r\": \"q\\\"q\" }\n]\n"
-        );
-    }
-
-    #[test]
-    fn wraps_long_entries() {
-        let long = "x".repeat(100);
-        assert_eq!(
-            to_json(&[(&long, "y")]),
-            format!("[\n\t{{\n\t\t\"p\": \"{long}\",\n\t\t\"r\": \"y\"\n\t}}\n]\n")
-        );
-    }
-
-    #[test]
-    fn fits_within_width() {
-        // 79 columns wide, so it stays on one line.
-        let (pattern, result) = ("p".repeat(30), "r".repeat(28));
-        assert_eq!(
-            to_json(&[(&pattern, &result)]),
-            format!("[\n\t{{ \"p\": \"{pattern}\", \"r\": \"{result}\" }}\n]\n")
-        );
-        // One column wider and it gets expanded.
-        let pattern = "p".repeat(31);
-        assert_eq!(
-            to_json(&[(&pattern, &result)]),
-            format!("[\n\t{{\n\t\t\"p\": \"{pattern}\",\n\t\t\"r\": \"{result}\"\n\t}}\n]\n")
-        );
-    }
-
-    #[test]
     fn batches_empty() {
-        assert_eq!(to_json_batches(&[]), "[\n]\n");
-        assert_eq!(to_json_batches(&[&[]]), "[\n\t[\n\t]\n]\n");
+        assert_eq!(to_json_batches(&[]), "[]");
+        assert_eq!(to_json_batches(&[&[]]), "[[]]");
     }
 
     #[test]
@@ -168,7 +67,16 @@ mod tests {
         let batches: &[&[(&str, &str)]] = &[&[("a", "b")], &[("c", "d"), ("e", "f")]];
         assert_eq!(
             to_json_batches(batches),
-            "[\n\t[\n\t\t{ \"p\": \"a\", \"r\": \"b\" }\n\t],\n\t[\n\t\t{ \"p\": \"c\", \"r\": \"d\" },\n\t\t{ \"p\": \"e\", \"r\": \"f\" }\n\t]\n]\n"
+            r#"[[["a","b"]],[["c","d"],["e","f"]]]"#
+        );
+    }
+
+    #[test]
+    fn batches_escapes() {
+        let batches: &[&[(&str, &str)]] = &[&[(r"(\S\S[дт])р ", " $1р "), ("a\nb", "q\"q")]];
+        assert_eq!(
+            to_json_batches(batches),
+            r#"[[["(\\S\\S[дт])р "," $1р "],["a\nb","q\"q"]]]"#
         );
     }
 }

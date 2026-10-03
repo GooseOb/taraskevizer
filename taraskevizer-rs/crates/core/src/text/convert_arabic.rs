@@ -121,8 +121,7 @@ fn is_ar_cons(b0: u8, b1: u8) -> bool {
 
 /// Lam-alif vowel `[АаЯя]` at `i` (2 bytes)? Returns 2 when present.
 fn lam_vow_len(b: &[u8], i: usize) -> usize {
-    if i + 2 <= b.len() && matches!((b[i], b[i + 1]), P_A_UP | P_A_LO | P_YA_UP | P_YA_LO)
-    {
+    if i + 2 <= b.len() && matches!((b[i], b[i + 1]), P_A_UP | P_A_LO | P_YA_UP | P_YA_LO) {
         2
     } else {
         0
@@ -304,7 +303,10 @@ fn ar_space_alif(text: &str) -> String {
 
 /// Softening lookahead `[еёіюяь]` (lowercase only, like the JSON).
 fn is_soft_look(b0: u8, b1: u8) -> bool {
-    matches!((b0, b1), P_YE_LO | P_YO_LO | P_II_LO | P_YU_LO | P_YA_LO | P_SOFT_LO)
+    matches!(
+        (b0, b1),
+        P_YE_LO | P_YO_LO | P_II_LO | P_YU_LO | P_YA_LO | P_SOFT_LO
+    )
 }
 
 /// Entries 6–10 fused: `д\u{652}з\u{652}(?=look)→ࢮ`, `з/к/с/т\u{652}(?=look)`

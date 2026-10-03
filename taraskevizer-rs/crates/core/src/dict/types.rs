@@ -14,8 +14,6 @@ enum SequentialEntry {
     Std(Regex, String),
 }
 
-/// One batch applied in a single left-to-right pass over the text.
-
 /// One regex batch applied in a single left-to-right pass.
 ///
 /// The batch compiles to ONE combined regex
@@ -64,7 +62,10 @@ impl RegexBatch {
             next_id += 1 + group_counts[i];
         }
         let re = Regex::new(&combined).unwrap_or_else(|_| {
-            panic!("Failed to compile combined regex batch ({} entries)", entries.len())
+            panic!(
+                "Failed to compile combined regex batch ({} entries)",
+                entries.len()
+            )
         });
         Self { re, alternatives }
     }
@@ -473,10 +474,7 @@ mod tests {
         let batches = make_batches(&[&[("аахен", "аахэн"), (" абасід", " абасыд")], &[("x", "y")]]);
         let dict = CompiledDict::new_batched_entries(&batches);
         assert_eq!(dict.batch_count(), 1);
-        assert_eq!(
-            dict.replace_all("аахен  абасід x"),
-            "аахэн  абасыд y"
-        );
+        assert_eq!(dict.replace_all("аахен  абасід x"), "аахэн  абасыд y");
     }
 
     #[test]
@@ -484,31 +482,31 @@ mod tests {
         // Simultaneous: replacement text is not rescanned within the batch.
         // Sequential would double-expand брэстам → ((брэста|…)…); single-pass
         // keeps one variation level.
-        let batches = make_batches(&[&[
-            ("брэстам", "(брэста|берасьце)м"),
-            ("брэста", "(брэста|берасьця)"),
-        ], &[("q", "q")]]);
+        let batches = make_batches(&[
+            &[
+                ("брэстам", "(брэста|берасьце)м"),
+                ("брэста", "(брэста|берасьця)"),
+            ],
+            &[("q", "q")],
+        ]);
         let dict = CompiledDict::new_batched_entries(&batches);
-        assert_eq!(
-            dict.replace_all("брэстам"),
-            "(брэста|берасьце)м"
-        );
+        assert_eq!(dict.replace_all("брэстам"), "(брэста|берасьце)м");
     }
 
     #[test]
     fn test_batched_regex_backrefs() {
         // Combined regex batch rewrites $N to combined group numbers.
-        let batches = make_batches(&[&[
-            ("абанен([тц])", "абанэн$1"),
-            (" абвер(а[мў]? |[ыу] | )", " абвэр$1"),
-        ], &[("z", "z")]]);
+        let batches = make_batches(&[
+            &[
+                ("абанен([тц])", "абанэн$1"),
+                (" абвер(а[мў]? |[ыу] | )", " абвэр$1"),
+            ],
+            &[("z", "z")],
+        ]);
         let dict = CompiledDict::new_batched_entries(&batches);
         assert_eq!(dict.replace_all("абанент"), "абанэнт");
         assert_eq!(dict.replace_all(" абвера "), " абвэра ");
-        assert_eq!(
-            dict.replace_all("абаненц  абверы "),
-            "абанэнц  абвэры "
-        );
+        assert_eq!(dict.replace_all("абаненц  абверы "), "абанэнц  абвэры ");
     }
 
     #[test]
@@ -543,10 +541,7 @@ mod tests {
 
     #[test]
     fn test_batched_str_constructor() {
-        let dict = CompiledDict::new_batched_str(&[
-            &[("a", "b"), ("c", "d")],
-            &[("e", "f")],
-        ]);
+        let dict = CompiledDict::new_batched_str(&[&[("a", "b"), ("c", "d")], &[("e", "f")]]);
         assert_eq!(dict.batch_count(), 1);
         assert_eq!(dict.replace_all("a c e"), "b d f");
     }

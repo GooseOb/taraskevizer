@@ -104,8 +104,7 @@ mod tests {
         let chunks = split_into_chunks(&text, text.len().div_ceil(16_000));
         assert_chunks_valid(&text, &chunks, (1 << 20) + 4);
         // Reassembly is exact.
-        let reassembled: String =
-            chunks.iter().map(|&(s, e)| &text[s..e]).collect();
+        let reassembled: String = chunks.iter().map(|&(s, e)| &text[s..e]).collect();
         assert_eq!(reassembled, text);
     }
 
@@ -157,8 +156,7 @@ mod tests {
             );
             assert!(e > s);
         }
-        let reassembled: String =
-            chunks.iter().map(|&(s, e)| &text[s..e]).collect();
+        let reassembled: String = chunks.iter().map(|&(s, e)| &text[s..e]).collect();
         assert_eq!(reassembled, text);
     }
 

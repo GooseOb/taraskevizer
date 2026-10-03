@@ -1080,12 +1080,7 @@ fn cap_class_len(text: &str, end: usize, extra: &[char]) -> usize {
 ///
 /// `vow` is the vowel's byte pair (`byte_pair("Е")` at the call site).
 /// All four vowels are 2-byte Cyrillic, hence the literal `2` below.
-fn capture_upper_pass(
-    text: &str,
-    vow: (u8, u8),
-    extra_latin: &[char],
-    je: &'static str,
-) -> String {
+fn capture_upper_pass(text: &str, vow: (u8, u8), extra_latin: &[char], je: &'static str) -> String {
     let bytes = text.as_bytes();
     let len = bytes.len();
     let mut out = String::with_capacity(len + 16);
@@ -1140,7 +1135,10 @@ fn eoua_i_upper(text: &str) -> String {
     let mut flush = 0usize;
     let mut i = 0usize;
     while i < len {
-        if i + II_LEN <= len && (bytes[i], bytes[i + 1]) == II_PAIR && has_lower_after(&text[i + II_LEN..]) {
+        if i + II_LEN <= len
+            && (bytes[i], bytes[i + 1]) == II_PAIR
+            && has_lower_after(&text[i + II_LEN..])
+        {
             let mut k = i;
             while k > 0 && bytes[k - 1] == b' ' {
                 k -= 1;
@@ -1352,8 +1350,7 @@ fn upper_singles(text: &str) -> String {
             };
             if let Some(r) = soft {
                 let after_head = &bytes[i + 2..];
-                if after_head.starts_with(SOFT_UPPER) || after_head.starts_with(SOFT_LOWER)
-                {
+                if after_head.starts_with(SOFT_UPPER) || after_head.starts_with(SOFT_LOWER) {
                     out.push_str(&text[flush..i]);
                     out.push_str(r);
                     flush = i + 4;
@@ -1432,14 +1429,8 @@ fn sharp_l_fix(text: &str, ji_fix: bool) -> String {
         {
             let next = bytes.get(i + STROKE_LEN).copied().unwrap_or(0);
             if next == b'I' || next == b'i' {
-                let foll = bytes
-                    .get(i + STROKE_LEN + 1)
-                    .copied()
-                    .unwrap_or(0);
-                if matches!(
-                    foll,
-                    b'A' | b'E' | b'O' | b'U' | b'a' | b'e' | b'o' | b'u'
-                ) {
+                let foll = bytes.get(i + STROKE_LEN + 1).copied().unwrap_or(0);
+                if matches!(foll, b'A' | b'E' | b'O' | b'U' | b'a' | b'e' | b'o' | b'u') {
                     // Fix 1 consumes `ŁI`/`Łi`.
                     out.push_str(&text[flush..i]);
                     out.push('L');
