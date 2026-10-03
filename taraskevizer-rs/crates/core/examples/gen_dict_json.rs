@@ -7,7 +7,7 @@
 
 use std::{path::PathBuf, process::ExitCode};
 
-use taraskevizer_core::dict::{json::to_json, PHONETIC, WORD_LIST};
+use taraskevizer_core::dict::{json::to_json_batches, PHONETIC, WORD_LIST};
 
 fn data_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/dict/data")
@@ -19,8 +19,8 @@ fn main() -> ExitCode {
     let mut ok = true;
 
     for (name, json) in [
-        ("wordlist.json", to_json(WORD_LIST)),
-        ("phonetic.json", to_json(PHONETIC)),
+        ("wordlist.json", to_json_batches(WORD_LIST)),
+        ("phonetic.json", to_json_batches(PHONETIC)),
     ] {
         let path = dir.join(name);
         if check {

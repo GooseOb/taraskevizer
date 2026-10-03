@@ -6,8 +6,9 @@ ARGS='-nc'
 OUTPUT_RS=output.rs.txt
 cargo run --release -- $ARGS <$FILENAME >output.rs.txt
 
-OUTPUT_JS=output.txt
-node ../dist/bin/index.js $ARGS <$FILENAME >$OUTPUT_JS
-sed -i 's/\/> / \/>/g' $OUTPUT_JS
-
-exec git diff --no-index --color-words output.txt output.rs.txt
+# OUTPUT_JS=output.txt
+# node ../dist/bin/index.js $ARGS <$FILENAME >$OUTPUT_JS
+# sed -i 's/\/> / \/>/g' $OUTPUT_JS
+#
+# exec git diff --no-index --color-words $OUTPUT_JS $OUTPUT_RS
+exec git diff --no-index --color-words output.reference.txt $OUTPUT_RS

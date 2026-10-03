@@ -9,21 +9,14 @@ use crate::{
     dict::{CompiledDict, PHONETIC as PHONETIC_ENTRIES, WORD_LIST as WORD_LIST_ENTRIES},
 };
 
-fn build_dict_matcher(entries: &[(&'static str, &'static str)]) -> CompiledDict {
-    let entries: Vec<crate::dict::DictEntry> = entries
-        .iter()
-        .map(|(pattern, result)| crate::dict::DictEntry {
-            pattern: (*pattern).to_string(),
-            result: (*result).to_string(),
-        })
-        .collect();
-    CompiledDict::new(&entries)
+fn build_batched_dict_matcher(batches: &[&[(&'static str, &'static str)]]) -> CompiledDict {
+    CompiledDict::new_batched_str(batches)
 }
 
 static WORD_LIST: std::sync::LazyLock<CompiledDict> =
-    std::sync::LazyLock::new(|| build_dict_matcher(WORD_LIST_ENTRIES));
+    std::sync::LazyLock::new(|| build_batched_dict_matcher(WORD_LIST_ENTRIES));
 static PHONETIC: std::sync::LazyLock<CompiledDict> =
-    std::sync::LazyLock::new(|| build_dict_matcher(PHONETIC_ENTRIES));
+    std::sync::LazyLock::new(|| build_batched_dict_matcher(PHONETIC_ENTRIES));
 
 pub struct PipelineContext<'a> {
     pub text: String,
