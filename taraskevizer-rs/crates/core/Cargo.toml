@@ -6,7 +6,6 @@ description = "Belarusian orthography converter (Narkamauka → Taraskevica)"
 
 [dependencies]
 regex = "1"
-aho-corasick = "1"
 memchr = "2.8"
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }

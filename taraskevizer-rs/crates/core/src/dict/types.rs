@@ -1,4 +1,3 @@
-use aho_corasick::{AhoCorasick, MatchKind};
 use regex::Regex;
 use serde::Deserialize;
 
@@ -15,41 +14,7 @@ enum SequentialEntry {
     Std(Regex, String),
 }
 
-/// One literal batch applied in a single left-to-right pass.
-///
-/// All patterns are plain strings (no regex metacharacters) and are replaced
-/// simultaneously: the replacement text is never rescanned within the same
-/// batch. Priority on overlap is dict order (`LeftmostFirst`), mirroring the
-/// old sequential order for the common disjoint case.
-struct LiteralBatch {
-    ac: AhoCorasick,
-    replacements: Vec<String>,
-}
-
-impl LiteralBatch {
-    fn new(entries: &[DictEntry]) -> Self {
-        let patterns: Vec<&str> = entries.iter().map(|e| e.pattern.as_str()).collect();
-        let replacements: Vec<String> =
-            entries.iter().map(|e| e.result.clone()).collect();
-        let ac = AhoCorasick::builder()
-            .match_kind(MatchKind::LeftmostFirst)
-            .build(patterns)
-            .expect("failed to build Aho-Corasick batch");
-        Self { ac, replacements }
-    }
-
-    fn replace_all(&self, text: &str) -> String {
-        if self.ac.is_match(text) {
-            self.ac.replace_all(text, &self.replacements)
-        } else {
-            text.to_string()
-        }
-    }
-
-    fn is_empty(&self) -> bool {
-        self.replacements.is_empty()
-    }
-}
+/// One batch applied in a single left-to-right pass over the text.
 
 /// One regex batch applied in a single left-to-right pass.
 ///
@@ -137,27 +102,6 @@ impl RegexBatch {
     }
 }
 
-enum SinglePassBatch {
-    Literal(LiteralBatch),
-    Regex(RegexBatch),
-}
-
-impl SinglePassBatch {
-    /// Build a single-pass batch, auto-selecting the engine:
-    /// all-literal → `Aho-Corasick` (no regex engine), otherwise one combined
-    /// regex. Returns `None` for empty input (no pass needed).
-    fn new(entries: &[DictEntry]) -> Option<Self> {
-        if entries.is_empty() {
-            return None;
-        }
-        if entries.iter().all(|e| !has_regex_meta(&e.pattern)) {
-            Some(SinglePassBatch::Literal(LiteralBatch::new(entries)))
-        } else {
-            Some(SinglePassBatch::Regex(RegexBatch::new(entries)))
-        }
-    }
-}
-
 /// A compiled dictionary: a few ordered single-pass batches followed by one
 /// ordered sequential tail.
 ///
@@ -170,7 +114,7 @@ impl SinglePassBatch {
 /// JSON shape is `{p, r}[][]`: outer vec = batches, last inner vec =
 /// sequential entries.
 pub struct CompiledDict {
-    single_pass: Vec<SinglePassBatch>,
+    single_pass: Vec<RegexBatch>,
     sequential: Vec<SequentialEntry>,
 }
 
@@ -187,9 +131,9 @@ impl CompiledDict {
 
     /// Batched dictionary from `&[(&str, &str)]` batches (static wordlist).
     ///
-    /// `batches[..len-1]` each become ONE single-pass pass (Aho-Corasick when
-    /// all-literal, otherwise one combined regex); `batches[len-1]` stays
-    /// sequential. Empty batches are skipped. Empty outer slice → empty dict.
+    /// `batches[..len-1]` each become ONE single-pass pass (one combined
+    /// regex); `batches[len-1]` stays sequential. Empty batches are skipped.
+    /// Empty outer slice → empty dict.
     pub fn new_batched_str(batches: &[&[(&str, &str)]]) -> Self {
         let owned: Vec<Vec<DictEntry>> = batches
             .iter()
@@ -217,8 +161,8 @@ impl CompiledDict {
         let (head, tail) = batches.split_at(batches.len() - 1);
         let mut single_pass = Vec::with_capacity(head.len());
         for batch in head {
-            if let Some(b) = SinglePassBatch::new(batch) {
-                single_pass.push(b);
+            if !batch.is_empty() {
+                single_pass.push(RegexBatch::new(batch));
             }
         }
         Self {
@@ -233,16 +177,7 @@ impl CompiledDict {
     pub fn replace_all(&self, text: &str) -> String {
         let mut result = text.to_string();
         for batch in &self.single_pass {
-            match batch {
-                SinglePassBatch::Literal(b) => {
-                    if !b.is_empty() {
-                        result = b.replace_all(&result);
-                    }
-                }
-                SinglePassBatch::Regex(b) => {
-                    result = b.replace_all(&result);
-                }
-            }
+            result = batch.replace_all(&result);
         }
         for entry in &self.sequential {
             match entry {
@@ -455,6 +390,8 @@ fn expand_replacement_std(replacement: &str, cap: &regex::Captures) -> String {
 }
 
 /// Check if a pattern string contains regex metacharacters.
+/// Used to split sequential-tail entries into `str::replace` literals vs
+/// `regex` entries (single-pass batches always use the combined regex).
 pub(crate) fn has_regex_meta(pattern: &str) -> bool {
     pattern.contains('\\')
         || pattern.contains('(')
@@ -513,16 +450,6 @@ mod tests {
             crate::text::FancyDict::new(&[("пэндзлік", "пэндзлік"), ("дз(?=[еёіюяь])", "дзь")]);
         assert_eq!(dict.replace_all("пэндзлік"), "пэндзлік");
         assert_eq!(dict.replace_all("дзі"), "дзьі");
-    }
-
-    #[test]
-    fn test_no_meta_check() {
-        assert!(!has_regex_meta("планета"));
-        assert!(!has_regex_meta(" гера"));
-        assert!(!has_regex_meta("Гродна"));
-        assert!(has_regex_meta("ге(?! )"));
-        assert!(has_regex_meta("се(?:к?)(ц)ы[ія]"));
-        assert!(has_regex_meta("абанемен(?=[тц])"));
     }
 
     #[test]

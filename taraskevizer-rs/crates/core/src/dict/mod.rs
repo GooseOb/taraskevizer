@@ -24,8 +24,8 @@ pub mod wordlist;
 ///
 /// Expands to `pub const WORD_LIST: &[&[(&str, &str)]]` — plain static
 /// slices, no code run at startup. Batches run in order, each in a single
-/// pass (Aho-Corasick when all-literal, otherwise one combined regex);
-/// `sequential` is the last batch and keeps per-entry ordered semantics.
+/// pass (one combined regex per batch); `sequential` is the last batch
+/// and keeps per-entry ordered semantics.
 /// Move an entry between `batch` and `sequential` blocks to change its
 /// execution model; order within and across blocks is preserved.
 #[macro_export]
