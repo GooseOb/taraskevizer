@@ -8,7 +8,7 @@ use crate::{
 
 pub fn step_prepare(ctx: &mut PipelineContext) {
     let mut t = replace_g_apostrophe(&ctx.text);
-    t = t.replace(" - ", " — ").replace(
+    t = t.replace(
         &ctx.cfg.left_angle_bracket,
         &format!(" {} ", ctx.cfg.left_angle_bracket),
     );

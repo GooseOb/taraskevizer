@@ -21,6 +21,7 @@ use std::time::{Duration, Instant};
 use rayon::prelude::*;
 use taraskevizer_core::config::TaraskConfig;
 use taraskevizer_core::pipeline::{run_tarask_timed, StepTiming};
+use taraskevizer_core::text::split_into_chunks;
 
 fn main() {
     // ── Resolve source path ─────────────────────────────────────
@@ -93,7 +94,7 @@ fn main() {
 
     for &chunk_size in chunk_sizes {
         let nchunks = total_bytes.div_ceil(chunk_size);
-        let chunks = split_into_chunks(&text, nchunks);
+        let ranges = split_into_chunks(&text, nchunks);
 
         eprintln!("[CHUNK_SIZE={chunk_size:>10}] splitting into {nchunks} chunk(s)...",);
 
@@ -101,21 +102,21 @@ fn main() {
         // Each chunk is run with the instrumented runner so we also get the
         // per-step breakdown. The output string is dropped (we only need the
         // measurement); the computation still runs fully.
-        let per_chunk: Vec<Vec<StepTiming>> = if chunks.len() > 1 {
-            chunks
+        let per_chunk: Vec<Vec<StepTiming>> = if ranges.len() > 1 {
+            ranges
                 .into_par_iter()
-                .map(|chunk| {
+                .map(|(s, e)| {
                     let mut t = Vec::new();
-                    let _out = run_tarask_timed(&chunk, &cfg, Some(&mut t));
+                    let _out = run_tarask_timed(&text[s..e], &cfg, Some(&mut t));
                     t
                 })
                 .collect()
         } else {
-            chunks
+            ranges
                 .into_iter()
-                .map(|chunk| {
+                .map(|(s, e)| {
                     let mut t = Vec::new();
-                    let _out = run_tarask_timed(&chunk, &cfg, Some(&mut t));
+                    let _out = run_tarask_timed(&text[s..e], &cfg, Some(&mut t));
                     t
                 })
                 .collect()
@@ -211,49 +212,4 @@ fn print_step_tables(results: &[RunResult]) {
             println!("{:>28} {:>14.4} {:>9.1}%", name, d.as_secs_f64(), pct);
         }
     }
-}
-
-/// Split `text` into `n` chunks at newline boundaries (mirrors cli/src/main.rs).
-fn split_into_chunks(text: &str, n: usize) -> Vec<String> {
-    if n <= 1 || text.is_empty() {
-        return vec![text.to_string()];
-    }
-    let target = text.len().div_ceil(n);
-    let mut chunks = Vec::with_capacity(n);
-    let mut start = 0;
-    for i in 0..n {
-        if start >= text.len() {
-            break;
-        }
-        let mut end = (start + target).min(text.len());
-        if i < n - 1 && end < text.len() {
-            while !text.is_char_boundary(end) {
-                end -= 1;
-            }
-            let forward = text[end..].find('\n').map(|p| end + p + 1);
-            let backward = text[..end].rfind('\n').map(|p| p + 1);
-            match (forward, backward) {
-                (Some(f), Some(b)) => {
-                    if f - end < end - b {
-                        end = f;
-                    } else {
-                        end = b;
-                    }
-                }
-                (Some(f), None) => end = f,
-                (None, Some(b)) => end = b,
-                (None, None) => {
-                    while !text.is_char_boundary(end) {
-                        end -= 1;
-                    }
-                }
-            }
-        }
-        if i == n - 1 {
-            end = text.len();
-        }
-        chunks.push(text[start..end].to_string());
-        start = end;
-    }
-    chunks
 }

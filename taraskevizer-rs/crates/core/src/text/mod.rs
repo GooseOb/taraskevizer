@@ -16,6 +16,7 @@ mod replace_g_apostrophe;
 mod replace_i_by_j;
 mod soften;
 mod space_out_punct_sym_digits;
+mod split_into_chunks;
 #[cfg(test)]
 mod test_oracle;
 mod unspace_punct_sym_digits;
@@ -45,6 +46,7 @@ pub(crate) use replace_g_apostrophe::replace_g_apostrophe;
 pub(crate) use replace_i_by_j::replace_i_by_j;
 pub(crate) use soften::soften;
 pub(crate) use space_out_punct_sym_digits::space_out_punct_sym_digits;
+pub use split_into_chunks::split_into_chunks;
 pub(crate) use unspace_punct_sym_digits::unspace_punct_sym_digits;
 pub(crate) use utf8_char_len::byte_pair;
 pub(crate) use utf8_char_len::utf8_char_len;

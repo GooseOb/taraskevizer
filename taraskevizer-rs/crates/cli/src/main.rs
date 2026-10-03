@@ -3,6 +3,7 @@ use std::io::{self, IsTerminal, Read, Write};
 use clap::Parser;
 use rayon::prelude::*;
 use taraskevizer_core::config::*;
+use taraskevizer_core::text::split_into_chunks;
 use taraskevizer_core::wrappers::{ANSI_COLOR_WRAPPERS, HTML_WRAPPERS};
 use taraskevizer_core::{alphabetic, phonetic, tarask};
 
@@ -198,43 +199,89 @@ fn main() {
         }
     } else {
         let mut bytes = Vec::new();
+        // Zero-copy when stdin is valid UTF-8 (the common case for XML dumps).
+        // Shrink first: read_to_end doubles capacity (up to ~2x input size).
         let input = if io::stdin().read_to_end(&mut bytes).is_ok() {
-            String::from_utf8_lossy(&bytes).into_owned()
+            bytes.shrink_to_fit();
+            String::from_utf8(bytes)
+                .unwrap_or_else(|e| String::from_utf8_lossy(e.as_bytes()).into_owned())
         } else {
             String::new()
         };
         if !input.is_empty() {
             const CHUNK_SIZE: usize = 16_000;
             let nchunks = input.len().div_ceil(CHUNK_SIZE);
-            let chunks = split_into_chunks(&input, nchunks);
+            // Borrowed ranges: same boundaries as before, no per-chunk copies.
+            let ranges = split_into_chunks(&input, nchunks);
             let nchars = input.len();
-            if !cli.single_thread && chunks.len() > 1 {
+            // Stream results out as chunks complete: peak memory stays ~1x
+            // input (input string only) instead of ~3x (input + chunk copies
+            // + collected results), so multi-GB dumps no longer OOM.
+            let stdout = io::stdout();
+            let mut out = io::BufWriter::with_capacity(1 << 20, stdout.lock());
+            if !cli.single_thread && ranges.len() > 1 {
                 let _ = io::stderr().write_fmt(format_args!(
                     "Processing {} chars in {} chunks... ",
-                    nchars, nchunks,
+                    nchars,
+                    ranges.len(),
                 ));
                 let _ = io::stderr().flush();
                 let start = std::time::Instant::now();
 
-                let results: Vec<String> = chunks
-                    .into_par_iter()
-                    .map(|chunk| run_mode(mode, &chunk, &cfg))
-                    .collect();
+                // Bounded parallel groups: full rayon speed with O(group)
+                // extra memory, output order preserved. Groups are bounded
+                // by count AND input bytes; a group containing an oversized
+                // chunk runs sequentially (one big chunk's transient working
+                // set fits easily, but 8 threads' worth does not — this
+                // OOM-killed the full-dump run at ~10GB).
+                const GROUP_MAX_CHUNKS: usize = 256;
+                const GROUP_MAX_BYTES: usize = 8 << 20;
+                const BIG_CHUNK: usize = 256 << 10;
+                let mut gstart = 0;
+                while gstart < ranges.len() {
+                    let mut gend = gstart;
+                    let mut gbytes = 0usize;
+                    while gend < ranges.len()
+                        && gend - gstart < GROUP_MAX_CHUNKS
+                        && gbytes <= GROUP_MAX_BYTES
+                    {
+                        let (s, e) = ranges[gend];
+                        gbytes += e - s;
+                        gend += 1;
+                    }
+                    let group = &ranges[gstart..gend];
+                    let results: Vec<String> = if group.iter().any(|&(s, e)| e - s > BIG_CHUNK) {
+                        group
+                            .iter()
+                            .map(|&(s, e)| run_mode(mode, &input[s..e], &cfg))
+                            .collect()
+                    } else {
+                        group
+                            .into_par_iter()
+                            .map(|&(s, e)| run_mode(mode, &input[s..e], &cfg))
+                            .collect()
+                    };
+                    for r in &results {
+                        let _ = out.write_all(r.as_bytes());
+                    }
+                    gstart = gend;
+                }
 
                 let _ = io::stderr().write_fmt(format_args!(
                     "done in {:.2}s.\n",
                     start.elapsed().as_secs_f64()
                 ));
-
-                for r in &results {
-                    let _ = io::stdout().write_all(r.as_bytes());
-                }
             } else {
-                for chunk in &chunks {
-                    let result = run_mode(mode, chunk, &cfg);
-                    let _ = io::stdout().write_all(result.as_bytes());
+                let debug_chunks = std::env::var("TARASK_DEBUG_CHUNKS").is_ok();
+                for (i, &(s, e)) in ranges.iter().enumerate() {
+                    if debug_chunks {
+                        eprintln!("chunk {i} [{s}..{e}] len {}", e - s);
+                    }
+                    let result = run_mode(mode, &input[s..e], &cfg);
+                    let _ = out.write_all(result.as_bytes());
                 }
             }
+            let _ = out.flush();
         }
     }
 }
@@ -245,48 +292,4 @@ fn run_mode(mode: &str, text: &str, cfg: &TaraskConfig) -> String {
         "phonetic" => phonetic(text, cfg),
         _ => tarask(text, cfg),
     }
-}
-
-fn split_into_chunks(text: &str, n: usize) -> Vec<String> {
-    if n <= 1 || text.is_empty() {
-        return vec![text.to_string()];
-    }
-    let target = text.len().div_ceil(n);
-    let mut chunks = Vec::with_capacity(n);
-    let mut start = 0;
-    for i in 0..n {
-        if start >= text.len() {
-            break;
-        }
-        let mut end = (start + target).min(text.len());
-        if i < n - 1 && end < text.len() {
-            while !text.is_char_boundary(end) {
-                end -= 1;
-            }
-            let forward = text[end..].find('\n').map(|p| end + p + 1);
-            let backward = text[..end].rfind('\n').map(|p| p + 1);
-            match (forward, backward) {
-                (Some(f), Some(b)) => {
-                    if f - end < end - b {
-                        end = f;
-                    } else {
-                        end = b;
-                    }
-                }
-                (Some(f), None) => end = f,
-                (None, Some(b)) => end = b,
-                (None, None) => {
-                    while !text.is_char_boundary(end) {
-                        end -= 1;
-                    }
-                }
-            }
-        }
-        if i == n - 1 {
-            end = text.len();
-        }
-        chunks.push(text[start..end].to_string());
-        start = end;
-    }
-    chunks
 }
