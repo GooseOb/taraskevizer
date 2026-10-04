@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::config::Alphabet;
 use crate::text::{highlight_diff_word, replace_g_str};
 use crate::pipeline::{PipelineContext, TextWord};
@@ -21,15 +23,16 @@ pub fn step_highlight_diff(ctx: &mut PipelineContext) {
         // Changed word: materialize before mutating (borrow ends at `new`).
         let new: String = {
             let w = slot.as_str(text_buf);
-            let word_h = if is_cyrillic {
+            let word_h: Cow<str> = if is_cyrillic {
                 replace_g_str(w)
             } else {
-                w.to_string()
+                Cow::Borrowed(w)
             };
+            let word_h: &str = &word_h;
             if o_word == word_h {
                 continue;
             }
-            highlight_diff_word(w, o_word, &word_h, &fix)
+            highlight_diff_word(w, o_word, word_h, &fix)
         };
         *slot = TextWord::Owned(new);
     }

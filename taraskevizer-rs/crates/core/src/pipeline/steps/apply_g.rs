@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     config::Alphabet,
     pipeline::PipelineContext,
@@ -10,7 +12,8 @@ pub fn step_apply_g(ctx: &mut PipelineContext) {
     }
     let wrap = ctx.cfg.wrappers.as_ref().and_then(|w| w.letter_h);
     if let Some(wrap) = wrap {
-        ctx.text = replace_g_with_map(&ctx.text, |ch| {
+        // Like `replace_g_str` below: skip rewriting when nothing matched.
+        if let Cow::Owned(mapped) = replace_g_with_map(&ctx.text, |ch| {
             wrap(if ctx.cfg.g {
                 ch
             } else {
@@ -20,8 +23,14 @@ pub fn step_apply_g(ctx: &mut PipelineContext) {
                     _ => ch,
                 }
             })
-        });
+        }) {
+            ctx.text = mapped;
+        }
     } else if !ctx.cfg.g {
-        ctx.text = replace_g_str(&ctx.text);
+        // `replace_g_str` borrows when there is nothing to map: only
+        // overwrite the backing string when a `ґ` was actually mapped.
+        if let Cow::Owned(mapped) = replace_g_str(&ctx.text) {
+            ctx.text = mapped;
+        }
     }
 }

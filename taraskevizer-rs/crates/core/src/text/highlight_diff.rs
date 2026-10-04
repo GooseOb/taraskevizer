@@ -15,7 +15,7 @@
 //! rule. `g`-only changes and `(a|b)` variation lists are left alone —
 //! the `g` and variations steps wrap those themselves.
 
-use crate::text::replace_g_str;
+use super::replace_g_str;
 
 pub fn apply_highlight_diff(
     word: &str,
