@@ -5,7 +5,7 @@ prev: true
 title: "TaraskConfig"
 ---
 
-Defined in: [index.ts:55](https://github.com/GooseOb/taraskevizer/blob/4fd96208ee1681d0908da0ebf276b42b301fce15/src/index.ts#L55)
+Defined in: [index.ts:55](https://github.com/GooseOb/taraskevizer/blob/3731f7bac0dad4386951f41db09650c527fc1fce/src/index.ts#L55)
 
 Conversion options. Mirrors the previous `TaraskConfig` API: every field
 keeps its name (`doEscapeCapitalized`, `newLine`, …) and defaults.
@@ -22,7 +22,7 @@ Only predefined wrapper sets are available (`wrappers: 'none' | 'html' |
 
 > **new TaraskConfig**(`options?`): `TaraskConfig`
 
-Defined in: [index.ts:56](https://github.com/GooseOb/taraskevizer/blob/4fd96208ee1681d0908da0ebf276b42b301fce15/src/index.ts#L56)
+Defined in: [index.ts:56](https://github.com/GooseOb/taraskevizer/blob/3731f7bac0dad4386951f41db09650c527fc1fce/src/index.ts#L56)
 
 #### Parameters
 

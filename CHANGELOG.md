@@ -39,6 +39,8 @@ auto-generated compare link below it.
 - Diff highlighting no longer ignores words that carry variations.
 - CLI `--help` usage is pinned to `tarask` regardless of the binary file name.
 - npm and Rust crate versions are released in lockstep.
+- Diff highlighting is now more percise, and does not highlight parts that are handled by the `variations` step
+  e.g. `с[ь]мяе[сь]ся`, not `с[ьмяесь]ся`, `у (а|ва)кне`, not `у [(а|ва)]кне`
 
 ### Removed
 
@@ -49,7 +51,7 @@ auto-generated compare link below it.
 ## Performance
 
 - On 30MB slice of Wikipedia dump, the Rust CLI is 6-10x faster than the JS CLI. (parallel enabled for both)
-- If used as a JS library (WASM module) in Node.js, might be slower on small inputs due to the overhead of crossing the WASM boundary.
+- If used as a JS library (WASM module), might be slower on small inputs due to the overhead of crossing the WASM boundary.
 - Conversion of 10MB Wikipedia slice in browser is 3-4x faster than the JS implementation.
 
 [11.0.0]: https://github.com/GooseOb/taraskevizer/compare/v10.4.24...v11.0.0

@@ -4,3 +4,6 @@ resolver = "2"
 
 [workspace.lints.clippy]
 pedantic = "warn"
+
+[profile.release]
+lto = true

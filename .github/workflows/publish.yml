@@ -72,6 +72,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: taraskevizer-rs
+          key: wasm32-unknown-unknown
       - uses: jetli/wasm-pack-action@v2
 
       - run: bun i --frozen-lockfile
