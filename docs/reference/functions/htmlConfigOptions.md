@@ -7,7 +7,7 @@ title: "htmlConfigOptions"
 
 > **htmlConfigOptions**(): [`TaraskConfig`](/taraskevizer/reference/classes/taraskconfig/)
 
-Defined in: [index.ts:62](https://github.com/GooseOb/taraskevizer/blob/f771aee86ae4eba9640f1c12193079b8d1dcaac2/src/index.ts#L62)
+Defined in: [index.ts:62](https://github.com/GooseOb/taraskevizer/blob/4fd96208ee1681d0908da0ebf276b42b301fce15/src/index.ts#L62)
 
 Predefined configuration for HTML output (wrappers + `<br>` newlines).
 

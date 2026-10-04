@@ -7,7 +7,7 @@ title: "createInteractiveTags"
 
 > **createInteractiveTags**(`__namedParameters?`): `object`
 
-Defined in: [html-tag-interactions.ts:26](https://github.com/GooseOb/taraskevizer/blob/f771aee86ae4eba9640f1c12193079b8d1dcaac2/src/html-tag-interactions.ts#L26)
+Defined in: [html-tag-interactions.ts:26](https://github.com/GooseOb/taraskevizer/blob/4fd96208ee1681d0908da0ebf276b42b301fce15/src/html-tag-interactions.ts#L26)
 
 ## Parameters
 
