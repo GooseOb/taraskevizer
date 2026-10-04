@@ -45,7 +45,7 @@
 	"scripts": {
 		"build": "wasm-pack build taraskevizer-rs/crates/wasm --target web --out-dir ../../../src/wasm && tsc --noEmit -p tsconfig.json && tsc -p tsconfig.build.json && mkdir -p dist/wasm && cp src/wasm/taraskevizer_wasm.js src/wasm/taraskevizer_wasm.d.ts src/wasm/taraskevizer_wasm_bg.wasm dist/wasm/ && chmod +x dist/cli.js && bun run bundle",
 		"postinstall": "node ./dist/install-cli-binary.js || exit 0",
-		"prepack": "bun run build",
+		"prepack": "npm run build",
 		"bundle": "esbuild src/bundle.ts --bundle --format=iife --global-name=taraskevizer --target=es2020 --minify --outfile=dist/bundle.js --loader:.wasm=binary --log-level=warning",
 		"format": "biome format --write && cargo fmt --all --manifest-path ./taraskevizer-rs/Cargo.toml",
 		"lint": "cargo clippy --all-targets --all-features --locked --manifest-path ./taraskevizer-rs/Cargo.toml",
