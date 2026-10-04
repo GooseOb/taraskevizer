@@ -98,10 +98,11 @@ pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
                     continue;
                 }
                 let is_abc = ic.first() == Some(&'*');
-                let char_offset = if is_abc { 1 } else { 0 };
+                let char_offset = usize::from(is_abc);
                 let do_remove = ic.get(char_offset) == Some(&'.');
                 let do_tarask = ic.get(char_offset) == Some(&',');
-                let content_start = is_abc as usize + do_remove as usize + do_tarask as usize;
+                let content_start =
+                    usize::from(is_abc) + usize::from(do_remove) + usize::from(do_tarask);
                 if content_start < ic.len() {
                     let real_content: String = ic[content_start..].iter().collect();
 
@@ -111,8 +112,7 @@ pub fn step_resolve_special_syntax(ctx: &mut PipelineContext) {
                         result.push('>');
                     } else if is_abc {
                         let lowered = apply_abc_lower(&real_content, abc);
-                        let converted =
-                            apply_abc_upper(&lowered, abc).unwrap_or_else(|| lowered.into_owned());
+                        let converted = apply_abc_upper(&lowered, abc).into_owned();
                         no_fix.push(converted);
                         if do_remove {
                             result.push_str(no_fix_ph);

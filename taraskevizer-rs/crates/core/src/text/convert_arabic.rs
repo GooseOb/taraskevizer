@@ -399,10 +399,9 @@ fn presoft_head_len(b: &[u8], i: usize) -> usize {
         return 0;
     }
     match (b[i], b[i + 1]) {
-        P_TA_AR | P_ZA_AR | P_THA_AR | P_KAF_AR => 2,
-        P_BE_LO | P_VE_LO | P_GHE_LO | P_DE_LO | P_ZHE_LO | P_ZE_LO | P_JOT_LO | P_KA_LO
-        | P_L_LO | P_EM_LO | P_EN_LO | P_PE_LO => 2,
-        P_ER_LO | P_ES_LO | P_TE_LO | P_EF_LO | P_KHA_LO | P_TSE_LO | P_CHE_LO | P_SHA_LO
+        P_TA_AR | P_ZA_AR | P_THA_AR | P_KAF_AR | P_BE_LO | P_VE_LO | P_GHE_LO | P_DE_LO
+        | P_ZHE_LO | P_ZE_LO | P_JOT_LO | P_KA_LO | P_L_LO | P_EM_LO | P_EN_LO | P_PE_LO
+        | P_ER_LO | P_ES_LO | P_TE_LO | P_EF_LO | P_KHA_LO | P_TSE_LO | P_CHE_LO | P_SHA_LO
         | P_USHORT_LO => 2,
         _ => 0,
     }

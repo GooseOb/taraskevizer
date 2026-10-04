@@ -325,9 +325,8 @@ fn lower_table(abc: Alphabet) -> &'static [(&'static str, &'static str)] {
 
 fn upper_table(abc: Alphabet) -> &'static [(&'static str, &'static str)] {
     match abc {
-        Alphabet::Cyrillic => &[],
+        Alphabet::Cyrillic | Alphabet::Arabic => &[],
         Alphabet::Latin => LAT_UPPER,
         Alphabet::LatinJi => JI_UPPER,
-        Alphabet::Arabic => &[],
     }
 }

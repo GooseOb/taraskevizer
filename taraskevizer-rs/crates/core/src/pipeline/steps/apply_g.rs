@@ -24,6 +24,6 @@ pub fn step_apply_g(ctx: &mut PipelineContext) {
             })
         });
     } else if !ctx.cfg.g {
-        ctx.text = replace_g_str(&ctx.text)
+        ctx.text = replace_g_str(&ctx.text);
     }
 }

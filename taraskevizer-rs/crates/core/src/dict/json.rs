@@ -1,6 +1,8 @@
 //! Serialization of dictionary entries back to JSON as compact
 //! `["pattern", "result"]` pairs.
 
+use std::fmt::Write as _;
+
 fn escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len() + 2);
     out.push('"');
@@ -15,7 +17,9 @@ fn escape(s: &str) -> String {
             '\t' => out.push_str("\\t"),
             // Other control characters only; everything else (including the
             // non-ASCII letters and the U+E0FF soft-sign marker) stays literal.
-            '\u{0}'..='\u{1f}' => out.push_str(&format!("\\u{:04x}", ch as u32)),
+            '\u{0}'..='\u{1f}' => {
+                let _ = write!(out, "\\u{:04x}", ch as u32);
+            }
             _ => out.push(ch),
         }
     }

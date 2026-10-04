@@ -10,3 +10,6 @@ crate-type = ["cdylib"]
 [dependencies]
 taraskevizer-core = { path = "../core" }
 wasm-bindgen = "0.2"
+
+[lints]
+workspace = true

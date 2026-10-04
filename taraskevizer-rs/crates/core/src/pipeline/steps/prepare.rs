@@ -32,5 +32,5 @@ pub fn step_unspace(ctx: &mut PipelineContext) {
             t = t.replace(&spaced, ctx.cfg.left_angle_bracket.as_str());
         }
     }
-    ctx.text = t
+    ctx.text = t;
 }

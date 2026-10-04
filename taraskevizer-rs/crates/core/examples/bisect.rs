@@ -14,6 +14,7 @@
 //! via run.sh). Everything runs in-process: no recompiles, no Python.
 
 use std::collections::BTreeSet;
+use std::fmt::Write as _;
 use std::io::Write as _;
 use taraskevizer_core::config::{Alphabet, JMode, TaraskConfig, VariationMode};
 use taraskevizer_core::dict::{CompiledDict, DictEntry, WORD_LIST};
@@ -30,6 +31,8 @@ const DEFAULT_DUMP: &str = concat!(
     "/../../../test/texts/bewiki-20251101-pages-articles-multistream_30M.xml"
 );
 const N: usize = 1416;
+/// Chunk size mirroring production (`cli/src/main.rs`).
+const CHUNK_SIZE: usize = 16_000;
 
 /// Flat entries in dict order, borrowed from the compiled `WORD_LIST`.
 fn flat_entries() -> Vec<(&'static str, &'static str)> {
@@ -98,12 +101,12 @@ fn write_wordlist(entries: &[(&'static str, &'static str)], cuts: &[usize]) {
     for w in cuts.windows(2) {
         let (s, e) = (w[0], w[1]);
         if e == N {
-            out.push_str(&format!("    sequential [ // SEQ [{s}..{e})\n"));
+            let _ = writeln!(out, "    sequential [ // SEQ [{s}..{e})");
         } else {
-            out.push_str(&format!("    batch [ // [{s}..{e}) ({})\n", e - s));
+            let _ = writeln!(out, "    batch [ // [{s}..{e}) ({})", e - s);
         }
         for (p, r) in &entries[s..e] {
-            out.push_str(&format!("        (r\"{p}\", r\"{r}\"),\n"));
+            let _ = writeln!(out, "        (r\"{p}\", r\"{r}\"),");
         }
         out.push_str("    ],\n");
     }
@@ -139,7 +142,7 @@ fn combine(accepted: &[(usize, usize)]) -> Vec<usize> {
     ] {
         bounds.insert(b);
     }
-    let acc_set: BTreeSet<(usize, usize)> = accepted.iter().cloned().collect();
+    let acc_set: BTreeSet<(usize, usize)> = accepted.iter().copied().collect();
     let flat: Vec<usize> = bounds.into_iter().collect();
     let mut cuts = vec![flat[0]];
     for w in flat.windows(2) {
@@ -167,8 +170,8 @@ fn nc_cfg() -> TaraskConfig {
 }
 
 /// Run each production chunk through the exact pre-wordlist prefix
-/// (trim → resolve_special_syntax → prepare → collapse_whitespaces →
-/// store_splitted_abc_converted_orig → to_lower_case), mirroring
+/// (trim → `resolve_special_syntax` → prepare → `collapse_whitespaces` →
+/// `store_splitted_abc_converted_orig` → `to_lower_case`), mirroring
 /// `run_base_pipeline_timed`. The wordlist stage sees precisely these strings
 /// in production, so partition equality HERE implies end-to-end equality
 /// (everything downstream is deterministic per chunk).
@@ -197,7 +200,6 @@ fn verify(dump: &str, reference_path: &str) {
     let cfg = nc_cfg();
     let bytes = std::fs::read(dump).expect("read dump");
     let input = String::from_utf8_lossy(&bytes).into_owned();
-    const CHUNK_SIZE: usize = 16_000;
     let ranges = split_into_chunks(&input, input.len().div_ceil(CHUNK_SIZE));
     log(&format!(
         "verifying {} chunks against reference...",
@@ -235,7 +237,7 @@ fn refinalize(entries: &[(&'static str, &'static str)], log_path: &str, dump: &s
         .filter(|s| !s.is_empty())
         .map(|s| s.parse().expect("int"))
         .collect();
-    assert!(nums.len() % 2 == 0, "pairs");
+    assert!(nums.len().is_multiple_of(2), "pairs");
     let mut accepted: Vec<(usize, usize)> = nums.chunks_exact(2).map(|c| (c[0], c[1])).collect();
     // Pre-proven safe (each merged alone with zero diffs; also baked into
     // every candidate test): keep them merged in the final file.
@@ -244,7 +246,7 @@ fn refinalize(entries: &[(&'static str, &'static str)], log_path: &str, dump: &s
             accepted.push(t);
         }
     }
-    accepted.sort();
+    accepted.sort_unstable();
     log(&format!("ACCEPTED: {accepted:?}"));
     let cuts = combine(&accepted);
     log(&format!("final intervals: {}", cuts.len() - 1));
@@ -253,7 +255,6 @@ fn refinalize(entries: &[(&'static str, &'static str)], log_path: &str, dump: &s
     let cfg = nc_cfg();
     let bytes = std::fs::read(dump).expect("read dump");
     let input = String::from_utf8_lossy(&bytes).into_owned();
-    const CHUNK_SIZE: usize = 16_000;
     let ranges = split_into_chunks(&input, input.len().div_ceil(CHUNK_SIZE));
     let wl_inputs = wordlist_inputs(&input, &ranges, &cfg);
     let ref_dict = dict_for(entries, &safe_baseline_cuts());
@@ -295,7 +296,7 @@ fn bisect(
         return;
     }
     log(&format!("{pad}  differs, splitting"));
-    let mid = (rs + re) / 2;
+    let mid = rs.midpoint(re);
     bisect(
         entries,
         chunks,
@@ -318,8 +319,8 @@ fn bisect(
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let mode = args.get(1).map(|s| s.as_str()).unwrap_or("bisect");
-    let dump = args.get(2).map(|s| s.as_str()).unwrap_or(DEFAULT_DUMP);
+    let mode = args.get(1).map_or("bisect", |s| s.as_str());
+    let dump = args.get(2).map_or(DEFAULT_DUMP, |s| s.as_str());
 
     let entries = flat_entries();
     log(&format!(
@@ -336,7 +337,6 @@ fn main() {
     if mode == "chunkinfo" {
         let bytes = std::fs::read(dump).expect("read dump");
         let input = String::from_utf8_lossy(&bytes).into_owned();
-        const CHUNK_SIZE: usize = 16_000;
         let ranges = split_into_chunks(&input, input.len().div_ceil(CHUNK_SIZE));
         let max = ranges.iter().map(|&(s, e)| e - s).max().unwrap_or(0);
         log(&format!(
@@ -348,11 +348,11 @@ fn main() {
     }
 
     if mode == "verify" {
-        let dump = args.get(2).map(|s| s.as_str()).unwrap_or(DEFAULT_DUMP);
-        let reference = args.get(3).map(|s| s.as_str()).unwrap_or(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/../../output.reference.txt"
-        ));
+        let dump = args.get(2).map_or(DEFAULT_DUMP, |s| s.as_str());
+        let reference = args.get(3).map_or(
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../output.reference.txt"),
+            |s| s.as_str(),
+        );
         verify(dump, reference);
         return;
     }
@@ -360,11 +360,10 @@ fn main() {
     if mode == "probe" {
         let rs: usize = args.get(2).expect("rs").parse().expect("int");
         let re: usize = args.get(3).expect("re").parse().expect("int");
-        let dump = args.get(4).map(|s| s.as_str()).unwrap_or(DEFAULT_DUMP);
+        let dump = args.get(4).map_or(DEFAULT_DUMP, |s| s.as_str());
         let cfg = nc_cfg();
         let bytes = std::fs::read(dump).expect("read dump");
         let input = String::from_utf8_lossy(&bytes).into_owned();
-        const CHUNK_SIZE: usize = 16_000;
         let ranges = split_into_chunks(&input, input.len().div_ceil(CHUNK_SIZE));
         let wl_inputs = wordlist_inputs(&input, &ranges, &cfg);
         let ref_dict = dict_for(&entries, &safe_baseline_cuts());
@@ -385,11 +384,8 @@ fn main() {
     }
 
     if mode == "refinalize" {
-        let log_path = args
-            .get(2)
-            .map(|s| s.as_str())
-            .unwrap_or("/tmp/bisect_rs.log");
-        let dump = args.get(3).map(|s| s.as_str()).unwrap_or(DEFAULT_DUMP);
+        let log_path = args.get(2).map_or("/tmp/bisect_rs.log", |s| s.as_str());
+        let dump = args.get(3).map_or(DEFAULT_DUMP, |s| s.as_str());
         refinalize(&entries, log_path, dump);
         return;
     }
@@ -400,7 +396,6 @@ fn main() {
     let cfg = nc_cfg();
     let bytes = std::fs::read(dump).expect("read dump");
     let input = String::from_utf8_lossy(&bytes).into_owned();
-    const CHUNK_SIZE: usize = 16_000;
     let ranges = split_into_chunks(&input, input.len().div_ceil(CHUNK_SIZE));
     log(&format!(
         "input {} bytes in {} chunks",
@@ -445,7 +440,7 @@ fn main() {
             0,
         );
     }
-    accepted.sort();
+    accepted.sort_unstable();
     log(&format!("ACCEPTED: {accepted:?}"));
     let cuts = combine(&accepted);
     log(&format!("final intervals: {}", cuts.len() - 1));

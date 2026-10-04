@@ -1,3 +1,6 @@
 [workspace]
 members = ["crates/core", "crates/cli", "crates/wasm"]
 resolver = "2"
+
+[workspace.lints.clippy]
+pedantic = "warn"

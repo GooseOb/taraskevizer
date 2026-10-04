@@ -38,13 +38,14 @@ pub(crate) fn apply_abc_lower(text: &str, abc: Alphabet) -> Cow<'_, str> {
     }
 }
 
-/// Manual upper-case alphabet conversion; `None` when the alphabet has no
-/// upper table (cyrillic, arabic) — replaces the `has_entries()` check.
-pub(crate) fn apply_abc_upper(text: &str, abc: Alphabet) -> Option<String> {
+/// Upper-case alphabet conversion, borrowing the input when the alphabet has
+/// no upper table (cyrillic, arabic) so call sites can treat "no table" and
+/// "converted" uniformly via `Cow` instead of branching on `Option`.
+pub(crate) fn apply_abc_upper(text: &str, abc: Alphabet) -> Cow<'_, str> {
     match abc {
-        Alphabet::Latin => Some(crate::text::convert_latin_upper(text)),
-        Alphabet::LatinJi => Some(crate::text::convert_latin_ji_upper(text)),
-        Alphabet::Cyrillic | Alphabet::Arabic => None,
+        Alphabet::Latin => Cow::Owned(crate::text::convert_latin_upper(text)),
+        Alphabet::LatinJi => Cow::Owned(crate::text::convert_latin_ji_upper(text)),
+        Alphabet::Cyrillic | Alphabet::Arabic => Cow::Borrowed(text),
     }
 }
 
@@ -72,10 +73,7 @@ pub(crate) fn regex_replace_all_with(
     let mut result = String::with_capacity(text.len());
     let mut last_end = 0;
     for cap in re.captures_iter(text) {
-        let m = match cap.get(0) {
-            Some(m) => m,
-            None => continue,
-        };
+        let Some(m) = cap.get(0) else { continue };
         result.push_str(&text[last_end..m.start()]);
         callback(&cap, &mut result);
         last_end = m.end();
@@ -91,7 +89,7 @@ pub(crate) fn replace_g_str(text: &str) -> String {
             'Ґ' => 'Г',
             'ґ' => 'г',
             _ => ch,
-        })
+        });
     }
     out
 }
@@ -118,8 +116,8 @@ pub(crate) fn initcap(word: &str) -> String {
 
 pub(crate) fn initcap_var(word: &str) -> String {
     regex_replace_all_with(word, r"[^(|)]*[|)]", |caps, out| {
-        let m = caps.get(0).map(|m| m.as_str()).unwrap_or("");
-        out.push_str(&initcap(m))
+        let m = caps.get(0).map_or("", |m| m.as_str());
+        out.push_str(&initcap(m));
     })
 }
 
@@ -216,9 +214,12 @@ fn highlight_diff_variable(
         return String::new();
     }
 
-    let mut last_i = wlen as isize - 1;
-    let mut last_oi = olen as isize - 1;
-    while last_i >= 0 && last_oi >= 0 && word_h[last_i as usize] == o_word[last_oi as usize] {
+    let mut last_i = wlen.cast_signed() - 1;
+    let mut last_oi = olen.cast_signed() - 1;
+    while last_i >= 0
+        && last_oi >= 0
+        && word_h[last_i.cast_unsigned()] == o_word[last_oi.cast_unsigned()]
+    {
         last_i -= 1;
         last_oi -= 1;
     }
@@ -234,12 +235,12 @@ fn highlight_diff_variable(
         first_i += 1;
     }
 
-    let last_i_u = last_i as usize;
-    let last_oi_u = last_oi as usize;
+    let last_i_u = last_i.cast_unsigned();
+    let last_oi_u = last_oi.cast_unsigned();
 
     if first_i == wlen {
         let prefix: String = word[..last_i_u].iter().collect();
-        let last: String = word[last_i_u..last_i_u + 1].iter().collect();
+        let last: String = word[last_i_u..=last_i_u].iter().collect();
         return format!("{}{}", prefix, highlight(&last));
     }
 

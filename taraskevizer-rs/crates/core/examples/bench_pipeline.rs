@@ -11,7 +11,7 @@
 //! Only the tarask pipeline is measured (not phonetic / alphabetic).
 //!
 //! Usage:
-//!   cargo run -p taraskevizer-core --example bench_pipeline [PATH]
+//!   cargo run -p taraskevizer-core --example `bench_pipeline` [PATH]
 //!
 //! `PATH` defaults to the 50M Wikipedia dump XML:
 //!   ../test/texts/bewiki-20251101-pages-articles-multistream_50M.xml
@@ -68,8 +68,8 @@ fn main() {
             warm_len -= 1;
         }
         let warm = &text[..warm_len];
-        let mut _t = Vec::new();
-        let _ = run_tarask_timed(warm, &cfg, Some(&mut _t));
+        let mut timings = Vec::new();
+        let _ = run_tarask_timed(warm, &cfg, Some(&mut timings));
     }
     eprintln!(" done in {:.2}s\n", warm_start.elapsed().as_secs_f64());
 
@@ -96,7 +96,7 @@ fn main() {
         let nchunks = total_bytes.div_ceil(chunk_size);
         let ranges = split_into_chunks(&text, nchunks);
 
-        eprintln!("[CHUNK_SIZE={chunk_size:>10}] splitting into {nchunks} chunk(s)...",);
+        eprintln!("[CHUNK_SIZE={chunk_size:>10}] splitting into {nchunks} chunk(s)...");
 
         let start = Instant::now();
         // Each chunk is run with the instrumented runner so we also get the

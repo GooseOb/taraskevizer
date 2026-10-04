@@ -32,7 +32,7 @@ fn test_phonetic_cases(cfg: &TaraskConfig, cases: &[(&str, &str)]) {
 
 // --- Wrapper helpers for highlighting / HTML tests ---
 
-fn def_var_no(s: &str) -> Cow<str> {
+fn def_var_no(s: &str) -> Cow<'_, str> {
     Cow::Borrowed(
         s.strip_prefix('(')
             .and_then(|s| s.split('|').next())
@@ -40,7 +40,7 @@ fn def_var_no(s: &str) -> Cow<str> {
     )
 }
 
-fn def_var_first(s: &str) -> Cow<str> {
+fn def_var_first(s: &str) -> Cow<'_, str> {
     Cow::Borrowed(
         s.strip_prefix('(')
             .and_then(|s| s.strip_suffix(')'))
@@ -609,8 +609,8 @@ fn test_multiline_html() {
 fn test_nbsp() {
     let cfg = default_cfg();
     let nbsp = '\u{00A0}';
-    let input = format!("І.{}С.{}Тургенева.", nbsp, nbsp);
-    let expected = format!("І.{}С.{}Турґенева.", nbsp, nbsp);
+    let input = format!("І.{nbsp}С.{nbsp}Тургенева.");
+    let expected = format!("І.{nbsp}С.{nbsp}Турґенева.");
     let result = tarask(&input, &cfg);
     assert_eq!(
         result, expected,
@@ -689,7 +689,7 @@ fn test_highlighting() {
 // JS test runner: highlightDiff([input[1]], [input[0]], true, (t) => `[${t}]`)
 #[test]
 fn test_highlight_diff_two_arg() {
-    let fix = |s: &str| format!("[{}]", s);
+    let fix = |s: &str| format!("[{s}]");
     let cases: &[((&str, &str), &str)] = &[
         (("planeta", "płanieta"), "p[lan]eta"),
         (("Persanalny", "Piersanalny"), "[Pe]rsanalny"),

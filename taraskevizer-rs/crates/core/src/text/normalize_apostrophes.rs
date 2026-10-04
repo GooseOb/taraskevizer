@@ -2,10 +2,10 @@ use super::utf8_char_len;
 
 /// Replace `'`, `` ` ``, `’` with `ʼ` when followed by a non-whitespace char.
 ///
-/// Equivalent to `/['`’](?=\S)/g`, but without the regex engine: single
+/// Equivalent to ``/['`’](?=\S)/g``, but without the regex engine: single
 /// pass, one allocation, byte-level scanning. The lookahead uses
 /// `char::is_whitespace`, which was probed to match `fancy_regex`'s `\S`
-/// exactly (blocks on the full Unicode White_Space set, replaces before
+/// exactly (blocks on the full Unicode `White_Space` set, replaces before
 /// U+FEFF/U+200B, fails at end-of-string).
 pub(crate) fn normalize_apostrophes(text: &str) -> String {
     let bytes = text.as_bytes();

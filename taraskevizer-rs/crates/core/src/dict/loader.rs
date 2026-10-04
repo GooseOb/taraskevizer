@@ -1,7 +1,7 @@
 use super::types::{CompiledDict, DictEntry};
 
-/// Load a flat sequential CompiledDict from JSON embedded at compile time.
-/// The JSON should be an array of DictEntry objects `[{"p":..., "r":...}, ...]`.
+/// Load a flat sequential `CompiledDict` from JSON embedded at compile time.
+/// The JSON should be an array of `DictEntry` objects `[{"p":..., "r":...}, ...]`.
 /// Kept for tests; production dicts use the batched variant below.
 pub fn load_dict_from_json(json_str: &str) -> CompiledDict {
     let entries: Vec<DictEntry> =
@@ -9,7 +9,7 @@ pub fn load_dict_from_json(json_str: &str) -> CompiledDict {
     CompiledDict::new(&entries)
 }
 
-/// Load a batched CompiledDict from JSON `[[{p, r}, ...], ...]` where the
+/// Load a batched `CompiledDict` from JSON `[[{p, r}, ...], ...]` where the
 /// LAST inner array is the sequential tail and all preceding arrays are
 /// single-pass batches.
 pub fn load_batched_dict_from_json(json_str: &str) -> CompiledDict {

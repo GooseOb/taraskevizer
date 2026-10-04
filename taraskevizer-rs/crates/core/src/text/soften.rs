@@ -200,6 +200,10 @@ fn is_big_cons_id(id: u32) -> bool {
 // ---------------------------------------------------------------------------
 
 /// Classify `buf[start..end]` (one whole unit). Returns `(byte_len, class, id)`.
+///
+/// The `as u8` cast is exact: `len` is a UTF-8 unit length, i.e. 1..=4
+/// (pinned by the `debug_assert`).
+#[allow(clippy::cast_possible_truncation)]
 fn classify_at(buf: &[u8], start: usize, end: usize) -> (u8, u8, u32) {
     let len = end - start;
     debug_assert!((1..=4).contains(&len));
@@ -215,6 +219,10 @@ fn classify_at(buf: &[u8], start: usize, end: usize) -> (u8, u8, u32) {
 /// Starts of candidate units (2-byte л/н/ц/д/з/с), ascending. Found by
 /// forward SIMD search for their second bytes; anything else can never
 /// start a firing gap, so the sweep bulk-copies it unexamined.
+///
+/// Stored offsets are `u32`: inputs are chunked to ≤1 MiB, so the cast below
+/// cannot truncate in practice.
+#[allow(clippy::cast_possible_truncation)]
 fn collect_candidates(s: &[u8]) -> Vec<u32> {
     let mut out = Vec::with_capacity(s.len() / 32);
     let mut from = 0usize;
@@ -499,9 +507,8 @@ fn match_iwords_at(out: &[u8], start: usize) -> bool {
 /// index (in the suffix) of the first lookahead unit — just after the
 /// trailing space and an optional transparent `(`.
 fn big_lookahead_at(out: &[u8], start: usize) -> bool {
-    let c0 = match peek_id(out, start) {
-        Some(c) => c,
-        None => return false,
+    let Some(c0) = peek_id(out, start) else {
+        return false;
     };
     if is_big_single_id(c0) {
         return true;

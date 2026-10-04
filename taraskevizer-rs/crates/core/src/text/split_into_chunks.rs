@@ -26,10 +26,10 @@ fn is_chunk_delimiter(c: char) -> bool {
 /// memory (the old forward/backward `\n` search re-scanned deserts per
 /// chunk, which was quadratic there).
 pub fn split_into_chunks(text: &str, n: usize) -> Vec<(usize, usize)> {
+    const MAX_CHUNK: usize = 1 << 20;
     if n <= 1 || text.is_empty() {
         return vec![(0, text.len())];
     }
-    const MAX_CHUNK: usize = 1 << 20;
     let target = text.len().div_ceil(n.max(1));
     let len = text.len();
     let mut chunks = Vec::new();

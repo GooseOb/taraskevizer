@@ -380,6 +380,8 @@ fn iotacize_vowel_ji(text: &str) -> String {
 
 /// Entry 0: `(V )і ў` → `$1й у` (`V` + ` і ў`).
 fn iotacize_sp_u_ji(text: &str) -> String {
+    // Trailer ` і ў` is space + `і` + space + `ў` (6 bytes).
+    const TRAILER: &str = " і ў";
     if !text.contains('і') {
         return text.to_string();
     }
@@ -388,8 +390,6 @@ fn iotacize_sp_u_ji(text: &str) -> String {
     let mut out = String::with_capacity(len + 16);
     let mut flush_from = 0usize;
     let mut i = 0usize;
-    // Trailer ` і ў` is space + `і` + space + `ў` (6 bytes).
-    const TRAILER: &str = " і ў";
     while i < len {
         let b = bytes[i];
         // `V` is non-ASCII: ASCII bytes never start a match.
@@ -422,6 +422,8 @@ fn iotacize_sp_u_ji(text: &str) -> String {
 
 /// Entry 1: `(V )і␣` → `$1й␣` (`V` + ` і `, trailing space consumed).
 fn iotacize_sp_ji(text: &str) -> String {
+    // Trailer ` і ` is space + `і` + space (4 bytes).
+    const TRAILER: &str = " і ";
     if !text.contains('і') {
         return text.to_string();
     }
@@ -430,8 +432,6 @@ fn iotacize_sp_ji(text: &str) -> String {
     let mut out = String::with_capacity(len + 16);
     let mut flush_from = 0usize;
     let mut i = 0usize;
-    // Trailer ` і ` is space + `і` + space (4 bytes).
-    const TRAILER: &str = " і ";
     while i < len {
         let b = bytes[i];
         // `V` is non-ASCII: ASCII bytes never start a match.
@@ -525,7 +525,7 @@ fn iotacize_iwords(text: &str) -> String {
             continue;
         }
         if text[i..].starts_with(" і") && matches_iwords(&text[i + 3..]) {
-            out.push_str(&text[flush_from..i + 1]);
+            out.push_str(&text[flush_from..=i]);
             out.push('й');
             out.push('і');
             flush_from = i + 3;

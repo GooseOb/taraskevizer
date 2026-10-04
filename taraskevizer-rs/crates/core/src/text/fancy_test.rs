@@ -64,14 +64,8 @@ pub(crate) fn fancy_replace_all(re: &FancyRegex, text: &str, replacement: &str) 
     let mut result = String::with_capacity(text.len());
     let mut last_end = 0;
     for cap in re.captures_iter(text) {
-        let cap = match cap {
-            Ok(c) => c,
-            Err(_) => continue,
-        };
-        let m = match cap.get(0) {
-            Some(m) => m,
-            None => continue,
-        };
+        let Ok(cap) = cap else { continue };
+        let Some(m) = cap.get(0) else { continue };
         result.push_str(&text[last_end..m.start()]);
         result.push_str(&expand_replacement(replacement, &cap));
         last_end = m.end();

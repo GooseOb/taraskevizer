@@ -68,7 +68,7 @@ mod tests {
         for &w in &ws {
             assert!(w.is_whitespace(), "U+{:04X} not ws", w as u32);
         }
-        let mut cases = vec!["".to_string(), "abc".to_string(), "  abc  ".to_string()];
+        let mut cases = vec![String::new(), "abc".to_string(), "  abc  ".to_string()];
         for &w in &ws {
             cases.push(format!("а{w}б"));
             cases.push(format!("а{w}{w}б"));

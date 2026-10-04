@@ -5,11 +5,10 @@ pub fn step_store_splitted_text(ctx: &mut PipelineContext) {
     // `orig_text` is split lazily by consumers; count (allocation-free scan)
     // only for the invariant check.
     let orig_len = ctx.orig_text.split(' ').count();
-    if ctx.text_arr.len() != orig_len {
-        panic!(
-            "Word count mismatch: text={}, orig={}",
-            ctx.text_arr.len(),
-            orig_len
-        );
-    }
+    assert!(
+        ctx.text_arr.len() == orig_len,
+        "Word count mismatch: text={}, orig={}",
+        ctx.text_arr.len(),
+        orig_len
+    );
 }

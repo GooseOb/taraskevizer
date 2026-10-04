@@ -10,7 +10,7 @@ pub fn step_convert_alphabet(ctx: &mut PipelineContext) {
         return;
     }
     let lowered = apply_abc_lower(&ctx.text, ctx.cfg.abc);
-    ctx.text = apply_abc_upper(&lowered, ctx.cfg.abc).unwrap_or_else(|| lowered.into_owned());
+    ctx.text = apply_abc_upper(&lowered, ctx.cfg.abc).into_owned();
 }
 
 pub fn step_convert_alphabet_lower(ctx: &mut PipelineContext) {

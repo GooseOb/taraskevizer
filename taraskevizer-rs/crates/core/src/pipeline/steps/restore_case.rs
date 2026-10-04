@@ -59,12 +59,9 @@ pub fn step_restore_case(ctx: &mut PipelineContext) {
 pub(crate) fn restore_case_words(text: &mut [TextWord], text_buf: &str, orig_text: &str) {
     let mut orig_it = orig_text.split(' ').peekable();
     for slot in text.iter_mut() {
-        let o_word = match orig_it.next() {
-            Some(o) => o,
-            // Fused iterator: stays `None`; remaining words are unchanged,
-            // exactly like the old `orig.get(i) → None → continue`.
-            None => break,
-        };
+        // Fused iterator: stays `None`; remaining words are unchanged,
+        // exactly like the old `orig.get(i) → None → continue`.
+        let Some(o_word) = orig_it.next() else { break };
         let word = slot.as_str(text_buf);
         if word == o_word {
             continue;

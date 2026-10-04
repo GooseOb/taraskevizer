@@ -662,6 +662,9 @@ pub(crate) const LU_RANGES: &[(u32, u32)] = &[
 ];
 
 /// Whether code point `cp` has Unicode general category Lu (`\p{Lu}`).
+///
+/// The `as u8` cast is exact: it only runs when `cp < 128` (checked above).
+#[allow(clippy::cast_possible_truncation)]
 pub(crate) fn is_lu(cp: u32) -> bool {
     // Fast path: XML-heavy inputs are mostly ASCII; skip the ~700-range
     // binary search for them. Cyrillic capitals are the next most common.

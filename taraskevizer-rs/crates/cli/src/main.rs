@@ -2,7 +2,7 @@ use std::io::{self, IsTerminal, Read, Write};
 
 use clap::Parser;
 use rayon::prelude::*;
-use taraskevizer_core::config::*;
+use taraskevizer_core::config::{Alphabet, JMode, TaraskConfig, VariationMode};
 use taraskevizer_core::text::split_into_chunks;
 use taraskevizer_core::wrappers::{ANSI_COLOR_WRAPPERS, HTML_WRAPPERS};
 use taraskevizer_core::{alphabetic, phonetic, tarask};
@@ -21,8 +21,6 @@ fn expand_args(raw: Vec<String>) -> Vec<String> {
             out.push(arg);
         } else {
             match arg.as_str() {
-                // Pass through — clap handles these natively
-                "-l" | "-a" | "-h" | "-V" => out.push(arg),
                 // Multi-char short forms → expand to long flags
                 "-lj" => out.push("--latin-ji".into()),
                 "-jr" => out.push("--jrandom".into()),
@@ -35,7 +33,10 @@ fn expand_args(raw: Vec<String>) -> Vec<String> {
                 "-abc" => out.push("--alphabet-only".into()),
                 "-ph" => out.push("--phonetic".into()),
                 "-st" => out.push("--single-thread".into()),
-                _ => out.push(arg), // unrecognized → let clap handle it
+                // Everything else passes through untouched: single-char
+                // flags clap handles natively (`-l`, `-a`, `-h`, `-V`) and
+                // unrecognized input (which clap reports).
+                _ => out.push(arg),
             }
         }
     }
@@ -44,6 +45,9 @@ fn expand_args(raw: Vec<String>) -> Vec<String> {
 
 // ── CLI args ────────────────────────────────────────────────────
 
+/// Flat bools are the idiomatic clap design (one field per flag); grouping
+/// them would only obscure the CLI definition.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Parser)]
 #[command(
     name = "tarask",
@@ -57,7 +61,7 @@ struct Cli {
     #[arg(long, short = 'l')]
     latin: bool,
 
-    /// Use LatinJi alphabet
+    /// Use `LatinJi` alphabet
     #[arg(long)]
     latin_ji: bool,
 
@@ -117,6 +121,10 @@ struct Cli {
 // ── Main ────────────────────────────────────────────────────────
 
 fn main() {
+    // Bounded parallel group tuning (see the grouping loop below).
+    const GROUP_MAX_CHUNKS: usize = 256;
+    const GROUP_MAX_BYTES: usize = 8 << 20;
+    const BIG_CHUNK: usize = 256 << 10;
     let raw: Vec<String> = std::env::args().collect();
     let expanded = expand_args(raw);
     let cli = Cli::parse_from(expanded);
@@ -234,9 +242,6 @@ fn main() {
                 // chunk runs sequentially (one big chunk's transient working
                 // set fits easily, but 8 threads' worth does not — this
                 // OOM-killed the full-dump run at ~10GB).
-                const GROUP_MAX_CHUNKS: usize = 256;
-                const GROUP_MAX_BYTES: usize = 8 << 20;
-                const BIG_CHUNK: usize = 256 << 10;
                 let mut gstart = 0;
                 while gstart < ranges.len() {
                     let mut gend = gstart;

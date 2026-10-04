@@ -1,6 +1,7 @@
 use regex::Regex;
 use serde::Deserialize;
 use std::borrow::Cow;
+use std::fmt::Write as _;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DictEntry {
@@ -57,7 +58,7 @@ impl RegexBatch {
                 combined.push('|');
             }
             let wrapper = next_id;
-            combined.push_str(&format!("(?P<__b{i}__>{})", entry.pattern));
+            let _ = write!(combined, "(?P<__b{i}__>{})", entry.pattern);
             let rewritten = rewrite_replacement(&entry.result, wrapper);
             alternatives.push((wrapper, rewritten));
             next_id += 1 + group_counts[i];
@@ -82,10 +83,7 @@ impl RegexBatch {
         let mut last_end = 0;
         let mut matched = false;
         for cap in self.re.captures_iter(text) {
-            let m = match cap.get(0) {
-                Some(m) => m,
-                None => continue,
-            };
+            let Some(m) = cap.get(0) else { continue };
             matched = true;
             result.push_str(&text[last_end..m.start()]);
             // Exactly one wrapper participates; first hit wins (dict order).
@@ -228,15 +226,12 @@ impl CompiledDict {
                     // `$N` + literal text works correctly.
                     if re.is_match(cur) {
                         let next = replace_all_std(re, cur, result_tpl);
-                        match &mut buf {
-                            Some(owned) => {
-                                *owned = next;
-                                cur = buf.as_ref().expect("just set");
-                            }
-                            None => {
-                                buf = Some(next);
-                                cur = buf.as_ref().expect("just set");
-                            }
+                        if let Some(owned) = &mut buf {
+                            *owned = next;
+                            cur = buf.as_ref().expect("just set");
+                        } else {
+                            buf = Some(next);
+                            cur = buf.as_ref().expect("just set");
                         }
                     }
                 }
@@ -309,7 +304,9 @@ fn rewrite_replacement(replacement: &str, base: usize) -> String {
                             break;
                         }
                     }
-                    if !num.is_empty() {
+                    if num.is_empty() {
+                        out.push('$');
+                    } else {
                         // Consume '{', digits, and optional '}'.
                         chars.next();
                         for _ in 0..num.len() {
@@ -322,10 +319,8 @@ fn rewrite_replacement(replacement: &str, base: usize) -> String {
                         if n == 0 {
                             out.push_str("$0");
                         } else {
-                            out.push_str(&format!("${}", n + base));
+                            let _ = write!(out, "${}", n + base);
                         }
-                    } else {
-                        out.push('$');
                     }
                 }
                 Some('0'..='9') => {
@@ -342,7 +337,7 @@ fn rewrite_replacement(replacement: &str, base: usize) -> String {
                     if n == 0 {
                         out.push_str("$0");
                     } else {
-                        out.push_str(&format!("${}", n + base));
+                        let _ = write!(out, "${}", n + base);
                     }
                 }
                 _ => {
@@ -373,10 +368,7 @@ fn replace_all_std(re: &Regex, text: &str, replacement: &str) -> String {
     let mut result = String::with_capacity(text.len());
     let mut last_end = 0;
     for cap in re.captures_iter(text) {
-        let m = match cap.get(0) {
-            Some(m) => m,
-            None => continue,
-        };
+        let Some(m) = cap.get(0) else { continue };
         result.push_str(&text[last_end..m.start()]);
         expand_replacement_std_into(replacement, &cap, &mut result);
         last_end = m.end();

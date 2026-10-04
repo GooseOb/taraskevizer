@@ -6,7 +6,7 @@ pub fn step_trim(ctx: &mut PipelineContext) {
     let after = &ctx.text[ctx.text.trim_end().len()..];
     ctx.trim_before = before.to_string();
     ctx.trim_after = after.to_string();
-    ctx.text = format!(" {} ", trimmed);
+    ctx.text = format!(" {trimmed} ");
 }
 
 pub fn step_untrim(ctx: &mut PipelineContext) {

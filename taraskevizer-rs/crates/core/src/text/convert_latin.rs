@@ -924,7 +924,7 @@ fn ji_iwords(text: &str) -> String {
         }
         // ` і` + iwords lookahead (` і` is space + 2-byte `і`).
         if text[i..].starts_with(" і") && crate::text::matches_iwords(&text[i + 3..]) {
-            out.push_str(&text[flush..i + 1]);
+            out.push_str(&text[flush..=i]);
             out.push_str("ji");
             flush = i + 3;
             i += 3;
@@ -932,14 +932,14 @@ fn ji_iwords(text: &str) -> String {
         }
         if text[i..].starts_with(" І") {
             if crate::text::matches_iwords(&text[i + 3..]) {
-                out.push_str(&text[flush..i + 1]);
+                out.push_str(&text[flush..=i]);
                 out.push_str("Ji");
                 flush = i + 3;
                 i += 3;
                 continue;
             }
             if matches_iwords_upper(&text[i + 3..]) {
-                out.push_str(&text[flush..i + 1]);
+                out.push_str(&text[flush..=i]);
                 out.push_str("JI");
                 flush = i + 3;
                 i += 3;

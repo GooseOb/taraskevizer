@@ -64,17 +64,22 @@ pub fn join_text_words(words: &[TextWord], buf: &str) -> String {
 /// Split `buf` on `' '` into span words (one `Vec` allocation, no per-word
 /// `String`s). Mirrors `buf.split(' ')` exactly, including leading/trailing
 /// empty parts from padding spaces.
+///
+/// Byte offsets are stored as `u32`: pipeline inputs are chunked to ≤1 MiB
+/// (and multi-gigabyte direct inputs are out of scope), so the `as u32`
+/// casts below cannot truncate in practice; the `debug_assert`s pin that.
+#[allow(clippy::cast_possible_truncation)]
 pub fn split_text_words(buf: &str) -> Vec<TextWord> {
     // Exact reserve via SIMD space count: `split(' ')` yields spaces + 1.
     let n = memchr::memchr_iter(b' ', buf.as_bytes()).count() + 1;
     let mut out = Vec::with_capacity(n);
     let mut start = 0u32;
     for (i, _) in buf.match_indices(' ') {
-        debug_assert!(i <= u32::MAX as usize);
+        debug_assert!(u32::try_from(i).is_ok());
         out.push(TextWord::Span(start, i as u32));
         start = i as u32 + 1;
     }
-    debug_assert!(buf.len() <= u32::MAX as usize);
+    debug_assert!(u32::try_from(buf.len()).is_ok());
     out.push(TextWord::Span(start, buf.len() as u32));
     out
 }
