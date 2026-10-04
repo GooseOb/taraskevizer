@@ -80,6 +80,8 @@ jobs:
           echo 'планета' | node dist/cli.js --no-color | grep -q 'плянэта'
           node dist/cli.js --no-color -l 'планета' | grep -q 'planeta'
           node dist/cli.js --version | grep -q "${{ needs.setup.outputs.version }}"
+      - name: Remove smoke-test binary from the package
+        run: rm -rf dist/bin
       - name: Upload package artifact
         uses: actions/upload-artifact@v7
         with:

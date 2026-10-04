@@ -3,7 +3,7 @@
 	"version": "11.0.0",
 	"author": "GooseOb",
 	"bin": {
-		"tarask": "./dist/cli.js"
+		"tarask": "dist/cli.js"
 	},
 	"repository": {
 		"type": "git",

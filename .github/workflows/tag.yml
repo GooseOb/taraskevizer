@@ -63,6 +63,6 @@ jobs:
 
       - name: Trigger publishing workflow
         if: steps.check.outputs.exists == 'false'
-        run: gh workflow run publish.yml --ref main
+        run: gh workflow run main.yml --ref main
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
