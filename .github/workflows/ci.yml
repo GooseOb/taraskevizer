@@ -14,7 +14,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-      - uses: jetli/wasm-pack-action@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
 
       - run: bun i --frozen-lockfile
         env:
@@ -56,11 +58,11 @@ jobs:
         working-directory: website
 
       - name: Upload docs artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           name: "github-pages"
           path: "website/dist"
 
       - name: Deploy docs to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

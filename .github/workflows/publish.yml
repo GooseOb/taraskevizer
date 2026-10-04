@@ -76,7 +76,9 @@ jobs:
         with:
           workspaces: taraskevizer-rs
           key: wasm32-unknown-unknown
-      - uses: jetli/wasm-pack-action@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
 
       - run: bun i --frozen-lockfile
         env:
@@ -301,7 +303,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           registry-url: "https://registry.npmjs.org"
           node-version: "24"
