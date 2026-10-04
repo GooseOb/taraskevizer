@@ -5,11 +5,16 @@ sidebar:
   order: 7
 ---
 
-The package installs a `tarask` binary. It wraps the `tarask` pipeline with
-flags that map onto [`TaraskConfig`](/taraskevizer/reference/classes/taraskconfig/)
-options.
+The `tarask` command runs the prebuilt Rust binary for your platform — the
+same converter as the JS API, but faster, and able to stream multi-GB inputs
+with parallel processing. Its flags map onto
+[`TaraskConfig`](/taraskevizer/reference/classes/taraskconfig/) options.
 
-## Install
+## Install via npm
+
+Installing the package also installs the `tarask` command. The binary
+matching your platform is downloaded automatically from
+GitHub releases on install (or, failing that, on first run).
 
 ```sh
 npm install -g taraskevizer
@@ -17,6 +22,32 @@ npm install -g taraskevizer
 yarn global add taraskevizer
 # or
 bun add -g taraskevizer
+```
+
+If the binary cannot be downloaded (offline install, `--ignore-scripts`),
+download the asset for your platform manually (see below) and place it into
+`<package>/dist/bin/`. Set `TARASKEVIZER_SKIP_BINARY_DOWNLOAD=1` to skip
+the download.
+
+## Native binaries (no runtime needed)
+
+Every release ships standalone `tarask` executables for these platforms:
+
+| OS      | Architecture           | Asset                               |
+| ------- | ---------------------- | ----------------------------------- |
+| Linux   | x64                    | `tarask-x86_64-unknown-linux-gnu`   |
+| Linux   | ARM64                  | `tarask-aarch64-unknown-linux-gnu`  |
+| macOS   | x64 (Intel)            | `tarask-x86_64-apple-darwin`        |
+| macOS   | ARM64 (Apple Silicon)  | `tarask-aarch64-apple-darwin`       |
+| Windows | x64                    | `tarask-x86_64-pc-windows-msvc.exe` |
+
+Download the file from
+[GitHub releases](https://github.com/GooseOb/taraskevizer/releases), make it
+executable (not needed on Windows) and run it:
+
+```sh
+chmod +x tarask-x86_64-unknown-linux-gnu
+./tarask-x86_64-unknown-linux-gnu --latin 'планета'
 ```
 
 ## Usage
@@ -100,14 +131,15 @@ tarask
 | ------------------------- | ------------------------------------------ |
 | `-html`, `--html`         | HTML mode (emit `tarF`/`tarL`/`tarH` tags) |
 | `-abc`, `--alphabet-only` | Alphabet-only conversion                   |
+| `-ph`, `--phonetic`       | Phonetic conversion                        |
 
 ### Other
 
-| Flag                        | Description                     |
-| --------------------------- | ------------------------------- |
-| `-nec`, `--not-escape-caps` | Don't protect capitalized runs  |
-| `-nc`, `--no-color`         | Disable ANSI color wrapping     |
-| `-st`, `--single-thread`    | Force single-threaded execution |
+| Flag                                             | Description                    |
+| ------------------------------------------------ | ------------------------------ |
+| `-nec`, `--no-escape-caps` (`--not-escape-caps`) | Don't protect capitalized runs |
+| `-nc`, `--no-color`                              | Disable ANSI color wrapping    |
+| `-st`, `--single-thread`                         | Force single-threaded execution |
 
 ## Known bugs
 

@@ -21,38 +21,34 @@ bun add taraskevizer
 
 ```js
 import {
-  pipelines,
+  init,
+  tarask,
+  alphabetic,
   TaraskConfig,
   htmlConfigOptions,
-  wrappers,
-  dicts,
 } from "taraskevizer";
 
-pipelines.tarask("планета");
+await init(); // skip under Node.js: the `node` export initializes automatically
+
+tarask("планета");
 // "плянэта"
 
 const cfg = new TaraskConfig({
-  abc: dicts.alphabets.cyrillic,
+  abc: "cyrillic",
   j: "always",
   variations: "first",
-  wrappers: wrappers.ansiColor,
+  wrappers: "ansi",
   g: true,
 });
-pipelines.tarask("планета і Гродна", cfg);
+tarask("планета і Гродна", cfg);
 // "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
 
-pipelines.tarask("энергія планеты", {
-  ...htmlConfigOptions,
-  abc: dicts.alphabets.latin,
-  g: false, // ignored, g matters for cyrillic alphabet only
-});
-// "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
+const htmlCfg = htmlConfigOptions();
+htmlCfg.abc = "latin";
+tarask("энергія планеты", htmlCfg);
+// "e<tarF>ne</tarF>r<tarF>g</tarF>ija p<tarF>l</tarF>a<tarF>ne</tarF>ty"
 
-const latinWithJiCfg = new TaraskConfig({
-  abc: dicts.alphabets.latinJi,
-});
-
-pipelines.alphabetic("яна і іншыя", latinWithJiCfg);
+alphabetic("яна і іншыя", new TaraskConfig({ abc: "latinJi" }));
 // "jana j jinšyja"
 ```
 
@@ -63,21 +59,24 @@ See the [API reference](/taraskevizer/reference/readme/) for every export, optio
 Every conversion is a call to a **pipeline** (what to do) with an optional
 [**`TaraskConfig`**](/taraskevizer/reference/classes/taraskconfig/) (how to do it).
 
-- A **pipeline** is a preconfigured routine such as `pipelines.tarask`,
-  `pipelines.alphabetic`, or `pipelines.phonetic`. See
+- A **pipeline** is an exported conversion function such as
+  [`tarask`](/taraskevizer/reference/functions/tarask/),
+  [`alphabetic`](/taraskevizer/reference/functions/alphabetic/), or
+  [`phonetic`](/taraskevizer/reference/functions/phonetic/). See
   [Builtin pipelines](/taraskevizer/guides/pipelines/).
 - A **config** tunes the alphabet, letter replacements, variations, and how
-  changed parts are wrapped. See
+  changed parts are wrapped. It can be a `TaraskConfig` instance or a plain
+  option object (`tarask("планета", { abc: "latin" })`). See
   [Configuration](/taraskevizer/guides/configuration/).
 
-If you omit the config, the default `TaraskConfig` is used, which converts
-into the Belarusian classical orthography (тарашкевіца) using the Cyrillic
-alphabet.
+If you omit the config, the defaults are used, which convert into the
+Belarusian classical orthography (тарашкевіца) using the Cyrillic alphabet.
 
 ## Using a `<script>` tag
 
 The package ships a browser bundle. After loading it, everything is exposed
-on the global `taraskevizer` object.
+on the global `taraskevizer` object. The bundle is fully synchronous — no
+initialization call is needed.
 
 :::caution
 In production, replace `latest` with a specific version number to avoid
@@ -89,10 +88,10 @@ website if a new version introduces breaking changes.
 <head>
   <script src="https://cdn.jsdelivr.net/npm/taraskevizer@latest/dist/bundle.js"></script>
   <script>
-    document.write(taraskevizer.pipelines.tarask("планета"));
+    document.write(taraskevizer.tarask("планета")); // "плянэта"
   </script>
 </head>
 ```
 
-The global mirrors the module exports, so `taraskevizer.pipelines.tarask(...)`
-works exactly like the imported `pipelines.tarask(...)`.
+The global mirrors the module exports, so `taraskevizer.tarask(...)`
+works exactly like the imported `tarask(...)`.

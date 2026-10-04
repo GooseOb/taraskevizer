@@ -10,7 +10,7 @@
  *
  * @example
  * ```js
- * import init, { tarask, TaraskConfig } from 'taraskevizer';
+ * import { init, tarask, TaraskConfig } from 'taraskevizer';
  *
  * await init();
  * tarask('планета'); // → 'плянэта'

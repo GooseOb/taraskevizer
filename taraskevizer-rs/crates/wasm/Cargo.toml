@@ -1,6 +1,6 @@
 [package]
 name = "taraskevizer-wasm"
-version = "10.5.0"
+version = "11.0.0"
 edition = "2021"
 description = "WASM bindings for taraskevizer"
 

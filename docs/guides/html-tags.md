@@ -5,8 +5,8 @@ sidebar:
   order: 4
 ---
 
-When converting with the HTML wrappers (`wrappers.html`, or
-`htmlConfigOptions`), the output is annotated with custom tags that describe
+When converting with the HTML wrappers (`wrappers: "html"`, or
+`htmlConfigOptions()`), the output is annotated with custom tags that describe
 what happened to each word. This is useful for building interactive
 previews where readers can toggle between spelling or alphabet variants.
 
@@ -29,9 +29,9 @@ commas. Which one is shown as the element body is controlled by the
 `variations` config option.
 
 ```html
-<tarL data-l="variation2,variation3">variation1</tarL>
+<tarL data-l='variation2,variation3'>variation1</tarL>
 
-<tarL data-l="Горадня">Гродна</tarL>
+<tarL data-l='Горадня'>Гродна</tarL>
 ```
 
 ## `tarH`
@@ -54,9 +54,16 @@ let the user toggle them.
 
 ```js
 // This example runs in the browser: it uses the DOM (`document`).
-import { pipelines, htmlConfigOptions, createInteractiveTags } from "taraskevizer";
+import {
+  init,
+  tarask,
+  htmlConfigOptions,
+  createInteractiveTags,
+} from "taraskevizer";
 
-const html = pipelines.tarask("Гродна і ґвалт", { ...htmlConfigOptions });
+await init(); // skip under Node.js or with the `<script>` bundle
+
+const html = tarask("Гродна і ґвалт", htmlConfigOptions());
 document.body.innerHTML = html;
 
 const tags = createInteractiveTags();

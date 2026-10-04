@@ -2,6 +2,9 @@
 	"name": "taraskevizer",
 	"version": "11.0.0",
 	"author": "GooseOb",
+	"bin": {
+		"tarask": "./dist/cli.js"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/GooseOb/taraskevizer.git"
@@ -43,14 +46,15 @@
 	"license": "MIT",
 	"private": false,
 	"scripts": {
-		"build": "wasm-pack build taraskevizer-rs/crates/wasm --target web --out-dir ../../../src/wasm && tsc --noEmit -p tsconfig.json && tsc -p tsconfig.build.json && mkdir -p dist/wasm && cp src/wasm/taraskevizer_wasm.js src/wasm/taraskevizer_wasm.d.ts src/wasm/taraskevizer_wasm_bg.wasm dist/wasm/ && bun run bundle",
+		"build": "wasm-pack build taraskevizer-rs/crates/wasm --target web --out-dir ../../../src/wasm && tsc --noEmit -p tsconfig.json && tsc -p tsconfig.build.json && mkdir -p dist/wasm && cp src/wasm/taraskevizer_wasm.js src/wasm/taraskevizer_wasm.d.ts src/wasm/taraskevizer_wasm_bg.wasm dist/wasm/ && chmod +x dist/cli.js && bun run bundle",
+		"postinstall": "node ./dist/install-cli-binary.js || exit 0",
 		"prepack": "bun run build",
 		"bundle": "esbuild src/bundle.ts --bundle --format=iife --global-name=taraskevizer --target=es2020 --minify --outfile=dist/bundle.js --loader:.wasm=binary --log-level=warning",
 		"format": "biome format --write",
 		"lint": "eslint .",
-		"test": "cargo test --workspace --manifest-path ./taraskevizer-rs/Cargo.toml",
+		"test": "cargo test --locked --workspace --manifest-path ./taraskevizer-rs/Cargo.toml",
 		"test:wasm": "wasm-pack test --node taraskevizer-rs/crates/wasm",
-		"json": "DEST_DIR=json cargo run --manifest-path ./taraskevizer-rs/Cargo.toml -p taraskevizer-core --example gen_dict_json",
+		"json": "DEST_DIR=json cargo run --locked --manifest-path ./taraskevizer-rs/Cargo.toml -p taraskevizer-core --example gen_dict_json",
 		"docs:dev": "cd website && bun run dev",
 		"docs:build": "cd website && bun install && bun run build",
 		"docs:preview": "cd website && bun run preview"

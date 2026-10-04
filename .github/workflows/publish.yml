@@ -1,0 +1,314 @@
+# Build everything and publish: npm package, GitHub release with native CLI
+# binaries and JSON dictionaries. Triggered by tag.yml (auto-tag) after a
+# version tag is pushed, or manually.
+#
+# Platforms (native CLI binaries, one matrix job each):
+#   - x86_64-unknown-linux-gnu  (Ubuntu)
+#   - aarch64-unknown-linux-gnu (Ubuntu ARM)
+#   - x86_64-pc-windows-msvc    (Windows)
+#   - aarch64-apple-darwin      (macOS Apple Silicon)
+#   - x86_64-apple-darwin       (macOS Intel)
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish (default: current ref)"
+        required: false
+        default: ""
+      prerelease:
+        description: "Mark this release as a pre-release"
+        type: boolean
+        default: false
+
+# Default read-only; the GitHub-release job widens this to `write`.
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version tag
+        id: resolve
+        run: |
+          TAG="${{ inputs.tag }}"
+          if [[ -z "$TAG" ]]; then
+            TAG="${{ github.ref_name }}"
+          fi
+          if [[ "$TAG" != v* ]]; then
+            echo "Expected a version tag like v1.2.3, got '$TAG'"
+            exit 1
+          fi
+          git rev-parse --verify "$TAG^{commit}" >/dev/null || {
+            echo "Tag $TAG not found"
+            exit 1
+          }
+          PKG_VERSION=$(jq -r .version package.json)
+          if [[ "v$PKG_VERSION" != "$TAG" ]]; then
+            echo "package.json version ($PKG_VERSION) does not match tag ($TAG)"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Publishing $TAG"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.setup.outputs.tag }}
+      - uses: oven-sh/setup-bun@v2
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: jetli/wasm-pack-action@v2
+
+      - run: bun i --frozen-lockfile
+        env:
+          HUSKY: 0
+      - run: bun run build
+      - run: bun run test
+      - name: Smoke-test the npm launcher against the native CLI
+        run: |
+          HOST=$(rustc -vV | sed -n 's/^host: //p')
+          mkdir -p dist/bin
+          cp "taraskevizer-rs/target/debug/taraskevizer-cli" "dist/bin/tarask-$HOST"
+          node dist/cli.js --no-color 'планета' | grep -q 'плянэта'
+          echo 'планета' | node dist/cli.js --no-color | grep -q 'плянэта'
+          node dist/cli.js --no-color -l 'планета' | grep -q 'planeta'
+          node dist/cli.js --version | grep -q "${{ needs.setup.outputs.version }}"
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: |
+            dist
+            README.md
+            package.json
+
+  binaries:
+    runs-on: ${{ matrix.os }}
+    needs: setup
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            strip: "true"
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            strip: "true"
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            strip: "false"
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            strip: "true"
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            strip: "true"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.setup.outputs.tag }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: taraskevizer-rs
+          key: ${{ matrix.target }}
+
+      - name: Build CLI
+        env:
+          CARGO_PROFILE_RELEASE_STRIP: ${{ matrix.strip }}
+        run: cargo build --release --locked --manifest-path ./taraskevizer-rs/Cargo.toml -p taraskevizer-cli --target ${{ matrix.target }}
+
+      - name: Stage binary
+        shell: bash
+        run: |
+          BIN="taraskevizer-rs/target/${{ matrix.target }}/release/taraskevizer-cli"
+          OUT="tarask-${{ matrix.target }}"
+          if [[ "${{ matrix.target }}" == *windows* ]]; then
+            BIN="$BIN.exe"
+            OUT="$OUT.exe"
+          fi
+          cp "$BIN" "$OUT"
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: cli-${{ matrix.target }}
+          path: |
+            tarask-${{ matrix.target }}*
+
+  json:
+    runs-on: ubuntu-latest
+    needs: setup
+    outputs:
+      json_changed: ${{ steps.compare.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.setup.outputs.tag }}
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Generate wordlist.json from the Rust core
+        run: npm run json
+
+      - name: Download latest release json bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p latest_json
+          TAG=""
+          for t in $(gh release list --limit 20 --json tagName --jq '.[].tagName'); do
+            if gh release view "$t" --json assets --jq '.assets[].name' | grep -qx 'json.zip'; then
+              TAG="$t"
+              break
+            fi
+          done
+          if [[ -n "$TAG" ]]; then
+            echo "Found previous json bundle in $TAG"
+            gh release download "$TAG" --pattern "json.zip" --dir latest_json
+            unzip -q latest_json/json.zip -d latest_json/unpacked
+          else
+            echo "NO_PREVIOUS_BUNDLE=true" >> $GITHUB_ENV
+          fi
+
+      - name: Compare json files
+        id: compare
+        run: |
+          if [[ "$NO_PREVIOUS_BUNDLE" == "true" ]] || ! diff -r -q json/ latest_json/unpacked/; then
+            CHANGED=true
+          else
+            CHANGED=false
+          fi
+          echo "JSON_CHANGED=$CHANGED" >> $GITHUB_ENV
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+
+      - name: Pack json.zip
+        if: env.JSON_CHANGED == 'true'
+        run: cd json && zip -X ../json.zip alphabets.json g.json noSoften.json softeners.json wordlist.json
+
+      - name: Upload json bundle artifact
+        if: env.JSON_CHANGED == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: json-bundle
+          path: json.zip
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [setup, build, json, binaries]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.setup.outputs.tag }}
+
+      - name: Download CLI binaries
+        uses: actions/download-artifact@v8
+        with:
+          pattern: cli-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Download json bundle
+        if: needs.json.outputs.json_changed == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          name: json-bundle
+          path: .
+
+      - name: Build release body from CHANGELOG.md
+        env:
+          TAG: ${{ needs.setup.outputs.tag }}
+        run: |
+          python3 - <<'EOF'
+          import os
+          import pathlib
+          import re
+          import textwrap
+
+          tag = os.environ.get("TAG", "")
+          version = tag[1:] if tag.startswith("v") else tag
+          changelog = ""
+          path = pathlib.Path("CHANGELOG.md")
+          if path.exists():
+              text = path.read_text()
+              m = re.search(
+                  rf"^## \[{re.escape(version)}\].*?\n(.*?)(?=^##\s|\Z)",
+                  text,
+                  re.M | re.S,
+              )
+              if m:
+                  changelog = m.group(1).strip()
+                  changelog = re.sub(
+                      r"(?m)^\[.+?\]:\s*https?://.*$", "", changelog
+                  ).strip()
+
+          if not changelog:
+              changelog = "_See the auto-generated notes below._"
+
+          footer = textwrap.dedent("""\
+          ## Install
+
+          ```sh
+          npm install -g taraskevizer
+          ```
+
+          Or download the `tarask-<platform>` binary below — no runtime needed.
+          """)
+          body = f"## What's changed\n\n{changelog}\n\n{footer}"
+          pathlib.Path("BODY.md").write_text(body)
+          print(f"Tag {tag}: changelog chars={len(changelog)}")
+          EOF
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.setup.outputs.tag }}
+          files: |
+            release-assets/tarask-*
+            json.zip
+          fail_on_unmatched_files: false
+          generate_release_notes: true
+          prerelease: ${{ inputs.prerelease == true }}
+          body_path: BODY.md
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: [setup, build, release]
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/setup-node@v6
+        with:
+          registry-url: "https://registry.npmjs.org"
+          node-version: "24"
+
+      - name: Download package artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: .
+
+      - run: npm publish
+
+      - run: |
+          curl -XPOST -u "${{secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/GooseOb/taraskevizatar/actions/workflows/build.yml/dispatches --data '{"ref": "main"}'

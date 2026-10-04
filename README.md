@@ -12,7 +12,8 @@ If you're looking for JSON dictionaries, check out the github releases.
 <head>
   <script src="https://cdn.jsdelivr.net/npm/taraskevizer@latest/dist/bundle.js"></script>
   <script>
-    document.write(taraskevizer.pipelines.tarask("планета"));
+    // Synchronous, no initialization needed
+    document.write(taraskevizer.tarask("планета")); // "плянэта"
   </script>
 </head>
 ```
@@ -41,39 +42,39 @@ bun add taraskevizer
 
 ```js
 import {
-  pipelines,
+  init,
+  tarask,
+  alphabetic,
   TaraskConfig,
   htmlConfigOptions,
-  wrappers,
-  alphabets,
 } from "taraskevizer";
 
-pipelines.tarask("планета");
+await init(); // skip under Node.js: the `node` export initializes automatically
+
+tarask("планета");
 // "плянэта"
 
 const cfg = new TaraskConfig({
-  abc: alphabets.cyrillic,
+  abc: "cyrillic",
   j: "always",
   variations: "first",
-  wrappers: wrappers.ansiColor,
+  wrappers: "ansi",
   g: true,
 });
-pipelines.tarask("планета і Гродна", cfg);
+tarask("планета і Гродна", cfg);
 // "пл\x1b[32mя\x1b[0mн\x1b[32mэ\x1b[0mта \x1b[32mй\x1b[0m \x1b[35mГорадня\x1b[0m"
 
-pipelines.tarask("энергія планеты", {
-  ...htmlConfigOptions,
-  abc: alphabets.latin,
-  g: false, // ignored, g matters for cyrillic alphabet only
-});
-// "en<tarF>erg</tarF>ija p<tarF>lan</tarF>ety"
+const htmlCfg = htmlConfigOptions(); // wrappers: "html", g: false, `<br>` newlines
+htmlCfg.abc = "latin"; // g only matters for the cyrillic alphabet
+tarask("энергія планеты", htmlCfg);
+// "e<tarF>ne</tarF>r<tarF>g</tarF>ija p<tarF>l</tarF>a<tarF>ne</tarF>ty"
 
-const latinWithJiCfg = new TaraskConfig({
-  abc: alphabets.latinJi,
-});
-
-pipelines.alphabetic("яна і іншыя", latinWithJiCfg);
+alphabetic("яна і іншыя", new TaraskConfig({ abc: "latinJi" }));
 // "jana j jinšyja"
+
+// Plain option objects work too, no `TaraskConfig` needed:
+tarask("планета", { abc: "latin" });
+// "planeta"
 ```
 
 # Builtin Pipelines
@@ -103,9 +104,9 @@ variations are mentioned in a `data-l` attribute,
 separated with commas.
 
 ```html
-<tarL data-l="variation2,variation3">variation1</tarL>
+<tarL data-l='variation2,variation3'>variation1</tarL>
 
-<tarL data-l="Горадня">Гродна</tarL>
+<tarL data-l='Горадня'>Гродна</tarL>
 ```
 
 ## tarH
@@ -128,7 +129,15 @@ Appears only if alphabet is cyrillic.
 
 # CLI
 
-## Install
+The `tarask` command runs the prebuilt Rust binary for your platform —
+the same converter as the JS API, but faster, and able to stream multi-GB
+inputs with parallel processing. For the full option list, run `tarask --help`.
+
+## Via npm
+
+Installing the package also installs the `tarask` command. The binary
+matching your platform is downloaded automatically
+from GitHub releases on install (or, failing that, on first run):
 
 With npm:
 
@@ -154,9 +163,6 @@ bun add -g taraskevizer
 tarask [options] text
 ```
 
-For usage examples and options use `--help` option
-(in source, content of `--help` is in [this file](./cli-help.txt))
-
 ### "Without installation"
 
 With npm:
@@ -171,11 +177,38 @@ With bun:
 bunx taraskevizer [options] text
 ```
 
+> [!NOTE]
+> The binary is fetched from the release matching the installed package
+> version. If it cannot be downloaded (offline install, `--ignore-scripts`),
+> download the asset for your platform manually (see below) and place it
+> into `<package>/dist/bin/`. Set `TARASKEVIZER_SKIP_BINARY_DOWNLOAD=1`
+> to skip the download.
+
+## Native binaries (no runtime needed)
+
+Every release ships standalone `tarask` executables for these platforms:
+
+| OS      | Architecture            | Asset                                |
+| ------- | ----------------------- | ------------------------------------ |
+| Linux   | x64                     | `tarask-x86_64-unknown-linux-gnu`    |
+| Linux   | ARM64                   | `tarask-aarch64-unknown-linux-gnu`   |
+| macOS   | x64 (Intel)             | `tarask-x86_64-apple-darwin`         |
+| macOS   | ARM64 (Apple Silicon)   | `tarask-aarch64-apple-darwin`        |
+| Windows | x64                     | `tarask-x86_64-pc-windows-msvc.exe`  |
+
+Download the file from [GitHub releases](https://github.com/GooseOb/taraskevizer/releases),
+make it executable (not needed on Windows) and run it:
+
+```sh
+chmod +x tarask-x86_64-unknown-linux-gnu
+./tarask-x86_64-unknown-linux-gnu --latin 'планета'
+```
+
 # Known bugs
 
 ## Replacing `не` with `ня`
 
-`Ня` should appear before a word where the first syllabe is stressed.
+`Ня` should appear before a word where the first syllable is stressed.
 At the moment, there is no way to check exactly if it is stressed.
 Algorithm makes some heuristics, but that's not enough to cover all cases.
 

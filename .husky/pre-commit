@@ -1,11 +1,3 @@
-[ -f '.git/commit-pkg' ] || {
-	[ $(git rev-parse --abbrev-ref HEAD) = main ] && {
-		echo '[ERROR] Please, use the following command for committing:'
-		echo '$ npx git-commit-pkg'
-		exit 1
-	}
-}
-
 bun run build
 bun run test
 bun run format &

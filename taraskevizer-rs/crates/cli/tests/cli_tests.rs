@@ -213,6 +213,22 @@ fn test_cli_short_st() {
 }
 
 #[test]
+fn test_cli_version_flags() {
+    let expected = format!("tarask {}", env!("CARGO_PKG_VERSION"));
+    assert_eq!(run_cli(&["--version"]), expected);
+    assert_eq!(run_cli(&["-v"]), expected);
+    assert_eq!(run_cli(&["-V"]), expected);
+}
+
+#[test]
+fn test_cli_not_escape_caps_alias() {
+    assert_eq!(
+        run_cli(&["--no-color", "--not-escape-caps", "ПЛАНЕТА"]),
+        "ПЛЯНЭТА"
+    );
+}
+
+#[test]
 fn test_cli_short_jr() {
     // jrandom — non-deterministic, just verify it runs without error
     let result = run_cli(&["-nc", "-jr", "яна і ён"]);

@@ -7,7 +7,7 @@ title: "init"
 
 > **init**(`module_or_path?`): `Promise`\<`InitOutput`\>
 
-Defined in: wasm/taraskevizer\_wasm.d.ts:193
+Defined in: wasm/taraskevizer\_wasm.d.ts:239
 
 If `module_or_path` is {RequestInfo} or {URL}, makes a request and
 for everything else, calls `WebAssembly.instantiate` directly.

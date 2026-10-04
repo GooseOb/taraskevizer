@@ -1,0 +1,68 @@
+# Automatically create a git tag when package.json version changes on main,
+# then trigger the publishing workflow.
+#
+# Flow: bump version in package.json (and the Rust crates to match) → push
+# to main → this workflow verifies the versions agree → creates tag vX.Y.Z
+# → publish.yml builds + publishes.
+name: Auto-tag
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [package.json]
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Read package.json version
+        id: version
+        run: |
+          ver=$(jq -r .version package.json)
+          echo "value=$ver" >> "$GITHUB_OUTPUT"
+          echo "package.json version: $ver"
+
+      - name: Check Rust crate versions match
+        run: |
+          PKG_VERSION="${{ steps.version.outputs.value }}"
+          for crate in core cli wasm; do
+            CRATE_VERSION=$(grep '^version =' taraskevizer-rs/crates/$crate/Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+            if [[ "$CRATE_VERSION" != "$PKG_VERSION" ]]; then
+              echo "Version mismatch: taraskevizer-$crate is $CRATE_VERSION, package.json is $PKG_VERSION"
+              exit 1
+            fi
+          done
+          echo "Rust crates match package.json ($PKG_VERSION)"
+
+      - name: Check if tag already exists
+        id: check
+        run: |
+          if git rev-parse "v${{ steps.version.outputs.value }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag v${{ steps.version.outputs.value }} already exists — skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create and push tag
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.version.outputs.value }}" -m "Release v${{ steps.version.outputs.value }}"
+          git push origin "v${{ steps.version.outputs.value }}"
+
+      - name: Trigger publishing workflow
+        if: steps.check.outputs.exists == 'false'
+        run: gh workflow run publish.yml --ref "v${{ steps.version.outputs.value }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

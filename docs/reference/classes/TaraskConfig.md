@@ -5,7 +5,7 @@ prev: true
 title: "TaraskConfig"
 ---
 
-Defined in: index.ts:55
+Defined in: [index.ts:55](https://github.com/GooseOb/taraskevizer/blob/f771aee86ae4eba9640f1c12193079b8d1dcaac2/src/index.ts#L55)
 
 Conversion options. Mirrors the previous `TaraskConfig` API: every field
 keeps its name (`doEscapeCapitalized`, `newLine`, …) and defaults.
@@ -22,7 +22,7 @@ Only predefined wrapper sets are available (`wrappers: 'none' | 'html' |
 
 > **new TaraskConfig**(`options?`): `TaraskConfig`
 
-Defined in: index.ts:56
+Defined in: [index.ts:56](https://github.com/GooseOb/taraskevizer/blob/f771aee86ae4eba9640f1c12193079b8d1dcaac2/src/index.ts#L56)
 
 #### Parameters
 
@@ -44,7 +44,7 @@ Defined in: index.ts:56
 
 > **abc**: `string`
 
-Defined in: wasm/taraskevizer\_wasm.d.ts:50
+Defined in: wasm/taraskevizer\_wasm.d.ts:48
 
 Alphabet: `"cyrillic"` (default), `"latin"`, `"latinJi"` or `"arabic"`.
 
@@ -58,7 +58,7 @@ Alphabet: `"cyrillic"` (default), `"latin"`, `"latinJi"` or `"arabic"`.
 
 > **doEscapeCapitalized**: `boolean`
 
-Defined in: wasm/taraskevizer\_wasm.d.ts:54
+Defined in: wasm/taraskevizer\_wasm.d.ts:52
 
 Whether capitalized words are protected from changes (default `true`).
 
@@ -72,7 +72,7 @@ Whether capitalized words are protected from changes (default `true`).
 
 > **g**: `boolean`
 
-Defined in: wasm/taraskevizer\_wasm.d.ts:59
+Defined in: wasm/taraskevizer\_wasm.d.ts:57
 
 Whether to convert `ґ→г`-style `г` into `ґ` where appropriate
 (default `true`; `false` in [`html_config_options`]).
@@ -87,7 +87,7 @@ Whether to convert `ґ→г`-style `г` into `ґ` where appropriate
 
 > **j**: `string`
 
-Defined in: wasm/taraskevizer\_wasm.d.ts:64
+Defined in: wasm/taraskevizer\_wasm.d.ts:62
 
 When to replace `і` by `й` after vowels: `"never"` (default),
 `"random"` or `"always"`.
@@ -102,7 +102,7 @@ When to replace `і` by `й` after vowels: `"never"` (default),
 
 > **leftAngleBracket**: `string`
 
-Defined in: wasm/taraskevizer\_wasm.d.ts:68
+Defined in: wasm/taraskevizer\_wasm.d.ts:66
 
 Replacement for `"<"` (default `"<"`, `"&lt"` in HTML mode).
 
@@ -116,7 +116,7 @@ Replacement for `"<"` (default `"<"`, `"&lt"` in HTML mode).
 
 > **newLine**: `string`
 
-Defined in: wasm/taraskevizer\_wasm.d.ts:72
+Defined in: wasm/taraskevizer\_wasm.d.ts:70
 
 Replacement for `"\n"` (default `"\n"`, `"<br>"` in HTML mode).
 
@@ -130,7 +130,7 @@ Replacement for `"\n"` (default `"\n"`, `"<br>"` in HTML mode).
 
 > **noFixPlaceholder**: `string`
 
-Defined in: wasm/taraskevizer\_wasm.d.ts:76
+Defined in: wasm/taraskevizer\_wasm.d.ts:74
 
 Placeholder for `<…>`-protected spans (default `" \u{e0fe} "`).
 
@@ -144,7 +144,7 @@ Placeholder for `<…>`-protected spans (default `" \u{e0fe} "`).
 
 > **variations**: `string`
 
-Defined in: wasm/taraskevizer\_wasm.d.ts:80
+Defined in: wasm/taraskevizer\_wasm.d.ts:78
 
 Which word variation to keep: `"all"` (default), `"no"` or `"first"`.
 
@@ -158,7 +158,7 @@ Which word variation to keep: `"all"` (default), `"no"` or `"first"`.
 
 > **wrappers**: `string`
 
-Defined in: wasm/taraskevizer\_wasm.d.ts:84
+Defined in: wasm/taraskevizer\_wasm.d.ts:82
 
 Active wrapper set: `"none"` (default), `"html"` or `"ansi"`.
 
@@ -172,7 +172,7 @@ Active wrapper set: `"none"` (default), `"html"` or `"ansi"`.
 
 > **\[dispose\]**(): `void`
 
-Defined in: wasm/taraskevizer\_wasm.d.ts:32
+Defined in: wasm/taraskevizer\_wasm.d.ts:30
 
 #### Returns
 
@@ -188,7 +188,7 @@ Defined in: wasm/taraskevizer\_wasm.d.ts:32
 
 > **free**(): `void`
 
-Defined in: wasm/taraskevizer\_wasm.d.ts:31
+Defined in: wasm/taraskevizer\_wasm.d.ts:29
 
 #### Returns
 

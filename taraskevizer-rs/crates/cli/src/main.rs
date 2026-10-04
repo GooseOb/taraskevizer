@@ -51,12 +51,22 @@ fn expand_args(raw: Vec<String>) -> Vec<String> {
 #[derive(Parser)]
 #[command(
     name = "tarask",
-    version = "10.5.0",
+    bin_name = "tarask",
+    version = env!("CARGO_PKG_VERSION"),
+    disable_version_flag = true,
     about = "Канвэртацыя акадэмічнага правапісу ў клясычны",
     long_about = "Belarusian orthography converter (Narkamauka → Taraskevica)\n\
                    Read text from stdin or provide it as arguments."
 )]
 struct Cli {
+    /// Print version (`-V` is accepted as an alias for compatibility)
+    #[arg(short = 'v', long, action = clap::ArgAction::Version)]
+    version: Option<bool>,
+
+    /// Print version (default clap spelling, kept working)
+    #[arg(short = 'V', action = clap::ArgAction::Version, hide = true)]
+    version_upper: Option<bool>,
+
     /// Use Latin alphabet
     #[arg(long, short = 'l')]
     latin: bool,
@@ -78,7 +88,7 @@ struct Cli {
     jalways: bool,
 
     /// Disable escaping of capitalized words (acronyms may change)
-    #[arg(long)]
+    #[arg(long, alias = "not-escape-caps")]
     no_escape_caps: bool,
 
     /// Disable ґ→г conversion

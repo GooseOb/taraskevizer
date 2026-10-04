@@ -32,18 +32,20 @@ mid-word. The unbracketed form uses a leading marker character and is handy
 for whole words:
 
 ```js
-import { pipelines, TaraskConfig, dicts } from "taraskevizer";
+import { init, tarask, TaraskConfig } from "taraskevizer";
 
-const cfg = new TaraskConfig({ abc: dicts.alphabets.latin });
+await init(); // skip under Node.js: the `node` export initializes automatically
 
-pipelines.tarask("Гэта <Планета>", cfg);
+const cfg = new TaraskConfig({ abc: "latin" });
+
+tarask("Гэта <Планета>", cfg);
 // "Heta <Планета>"
 
-pipelines.tarask("плянэта <.Планета>", cfg);
+tarask("плянэта <.Планета>", cfg);
 // "planeta Планета"
 
-pipelines.tarask("<*Гродна>", cfg);
-// <Hrodna>
+tarask("<*Гродна>", cfg);
+// "<Hrodna>"
 ```
 
 ## Escaping angle brackets
@@ -58,9 +60,5 @@ the marker's closing bracket:
 ## How it works under the hood
 
 Marked parts are extracted before conversion and stored, then re-inserted
-afterwards using the `noFixPlaceholder`. The steps involved are
-[`resolveSpecialSyntax`](/taraskevizer/reference/taraskevizer/namespaces/steps/variables/resolvespecialsyntax/)
-(which captures the parts) and
-[`applyNoFix`](/taraskevizer/reference/taraskevizer/namespaces/steps/variables/applynofix/)
-(which puts them back). You normally never call these directly — they run as
-part of every builtin pipeline.
+afterwards using the `noFixPlaceholder` config option. This runs as part of
+every builtin pipeline.
