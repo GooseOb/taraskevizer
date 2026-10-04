@@ -12,8 +12,10 @@
 //! (`жыццясцвярджальны → жыцьцясьцьвярджальны` gives
 //! `жыц[ь]цяс[ь]ц[ь]вярджальны`, not one spanning block).
 //! Pure deletions have no new chars to show, hence the surrounding-letter
-//! rule. `g`-only changes and `(a|b)` variation lists are left alone —
-//! the `g` and variations steps wrap those themselves.
+//! rule. `g`-only changes are left alone — the `g` step wraps those itself.
+//! `(a|b)` variation lists are left for the variations step, but changes
+//! outside the parens are still highlighted
+//! (`ватэрлё(а|о)` vs `ватэрлоа` gives `ватэрл[ё](а|о)`).
 
 use super::replace_g_str;
 
@@ -189,70 +191,51 @@ fn levenshtein_ranges(
     ranges
 }
 
-pub(crate) fn highlight_diff_word(
-    word: &str,
-    o_word: &str,
-    word_h: &str,
-    highlight: &dyn Fn(&str) -> String,
-) -> String {
-    // `g`-only changes are wrapped by the `g` step, and `(a|b)` variation
-    // lists are wrapped by the variations step, so `fix` stays quiet here.
-    if o_word == word || o_word == word_h || word.contains('(') {
-        return word.to_string();
+/// Common prefix/suffix trim + middle diff; returns merged highlight ranges
+/// in new-word coordinates (`cmp.len()`).
+fn diff_ranges(cmp: &[char], old: &[char]) -> Vec<(usize, usize)> {
+    let new_len = cmp.len();
+    let old_len = old.len();
+    if new_len == 0 {
+        return Vec::new();
     }
-    let wchars: Vec<char> = word.chars().collect();
-    let ochars: Vec<char> = o_word.chars().collect();
-    let hchars: Vec<char> = word_h.chars().collect();
-    let wlen = wchars.len();
-    let olen = ochars.len();
-    if wlen == 0 {
-        return String::new();
-    }
-    // The `g` mapping is 1–1, so `hchars` aligns with `wchars`.
-    let cmp: &[char] = if hchars.len() == wlen {
-        &hchars
-    } else {
-        &wchars
-    };
-
-    // Common prefix / suffix trim; the real diff lives in the middle.
     let mut prefix = 0;
-    while prefix < wlen && prefix < olen && cmp[prefix] == ochars[prefix] {
+    while prefix < new_len && prefix < old_len && cmp[prefix] == old[prefix] {
         prefix += 1;
     }
     let mut suffix = 0;
-    while suffix < wlen - prefix
-        && suffix < olen - prefix
-        && cmp[wlen - 1 - suffix] == ochars[olen - 1 - suffix]
+    while suffix < new_len - prefix
+        && suffix < old_len - prefix
+        && cmp[new_len - 1 - suffix] == old[old_len - 1 - suffix]
     {
         suffix += 1;
     }
     let h_start = prefix;
-    let h_end = wlen - suffix;
+    let h_end = new_len - suffix;
     let o_start = prefix;
-    let o_end = olen - suffix;
+    let o_end = old_len - suffix;
     let mid_new = h_end - h_start;
     let mid_old = o_end - o_start;
     if mid_new == 0 && mid_old == 0 {
-        return word.to_string();
+        return Vec::new();
     }
 
-    // Highlight ranges in new-word (`wchars`) coordinates.
+    // Highlight ranges in new-word coordinates.
     let ranges: Vec<(usize, usize)> = if mid_new == 0 {
         // Pure deletion: no new chars to show, highlight surrounding letters.
         let gap = h_start;
-        vec![(gap.saturating_sub(1), (gap + 1).min(wlen))]
+        vec![(gap.saturating_sub(1), (gap + 1).min(new_len))]
     } else if mid_old == 0 {
         // Pure insertion: highlight the inserted part.
         vec![(h_start, h_end)]
     } else if mid_new == mid_old {
-        equal_len_ranges(cmp, &ochars, h_start, o_start, mid_new)
+        equal_len_ranges(cmp, old, h_start, o_start, mid_new)
     } else {
-        levenshtein_ranges(&ochars[o_start..o_end], &cmp[h_start..h_end], h_start, wlen)
+        levenshtein_ranges(&old[o_start..o_end], &cmp[h_start..h_end], h_start, new_len)
     };
 
     if ranges.is_empty() {
-        return word.to_string();
+        return ranges;
     }
     // Merge overlapping / touching ranges (deletion surroundings can touch).
     let mut merged: Vec<(usize, usize)> = Vec::with_capacity(ranges.len());
@@ -269,10 +252,18 @@ pub(crate) fn highlight_diff_word(
             merged.push(r);
         }
     }
+    merged
+}
 
-    let mut result = String::with_capacity(word.len() + merged.len() * 8);
+fn render_highlighted(
+    word: &str,
+    wchars: &[char],
+    ranges: &[(usize, usize)],
+    highlight: &dyn Fn(&str) -> String,
+) -> String {
+    let mut result = String::with_capacity(word.len() + ranges.len() * 8);
     let mut pos = 0;
-    for (rs, re) in merged {
+    for &(rs, re) in ranges {
         if rs > pos {
             result.extend(wchars[pos..rs].iter());
         }
@@ -280,10 +271,108 @@ pub(crate) fn highlight_diff_word(
         result.push_str(&highlight(&diff));
         pos = re;
     }
-    if pos < wlen {
+    if pos < wchars.len() {
         result.extend(wchars[pos..].iter());
     }
     result
+}
+
+/// Expand each `(main|vars)` list to its main form (the text up to the first
+/// `|` or `)`), for diffing. Returns the expanded chars alongside, per
+/// expanded char, the original index and whether it sits inside a `(…)` list
+/// in the original word. A lone `(` without `)` is treated as plain text.
+fn expand_variations(cmp: &[char]) -> (Vec<char>, Vec<usize>, Vec<bool>) {
+    let mut expanded: Vec<char> = Vec::with_capacity(cmp.len());
+    let mut orig_idx: Vec<usize> = Vec::with_capacity(cmp.len());
+    let mut inside: Vec<bool> = Vec::with_capacity(cmp.len());
+    let mut pos = 0;
+    while pos < cmp.len() {
+        let mut list_end = None;
+        if cmp[pos] == '(' {
+            list_end = cmp[pos..]
+                .iter()
+                .position(|&c| c == ')')
+                .map(|rel| pos + rel);
+        }
+        if let Some(end) = list_end {
+            let mut main_end = pos + 1;
+            while main_end < end && cmp[main_end] != '|' {
+                main_end += 1;
+            }
+            let main = &cmp[pos + 1..main_end];
+            expanded.extend_from_slice(main);
+            orig_idx.extend(pos + 1..main_end);
+            inside.resize(inside.len() + main.len(), true);
+            pos = end + 1;
+        } else {
+            expanded.push(cmp[pos]);
+            orig_idx.push(pos);
+            inside.push(false);
+            pos += 1;
+        }
+    }
+    (expanded, orig_idx, inside)
+}
+
+pub(crate) fn highlight_diff_word(
+    word: &str,
+    o_word: &str,
+    word_h: &str,
+    highlight: &dyn Fn(&str) -> String,
+) -> String {
+    let wchars: Vec<char> = word.chars().collect();
+    let ochars: Vec<char> = o_word.chars().collect();
+    let hchars: Vec<char> = word_h.chars().collect();
+    let wlen = wchars.len();
+    if wlen == 0 {
+        return String::new();
+    }
+    // The `g` mapping is 1–1, so `hchars` aligns with `wchars`.
+    let cmp: &[char] = if hchars.len() == wlen {
+        &hchars
+    } else {
+        &wchars
+    };
+
+    if !word.contains('(') {
+        let ranges = diff_ranges(cmp, &ochars);
+        if ranges.is_empty() {
+            return word.to_string();
+        }
+        return render_highlighted(word, &wchars, &ranges, highlight);
+    }
+
+    // Variation-aware path: expand each `(main|vars)` list to its main form,
+    // diff that, then map highlight ranges back — keeping only the parts
+    // outside the parens (the lists themselves are wrapped by the variations
+    // step). E.g. `ватэрлё(а|о)` vs `ватэрлоа` highlights only `ё`.
+    let (expanded, orig_idx, inside) = expand_variations(cmp);
+    let ranges = diff_ranges(&expanded, &ochars);
+    let mut orig_ranges: Vec<(usize, usize)> = Vec::with_capacity(ranges.len());
+    for (rs, re) in ranges {
+        // Expanded chars inside a list get no `fix` highlight: emit each
+        // maximal outside-parens run instead.
+        let mut pos = rs;
+        while pos < re {
+            while pos < re && inside[pos] {
+                pos += 1;
+            }
+            if pos == re {
+                break;
+            }
+            let first = pos;
+            while pos < re && !inside[pos] {
+                pos += 1;
+            }
+            // An outside run maps to a contiguous original span: it can never
+            // span a list, whose chars are all marked inside.
+            orig_ranges.push((orig_idx[first], orig_idx[pos - 1] + 1));
+        }
+    }
+    if orig_ranges.is_empty() {
+        return word.to_string();
+    }
+    render_highlighted(word, &wchars, &orig_ranges, highlight)
 }
 
 #[cfg(test)]
@@ -350,6 +439,19 @@ mod tests {
         check("ґазета", "газета", "ґазета");
         // Equal words pass through.
         check("план", "план", "план");
+    }
+
+    #[test]
+    fn variation_lists_highlight_outside_only() {
+        // Changed letter outside the parens is highlighted; the list itself
+        // is left for the variations step.
+        check("ватэрлё(а|о)", "ватэрлоа", "ватэрл[ё](а|о)");
+        // An insertion living entirely inside a list is left alone too.
+        check("план(ы|а)", "план", "план(ы|а)");
+        // A change confined to a list's main form is the variations step's job.
+        check("а(б|в)", "ав", "а(б|в)");
+        // Multiple lists, no outside change.
+        check("а(б|в)с(г|д)", "абсг", "а(б|в)с(г|д)");
     }
 
     #[test]

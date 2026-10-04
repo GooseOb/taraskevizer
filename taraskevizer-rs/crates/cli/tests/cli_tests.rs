@@ -70,7 +70,7 @@ fn test_cli_no_color_latin() {
 #[test]
 fn test_cli_latin_ansi() {
     let result = run_cli(&["-l", "планета"]);
-    assert_eq!(result, "p\u{1b}[32mlan\u{1b}[0meta");
+    assert_eq!(result, "p\u{1b}[32ml\u{1b}[0ma\u{1b}[32mne\u{1b}[0mta");
 }
 
 #[test]
