@@ -2,6 +2,9 @@
 # binaries and JSON dictionaries. Triggered by tag.yml (auto-tag) after a
 # version tag is pushed, or manually.
 #
+# Runs on the main branch (not the tag) so all jobs share the same cache
+# scope as CI — tag-triggered runs cannot see the warm cache.
+#
 # Platforms (native CLI binaries, one matrix job each):
 #   - x86_64-unknown-linux-gnu  (Ubuntu)
 #   - aarch64-unknown-linux-gnu (Ubuntu ARM)
@@ -13,10 +16,6 @@ name: Publish
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Release tag to publish (default: current ref)"
-        required: false
-        default: ""
       prerelease:
         description: "Mark this release as a pre-release"
         type: boolean
@@ -34,27 +33,16 @@ jobs:
       tag: ${{ steps.resolve.outputs.tag }}
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       - name: Resolve version tag
         id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="${{ inputs.tag }}"
-          if [[ -z "$TAG" ]]; then
-            TAG="${{ github.ref_name }}"
-          fi
-          if [[ "$TAG" != v* ]]; then
-            echo "Expected a version tag like v1.2.3, got '$TAG'"
-            exit 1
-          fi
-          git rev-parse --verify "$TAG^{commit}" >/dev/null || {
-            echo "Tag $TAG not found"
-            exit 1
-          }
+          TAG=$(gh api repos/$GITHUB_REPOSITORY/tags --jq '.[0].name')
           PKG_VERSION=$(jq -r .version package.json)
           if [[ "v$PKG_VERSION" != "$TAG" ]]; then
-            echo "package.json version ($PKG_VERSION) does not match tag ($TAG)"
+            echo "package.json version ($PKG_VERSION) does not match latest tag ($TAG); refusing to publish"
             exit 1
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
@@ -66,8 +54,6 @@ jobs:
     needs: setup
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.setup.outputs.tag }}
       - uses: oven-sh/setup-bun@v2
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -127,8 +113,6 @@ jobs:
             strip: "true"
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.setup.outputs.tag }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -167,8 +151,6 @@ jobs:
       json_changed: ${{ steps.compare.outputs.changed }}
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.setup.outputs.tag }}
       - uses: dtolnay/rust-toolchain@stable
 
       - name: Generate wordlist.json from the Rust core
@@ -223,8 +205,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.setup.outputs.tag }}
 
       - name: Download CLI binaries
         uses: actions/download-artifact@v8

@@ -7,7 +7,7 @@ title: "alphabetic"
 
 > **alphabetic**(`text`, `config?`): `string`
 
-Defined in: [index.ts:70](https://github.com/GooseOb/taraskevizer/blob/3731f7bac0dad4386951f41db09650c527fc1fce/src/index.ts#L70)
+Defined in: [index.ts:70](https://github.com/GooseOb/taraskevizer/blob/75123121453e0346f56063b4da86739d73284f89/src/index.ts#L70)
 
 Alphabet-only conversion (no Taraskevization).
 
