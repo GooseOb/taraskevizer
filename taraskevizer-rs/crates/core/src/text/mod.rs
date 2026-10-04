@@ -1,7 +1,11 @@
+mod apply_abc;
 mod convert_arabic;
 mod convert_latin;
 #[cfg(test)]
 mod fancy_test;
+mod find_unescaped_gt;
+mod highlight_diff;
+mod initcap;
 mod iotacize_ji;
 mod is_ascii_punct_sym;
 mod is_decimal_number;
@@ -12,6 +16,8 @@ mod is_punct_or_symbol;
 mod is_spaced_cluster_char;
 mod nia_biaz;
 mod normalize_apostrophes;
+mod regex_replace_all_with;
+mod replace_g;
 mod replace_g_apostrophe;
 mod replace_i_by_j;
 mod soften;
@@ -22,6 +28,7 @@ mod test_oracle;
 mod unspace_punct_sym_digits;
 mod utf8_char_len;
 
+pub(crate) use apply_abc::{apply_abc_lower, apply_abc_upper};
 pub(crate) use convert_arabic::convert_arabic;
 pub(crate) use convert_latin::convert_latin_ji_lower;
 pub(crate) use convert_latin::convert_latin_ji_upper;
@@ -29,6 +36,10 @@ pub(crate) use convert_latin::convert_latin_lower;
 pub(crate) use convert_latin::convert_latin_upper;
 #[cfg(test)]
 pub(crate) use fancy_test::FancyDict;
+pub(crate) use find_unescaped_gt::find_unescaped_gt;
+pub use highlight_diff::apply_highlight_diff;
+pub(crate) use highlight_diff::highlight_diff_word;
+pub(crate) use initcap::{initcap, initcap_var};
 pub(crate) use iotacize_ji::iotacize_ji;
 pub(crate) use iotacize_ji::match_iwords_len;
 pub(crate) use iotacize_ji::matches_iwords;
@@ -42,6 +53,8 @@ pub(crate) use is_spaced_cluster_char::is_spaced_cluster_char;
 pub(crate) use nia_biaz::end_z_soften_and_nia_biaz;
 pub(crate) use nia_biaz::ia_words;
 pub(crate) use normalize_apostrophes::normalize_apostrophes;
+pub(crate) use regex_replace_all_with::regex_replace_all_with;
+pub(crate) use replace_g::{replace_g_str, replace_g_with_map};
 pub(crate) use replace_g_apostrophe::replace_g_apostrophe;
 pub(crate) use replace_i_by_j::replace_i_by_j;
 pub(crate) use soften::soften;

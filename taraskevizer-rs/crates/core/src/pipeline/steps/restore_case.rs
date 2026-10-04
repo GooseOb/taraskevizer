@@ -1,6 +1,6 @@
-use crate::pipeline::{
-    helpers::{initcap, initcap_var},
-    PipelineContext, TextWord,
+use crate::{
+    pipeline::{PipelineContext, TextWord},
+    text::{initcap, initcap_var},
 };
 
 /// Mirrors the JS `isUpperCase` helper: a string is considered uppercase when

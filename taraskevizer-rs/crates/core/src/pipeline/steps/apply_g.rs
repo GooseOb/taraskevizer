@@ -1,9 +1,7 @@
 use crate::{
     config::Alphabet,
-    pipeline::{
-        helpers::{replace_g_str, replace_g_with_map},
-        PipelineContext,
-    },
+    pipeline::PipelineContext,
+    text::{replace_g_str, replace_g_with_map},
 };
 
 pub fn step_apply_g(ctx: &mut PipelineContext) {

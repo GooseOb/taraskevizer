@@ -1,6 +1,6 @@
 use crate::{
-    pipeline::{helpers::soften, PipelineContext, PHONETIC},
-    text::{end_z_soften_and_nia_biaz, ia_words},
+    pipeline::{PipelineContext, PHONETIC},
+    text::{end_z_soften_and_nia_biaz, ia_words, soften},
 };
 
 pub fn step_phonetize(ctx: &mut PipelineContext) {

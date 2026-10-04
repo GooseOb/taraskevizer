@@ -1,10 +1,9 @@
 use crate::{
     pipeline::{
-        helpers::{apply_abc_lower, apply_abc_upper, find_unescaped_gt},
         steps::restore_case::restore_case_words,
         PipelineContext, {join_text_words, split_text_words},
     },
-    text::is_lu,
+    text::{apply_abc_lower, apply_abc_upper, find_unescaped_gt, is_lu},
 };
 
 /// Whether `ch` is uppercase (`\p{Lu}`).

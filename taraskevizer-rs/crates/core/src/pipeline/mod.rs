@@ -1,7 +1,6 @@
-mod helpers;
 mod steps;
 
-pub use self::helpers::apply_highlight_diff;
+pub use crate::text::apply_highlight_diff;
 pub use self::steps::*;
 
 use crate::{

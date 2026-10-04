@@ -1,5 +1,5 @@
 use crate::config::Alphabet;
-use crate::pipeline::helpers::{highlight_diff_word, replace_g_str};
+use crate::text::{highlight_diff_word, replace_g_str};
 use crate::pipeline::{PipelineContext, TextWord};
 
 pub fn step_highlight_diff(ctx: &mut PipelineContext) {
@@ -29,7 +29,7 @@ pub fn step_highlight_diff(ctx: &mut PipelineContext) {
             if o_word == word_h {
                 continue;
             }
-            highlight_diff_word(w, o_word, &word_h, is_cyrillic, &fix)
+            highlight_diff_word(w, o_word, &word_h, &fix)
         };
         *slot = TextWord::Owned(new);
     }

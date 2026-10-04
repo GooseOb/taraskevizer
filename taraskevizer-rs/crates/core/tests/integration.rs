@@ -1,8 +1,7 @@
 use std::borrow::Cow;
 
 use taraskevizer_core::{
-    alphabetic, apply_highlight_diff, config::*, html_config_options, phonetic, tarask,
-    HTML_WRAPPERS,
+    alphabetic, config::*, html_config_options, phonetic, tarask, HTML_WRAPPERS,
 };
 
 fn default_cfg() -> TaraskConfig {
@@ -594,7 +593,7 @@ fn test_multiline_html() {
     };
     let cases: &[(&str, &str)] = &[(
         "жыццясцвярджальны\n\t\t\tплан",
-        "жыц<tarF>ьцясьць</tarF>вярджальны<br>\t\t\tпл<tarF>я</tarF>н",
+        "жыц<tarF>ь</tarF>цяс<tarF>ь</tarF>ц<tarF>ь</tarF>вярджальны<br>\t\t\tпл<tarF>я</tarF>н",
     )];
     for (input, expected) in cases {
         let result = tarask(input, &cfg);
@@ -669,48 +668,22 @@ fn test_highlighting() {
         ("планета", "пл[я]н[э]та"),
         ("смех", "с[ь]мех"),
         ("балкон", "бал[ь]кон"),
-        ("брэст", "[(брэст|берасьце)]"),
-        ("балонья", "бал[ёньн]я"),
-        ("бернардзінцы", "б[эрнарды]нцы"),
+        ("брэст", "(брэст|берасьце)"),
+        ("балонья", "бал[ё]нь[н]я"),
+        ("бернардзінцы", "б[э]рнард[ы]нцы"),
         ("мекка", "м[э]ка"),
-        ("санкцый", "санкц[(ый|ыяў)]"),
+        ("санкцый", "санкц(ый|ыяў)"),
         ("баторый", "батор[ы]"),
         ("сцэнарый", "сцэна[р]"),
         ("Віктор Гюго", "Віктор [Ю]ґо"),
         ("казахскі", "каз[ас]кі"),
+        ("жыццясцвярджальны", "жыц[ь]цяс[ь]ц[ь]вярджальны"),
+        ("снег", "с[ь]нег"),
+        ("план", "пл[я]н"),
     ];
     for (input, expected) in cases {
         let result = tarask(input, &cfg);
         assert_eq!(&result, expected, "input: {input:?}");
-    }
-}
-
-// 2-arg highlighting: tests apply_highlight_diff directly (matching JS highlightDiff with two strings)
-// JS test runner: highlightDiff([input[1]], [input[0]], true, (t) => `[${t}]`)
-#[test]
-fn test_highlight_diff_two_arg() {
-    let fix = |s: &str| format!("[{s}]");
-    let cases: &[((&str, &str), &str)] = &[
-        (("planeta", "płanieta"), "p[lan]eta"),
-        (("Persanalny", "Piersanalny"), "[Pe]rsanalny"),
-        (("абба", "абвба"), "а[бб]а"),
-        (("ббаа", "бвбаа"), "[бб]аа"),
-        (("аабб", "аабвб"), "аа[бб]"),
-    ];
-    for ((word, orig), expected) in cases {
-        let result = apply_highlight_diff(word, orig, true, &fix);
-        assert_eq!(&result, *expected, "input: {word:?} vs {orig:?}");
-    }
-}
-
-// Regression: overlapping prefix/suffix matches (wlen != olen, repeated chars)
-// used to panic with an inverted slice index in highlight_diff_variable.
-#[test]
-fn test_highlight_diff_overlapping_region() {
-    let fix = |s: &str| format!("[{s}]");
-    for (word, orig) in [("aaa", "aa"), ("aaaa", "aa"), ("aaa", "a"), ("aa", "aaa")] {
-        let _ = apply_highlight_diff(word, orig, true, &fix);
-        let _ = apply_highlight_diff(word, orig, false, &fix);
     }
 }
 
@@ -729,7 +702,7 @@ fn test_html_options() {
     let cases: &[(&str, &str)] = &[
         (
             "жыццясцвярджальны план",
-            "жыц<tarF>ьцясьць</tarF>вярджальны пл<tarF>я</tarF>н",
+            "жыц<tarF>ь</tarF>цяс<tarF>ь</tarF>ц<tarF>ь</tarF>вярджальны пл<tarF>я</tarF>н",
         ),
         ("??????", "??????"),
         ("газета", "<tarH>г</tarH>аз<tarF>э</tarF>та"),

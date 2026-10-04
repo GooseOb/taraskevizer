@@ -1,6 +1,6 @@
-use crate::pipeline::{
-    helpers::{apply_abc_lower, apply_abc_upper},
-    PipelineContext,
+use crate::{
+    pipeline::PipelineContext,
+    text::{apply_abc_lower, apply_abc_upper},
 };
 
 pub fn step_store_splitted_abc_converted_orig(ctx: &mut PipelineContext) {
