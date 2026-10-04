@@ -172,7 +172,7 @@ fn nc_cfg() -> TaraskConfig {
 /// Run each production chunk through the exact pre-wordlist prefix
 /// (trim → `resolve_special_syntax` → prepare → `collapse_whitespaces` →
 /// `store_splitted_abc_converted_orig` → `to_lower_case`), mirroring
-/// `run_base_pipeline_timed`. The wordlist stage sees precisely these strings
+/// `run_base_pipeline`. The wordlist stage sees precisely these strings
 /// in production, so partition equality HERE implies end-to-end equality
 /// (everything downstream is deterministic per chunk).
 fn wordlist_inputs(input: &str, ranges: &[(usize, usize)], cfg: &TaraskConfig) -> Vec<String> {

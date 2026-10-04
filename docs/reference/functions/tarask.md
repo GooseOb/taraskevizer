@@ -7,7 +7,7 @@ title: "tarask"
 
 > **tarask**(`text`, `config?`): `string`
 
-Defined in: [index.ts:66](https://github.com/GooseOb/taraskevizer/blob/75123121453e0346f56063b4da86739d73284f89/src/index.ts#L66)
+Defined in: [index.ts:66](https://github.com/GooseOb/taraskevizer/blob/ac801db8bb7595f43c3cc25af94c04cfdeaad4c1/src/index.ts#L66)
 
 Convert academic orthography to classical (Taraskievica).
 

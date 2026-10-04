@@ -228,17 +228,11 @@ fn main() {
         };
         if !input.is_empty() {
             const CHUNK_SIZE: usize = 16_000;
-            let splitting_start = std::time::Instant::now();
-            let _ = io::stderr().write_all(b"Splitting input into chunks... ");
-            let _ = io::stderr().flush();
+            let _ = io::stderr().write_all(b"Splitting input into chunks...\n");
             let nchunks = input.len().div_ceil(CHUNK_SIZE);
             // Borrowed ranges: same boundaries as before, no per-chunk copies.
             let ranges = split_into_chunks(&input, nchunks);
             let nchars = input.len();
-            let _ = io::stderr().write_fmt(format_args!(
-                "done in {:.2}s\n",
-                splitting_start.elapsed().as_secs_f64()
-            ));
             // Stream results out as chunks complete: peak memory stays ~1x
             // input (input string only) instead of ~3x (input + chunk copies
             // + collected results), so multi-GB dumps no longer OOM.
@@ -246,12 +240,10 @@ fn main() {
             let mut out = io::BufWriter::with_capacity(1 << 20, stdout.lock());
             if !cli.single_thread && ranges.len() > 1 {
                 let _ = io::stderr().write_fmt(format_args!(
-                    "Processing {} chars in {} chunks... ",
+                    "Processing {} chars in {} chunks...\n",
                     nchars,
                     ranges.len(),
                 ));
-                let _ = io::stderr().flush();
-                let start = std::time::Instant::now();
 
                 // Bounded parallel groups: full rayon speed with O(group)
                 // extra memory, output order preserved. Groups are bounded
@@ -288,11 +280,6 @@ fn main() {
                     }
                     gstart = gend;
                 }
-
-                let _ = io::stderr().write_fmt(format_args!(
-                    "done in {:.2}s.\n",
-                    start.elapsed().as_secs_f64()
-                ));
             } else {
                 let debug_chunks = std::env::var("TARASK_DEBUG_CHUNKS").is_ok();
                 for (i, &(s, e)) in ranges.iter().enumerate() {
