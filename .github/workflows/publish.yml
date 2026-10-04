@@ -294,7 +294,9 @@ jobs:
           name: dist
           path: .
 
-      - run: npm publish
+      # --ignore-scripts: dist/ is already built and tested by the build
+      # job; prepack would pointlessly rebuild it (and fail: no Rust/bun here).
+      - run: npm publish --ignore-scripts
 
       - run: |
           curl -XPOST -u "${{secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/GooseOb/taraskevizatar/actions/workflows/build.yml/dispatches --data '{"ref": "main"}'
