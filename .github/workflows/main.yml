@@ -13,6 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: jetli/wasm-pack-action@v2
 
       - run: bun i --frozen-lockfile
         env:
@@ -51,32 +55,39 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v6
-      - name: Download package artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: dist
-          path: .
+      - uses: dtolnay/rust-toolchain@stable
 
-      - run: npm run json
+      - name: Generate wordlist.json from the Rust core
+        run: npm run json
 
-      - name: Download latest release json files
+      - name: Download latest release json bundle
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download --pattern "*.json" --dir latest_json
+        run: |
+          mkdir -p latest_json
+          if gh release download --pattern "json.zip" --dir latest_json; then
+            unzip -q latest_json/json.zip -d latest_json/unpacked
+          else
+            echo "NO_PREVIOUS_BUNDLE=true" >> $GITHUB_ENV
+          fi
 
       - name: Compare json files
         run: |
-          if diff -Zq json/ latest_json/; then
-              echo "JSON_CHANGED=false" >> $GITHUB_ENV
+          if [[ "$NO_PREVIOUS_BUNDLE" == "true" ]] || ! diff -r -q json/ latest_json/unpacked/; then
+            echo "JSON_CHANGED=true" >> $GITHUB_ENV
           else
-              echo "JSON_CHANGED=true" >> $GITHUB_ENV
+            echo "JSON_CHANGED=false" >> $GITHUB_ENV
           fi
+
+      - name: Pack json.zip
+        if: env.JSON_CHANGED == 'true'
+        run: cd json && zip -X ../json.zip alphabets.json g.json noSoften.json softeners.json wordlist.json
 
       - name: Create Release
         if: env.JSON_CHANGED == 'true'
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "json/*"
+          artifacts: "json.zip"
           tag: v${{ needs.build.outputs.version }}
 
   docs:
@@ -89,7 +100,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - uses: ts-graphviz/setup-graphviz@v2
 
       - name: Install root dependencies
         run: bun i --frozen-lockfile
@@ -99,11 +109,6 @@ jobs:
       - name: Install docs dependencies
         run: bun install --frozen-lockfile
         working-directory: website
-
-      - name: Generate dependency graph
-        run: |
-          mkdir -p website/public
-          node ./tools/dep-graph.js | dot -Tpng -o website/public/graph.png
 
       - name: Build docs site
         run: bun run build

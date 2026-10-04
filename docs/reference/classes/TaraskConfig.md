@@ -5,7 +5,16 @@ prev: true
 title: "TaraskConfig"
 ---
 
-Defined in: [config.ts:9](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L9)
+Defined in: index.ts:55
+
+Conversion options. Mirrors the previous `TaraskConfig` API: every field
+keeps its name (`doEscapeCapitalized`, `newLine`, …) and defaults.
+Only predefined wrapper sets are available (`wrappers: 'none' | 'html' |
+'ansi'`); arbitrary callback wrappers cannot cross the WASM boundary.
+
+## Extends
+
+- `TaraskConfig`
 
 ## Constructors
 
@@ -13,33 +22,35 @@ Defined in: [config.ts:9](https://github.com/GooseOb/taraskevizer/blob/04e4f6650
 
 > **new TaraskConfig**(`options?`): `TaraskConfig`
 
-Defined in: [config.ts:10](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L10)
+Defined in: index.ts:56
 
 #### Parameters
 
 ##### options?
 
-`Partial`\<\{ `abc`: \{ `lower`: [`CallableDict`](/taraskevizer/reference/taraskevizer/namespaces/dicts/type-aliases/callabledict/)\<`RegExp`\>; `upper?`: [`CallableDict`](/taraskevizer/reference/taraskevizer/namespaces/dicts/type-aliases/callabledict/)\<`RegExp`\>; \}; `doEscapeCapitalized`: `boolean`; `g`: `boolean`; `j`: [`OptionJ`](/taraskevizer/reference/type-aliases/optionj/); `leftAngleBracket`: `string`; `newLine`: `string`; `noFixPlaceholder`: `string`; `variations`: [`Variation`](/taraskevizer/reference/type-aliases/variation/); `wrappers`: \{ `fix?`: `TransformString`; `letterH?`: `TransformString`; `variable?`: \{ `all`: `TransformString`; `first`: `TransformString`; `no`: `TransformString`; \}; \} \| `null`; \}\>
+[`TaraskOptions`](/taraskevizer/reference/interfaces/taraskoptions/)
 
 #### Returns
 
 `TaraskConfig`
 
+#### Overrides
+
+`TaraskConfigBase.constructor`
+
 ## Properties
 
 ### abc
 
-> **abc**: [`Alphabet`](/taraskevizer/reference/taraskevizer/namespaces/dicts/namespaces/alphabets/type-aliases/alphabet/)
+> **abc**: `string`
 
-Defined in: [config.ts:22](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L22)
+Defined in: wasm/taraskevizer\_wasm.d.ts:50
 
-Predefined alphabets are in [dicts.alphabets](/taraskevizer/reference/taraskevizer/namespaces/dicts/namespaces/alphabets/readme/).
+Alphabet: `"cyrillic"` (default), `"latin"`, `"latinJi"` or `"arabic"`.
 
-#### Default
+#### Inherited from
 
-```ts
-alphabets.cyrillic
-```
+`TaraskConfigBase.abc`
 
 ***
 
@@ -47,15 +58,13 @@ alphabets.cyrillic
 
 > **doEscapeCapitalized**: `boolean`
 
-Defined in: [config.ts:43](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L43)
+Defined in: wasm/taraskevizer\_wasm.d.ts:54
 
-If set to false, may cause unwanted changes in acronyms.
+Whether capitalized words are protected from changes (default `true`).
 
-#### Default
+#### Inherited from
 
-```ts
-true
-```
+`TaraskConfigBase.doEscapeCapitalized`
 
 ***
 
@@ -63,45 +72,29 @@ true
 
 > **g**: `boolean`
 
-Defined in: [config.ts:67](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L67)
+Defined in: wasm/taraskevizer\_wasm.d.ts:59
 
-Do replace ґ(g) by г(h) in cyrillic alphabet?
+Whether to convert `ґ→г`-style `г` into `ґ` where appropriate
+(default `true`; `false` in [`html_config_options`]).
 
-| Value | Example                                 |
-| ----- | --------------------------------------- |
-| true  | Ґвалт ґвалт                             |
-| false | Гвалт гвалт                             |
-| true  | `<tarH>ґ</tarH>валт <tarH>Ґ</tarH>валт` |
-| false | `<tarH>г</tarH>валт <tarH>Г</tarH>валт` |
+#### Inherited from
 
-#### Default
-
-```ts
-false
-```
+`TaraskConfigBase.g`
 
 ***
 
 ### j
 
-> **j**: [`OptionJ`](/taraskevizer/reference/type-aliases/optionj/)
+> **j**: `string`
 
-Defined in: [config.ts:36](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L36)
+Defined in: wasm/taraskevizer\_wasm.d.ts:64
 
-| When to replace `і`(`i`) by `й`(`j`) after vowels | Example                  |
-| ------------------------------------------------- | ------------------------ |
-|                                                   | `яна і ён`               |
-| never                                             | `яна і ён`               |
-| random                                            | `яна і ён` or `яна й ён` |
-| always                                            | `яна й ён`               |
+When to replace `і` by `й` after vowels: `"never"` (default),
+`"random"` or `"always"`.
 
-Has no effect with abc set to [dicts.alphabets.latinJi](/taraskevizer/reference/taraskevizer/namespaces/dicts/namespaces/alphabets/variables/latinji/).
+#### Inherited from
 
-#### Default
-
-```ts
-"never"
-```
+`TaraskConfigBase.j`
 
 ***
 
@@ -109,21 +102,13 @@ Has no effect with abc set to [dicts.alphabets.latinJi](/taraskevizer/reference/
 
 > **leftAngleBracket**: `string`
 
-Defined in: [config.ts:95](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L95)
+Defined in: wasm/taraskevizer\_wasm.d.ts:68
 
-String to replace `"<"` with.
+Replacement for `"<"` (default `"<"`, `"&lt"` in HTML mode).
 
-#### Default
+#### Inherited from
 
-```ts
-"<"
-```
-
-#### Example
-
-```ts
-"&lt;"
-```
+`TaraskConfigBase.leftAngleBracket`
 
 ***
 
@@ -131,21 +116,13 @@ String to replace `"<"` with.
 
 > **newLine**: `string`
 
-Defined in: [config.ts:87](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L87)
+Defined in: wasm/taraskevizer\_wasm.d.ts:72
 
-String to replace `"\n"` with.
+Replacement for `"\n"` (default `"\n"`, `"<br>"` in HTML mode).
 
-#### Default
+#### Inherited from
 
-```ts
-"\n"
-```
-
-#### Example
-
-```ts
-"<br>"
-```
+`TaraskConfigBase.newLine`
 
 ***
 
@@ -153,54 +130,70 @@ String to replace `"\n"` with.
 
 > **noFixPlaceholder**: `string`
 
-Defined in: [config.ts:104](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L104)
+Defined in: wasm/taraskevizer\_wasm.d.ts:76
 
-Placeholder for parts that should not be fixed like those enclosed in `< >`.
+Placeholder for `<…>`-protected spans (default `" \u{e0fe} "`).
 
-> Change only if the default value interferes with your text.
+#### Inherited from
 
-#### Default
-
-```ts
-" \ue0fe "
-```
+`TaraskConfigBase.noFixPlaceholder`
 
 ***
 
 ### variations
 
-> **variations**: [`Variation`](/taraskevizer/reference/type-aliases/variation/)
+> **variations**: `string`
 
-Defined in: [config.ts:79](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L79)
+Defined in: wasm/taraskevizer\_wasm.d.ts:80
 
-| Which variation is used if a part of word is variable | Example           |
-| ----------------------------------------------------- | ----------------- |
-|                                                       | Гродна            |
-| no (main)                                             | Гродна            |
-| first                                                 | Горадня           |
-| all                                                   | (Гродна\|Горадня) |
+Which word variation to keep: `"all"` (default), `"no"` or `"first"`.
 
-#### Default
+#### Inherited from
 
-```ts
-"all"
-```
+`TaraskConfigBase.variations`
 
 ***
 
 ### wrappers
 
-> **wrappers**: `Partial`\<[`Wrappers`](/taraskevizer/reference/taraskevizer/namespaces/wrappers/type-aliases/wrappers/)\> \| `null`
+> **wrappers**: `string`
 
-Defined in: [config.ts:53](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/config.ts#L53)
+Defined in: wasm/taraskevizer\_wasm.d.ts:84
 
-Used for wrapping changed parts.
-Predefined dicts are in [wrappers](/taraskevizer/reference/classes/taraskconfig/#wrappers).
+Active wrapper set: `"none"` (default), `"html"` or `"ansi"`.
 
-If `null`, wrapping changes will be skipped.
+#### Inherited from
 
-#### Default
+`TaraskConfigBase.wrappers`
 
-```ts
-null
-```
+## Methods
+
+### \[dispose\]()
+
+> **\[dispose\]**(): `void`
+
+Defined in: wasm/taraskevizer\_wasm.d.ts:32
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+`TaraskConfigBase.[dispose]`
+
+***
+
+### free()
+
+> **free**(): `void`
+
+Defined in: wasm/taraskevizer\_wasm.d.ts:31
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+`TaraskConfigBase.free`

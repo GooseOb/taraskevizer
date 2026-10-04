@@ -1,7 +1,12 @@
 node_modules
 dist
-json
 dist-bun
+test/
 .idea
 output.txt
 tsconfig.tsbuildinfo
+src/wasm
+
+# exported from rust
+json/wordlist.json
+json/phonetic.json

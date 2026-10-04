@@ -1,7 +1,7 @@
 mod steps;
 
-pub use crate::text::apply_highlight_diff;
 pub use self::steps::*;
+pub use crate::text::apply_highlight_diff;
 
 use crate::{
     config::TaraskConfig,

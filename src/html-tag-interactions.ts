@@ -1,13 +1,26 @@
-import { gobj } from './dict';
-import type { Wrappers } from './wrappers';
+/**
+ * Browser helper for the HTML output of the taraskevizer pipelines.
+ *
+ * Works on text converted with the `html` wrappers (see `htmlConfigOptions`):
+ * `<tarH>` letter toggles and `<tarL data-l='…'>` variation cycling, with
+ * change tracking via `changeList`. This module is DOM-only and dependency-free.
+ */
 
 interface ChangeableElement extends HTMLElement {
 	seqNum: number;
 }
 type Subscriber = (changeList: number[]) => void;
 
+/** `г↔ґ` swap for `<tarH>` toggles (mirror of the core `applyG` step). */
+const gSwap: Record<string, string> = {
+	г: 'ґ',
+	Г: 'Ґ',
+	ґ: 'г',
+	Ґ: 'Г',
+};
+
 const applyG = (el: Element) => {
-	el.textContent = gobj[el.textContent as keyof typeof gobj];
+	el.textContent = gSwap[el.textContent as string] ?? el.textContent;
 };
 
 export const createInteractiveTags = ({
@@ -15,7 +28,7 @@ export const createInteractiveTags = ({
 	letterH = 'tarH',
 	changeList = [],
 }: Partial<
-	Record<Exclude<keyof Wrappers, 'fix'>, string> & { changeList: number[] }
+	Record<'variable' | 'letterH', string> & { changeList: number[] }
 > = {}) => {
 	variable = variable.toUpperCase();
 	letterH = letterH.toUpperCase();

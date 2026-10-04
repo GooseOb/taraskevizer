@@ -28,7 +28,7 @@ use taraskevizer_core::text::split_into_chunks;
 const WORDLIST_RS: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/src/dict/wordlist.rs");
 const DEFAULT_DUMP: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/../../../test/texts/bewiki-20251101-pages-articles-multistream_30M.xml"
+    "/../../../test/texts/bewiki-20261001-pages-articles-multistream_30M.xml"
 );
 const N: usize = 1416;
 /// Chunk size mirroring production (`cli/src/main.rs`).

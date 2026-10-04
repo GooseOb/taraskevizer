@@ -47,15 +47,14 @@ fn map_g_targets(text: &str, mut push_mapped: impl FnMut(char, &mut String)) -> 
 /// Map `Ґ → Г`, `ґ → г`, borrowing the input when neither is present.
 pub(crate) fn replace_g_str(text: &str) -> Cow<'_, str> {
     // `ch` is always `Ґ` or `ґ` here (driver-filtered).
-    map_g_targets(text, |ch, buf| buf.push(if ch == 'Ґ' { 'Г' } else { 'г' }))
+    map_g_targets(text, |ch, buf| {
+        buf.push(if ch == 'Ґ' { 'Г' } else { 'г' })
+    })
 }
 
 /// Replace each `Ґ`/`ґ` with `f(ch)`, borrowing the input when neither is
 /// present.
-pub(crate) fn replace_g_with_map(
-    text: &str,
-    f: impl Fn(char) -> String,
-) -> Cow<'_, str> {
+pub(crate) fn replace_g_with_map(text: &str, f: impl Fn(char) -> String) -> Cow<'_, str> {
     map_g_targets(text, |ch, buf| buf.push_str(&f(ch)))
 }
 
@@ -66,10 +65,7 @@ mod tests {
 
     #[test]
     fn maps_both_cases() {
-        assert_eq!(
-            replace_g_str("ґазета Ґедзь").into_owned(),
-            "газета Гедзь"
-        );
+        assert_eq!(replace_g_str("ґазета Ґедзь").into_owned(), "газета Гедзь");
         assert_eq!(replace_g_str("аҐ").into_owned(), "аГ");
         assert_eq!(replace_g_str("ґ").into_owned(), "г");
     }

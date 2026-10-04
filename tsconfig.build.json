@@ -1,0 +1,14 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"noEmit": false,
+		"incremental": false,
+		"tsBuildInfoFile": null,
+		"outDir": "dist",
+		"rootDir": "src",
+		"declaration": true,
+		"types": ["bun-types", "node"]
+	},
+	"include": ["src"],
+	"exclude": ["src/bundle.ts"]
+}

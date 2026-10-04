@@ -1,16 +1,23 @@
 {
 	"name": "taraskevizer",
-	"version": "10.4.23",
+	"version": "11.0.0",
 	"author": "GooseOb",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/GooseOb/taraskevizer.git"
 	},
-	"main": "dist/index.js",
-	"module": "dist/index.js",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"node": "./dist/node.js",
+			"default": "./dist/index.js"
+		}
+	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.1",
-		"@digitak/esrun": "^3.2.26",
 		"@eslint/js": "^10.0.1",
 		"@types/node": "^25.9.4",
 		"bun-types": "^1.3.14",
@@ -19,9 +26,6 @@
 		"husky": "^9.1.7",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.62.0"
-	},
-	"bin": {
-		"tarask": "dist/bin/index.js"
 	},
 	"description": "Канвэртацыя акадэмічнага правапісу ў клясычны",
 	"files": [
@@ -39,19 +43,18 @@
 	"license": "MIT",
 	"private": false,
 	"scripts": {
-		"build": "bun ./build.ts",
+		"build": "wasm-pack build taraskevizer-rs/crates/wasm --target web --out-dir ../../../src/wasm && tsc --noEmit -p tsconfig.json && tsc -p tsconfig.build.json && mkdir -p dist/wasm && cp src/wasm/taraskevizer_wasm.js src/wasm/taraskevizer_wasm.d.ts src/wasm/taraskevizer_wasm_bg.wasm dist/wasm/ && bun run bundle",
+		"prepack": "bun run build",
+		"bundle": "esbuild src/bundle.ts --bundle --format=iife --global-name=taraskevizer --target=es2020 --minify --outfile=dist/bundle.js --loader:.wasm=binary --log-level=warning",
 		"format": "biome format --write",
 		"lint": "eslint .",
-		"dev": "esrun --watch=src/*,test/* --send-code-mode=temporaryFile test",
-		"dev:bun": "bun test --watch",
-		"test": "bun ./test",
-		"json": "node ./generate-json.js",
-		"test-cli": "bun run build && bun run test",
+		"test": "cargo test --workspace --manifest-path ./taraskevizer-rs/Cargo.toml",
+		"test:wasm": "wasm-pack test --node taraskevizer-rs/crates/wasm",
+		"json": "DEST_DIR=json cargo run --manifest-path ./taraskevizer-rs/Cargo.toml -p taraskevizer-core --example gen_dict_json",
 		"docs:dev": "cd website && bun run dev",
 		"docs:build": "cd website && bun install && bun run build",
 		"docs:preview": "cd website && bun run preview"
 	},
 	"sideEffects": false,
-	"type": "module",
-	"types": "dist/index.d.ts"
+	"type": "module"
 }

@@ -7,13 +7,13 @@ title: "createInteractiveTags"
 
 > **createInteractiveTags**(`__namedParameters?`): `object`
 
-Defined in: [html-tag-interactions.ts:13](https://github.com/GooseOb/taraskevizer/blob/04e4f66503c2dd917f7704af253eb5209d50b02d/src/html-tag-interactions.ts#L13)
+Defined in: [html-tag-interactions.ts:26](https://github.com/GooseOb/taraskevizer/blob/4a97b49b7119467ce7447c1fd6af67f8e6c9e8d7/src/html-tag-interactions.ts#L26)
 
 ## Parameters
 
 ### \_\_namedParameters?
 
-`Partial`\<`Record`\<`Exclude`\<keyof [`Wrappers`](/taraskevizer/reference/taraskevizer/namespaces/wrappers/type-aliases/wrappers/), `"fix"`\>, `string`\> & `object`\> = `{}`
+`Partial`\<`Record`\<`"variable"` \| `"letterH"`, `string`\> & `object`\> = `{}`
 
 ## Returns
 

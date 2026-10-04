@@ -14,7 +14,7 @@
 //!   cargo run -p taraskevizer-core --example `bench_pipeline` [PATH]
 //!
 //! `PATH` defaults to the 50M Wikipedia dump XML:
-//!   ../test/texts/bewiki-20251101-pages-articles-multistream_50M.xml
+//!   ../test/texts/bewiki-20261001-pages-articles-multistream_50M.xml
 
 use std::time::{Duration, Instant};
 
@@ -26,14 +26,14 @@ use taraskevizer_core::text::split_into_chunks;
 fn main() {
     // ── Resolve source path ─────────────────────────────────────
     let args: Vec<String> = std::env::args().collect();
-    let default_path = "../test/texts/bewiki-20251101-pages-articles-multistream_10M.xml";
+    let default_path = "../test/texts/bewiki-20261001-pages-articles-multistream_10M.xml";
     let candidates: Vec<String> = if args.len() > 1 {
         vec![args[1].clone()]
     } else {
         vec![
             default_path.to_string(),
-            "../../../test/texts/bewiki-20251101-pages-articles-multistream_10M.xml".to_string(),
-            "/home/gooseob/projects/taraskevizer/test/texts/bewiki-20251101-pages-articles-multistream_10M.xml".to_string(),
+            "../../../test/texts/bewiki-20261001-pages-articles-multistream_10M.xml".to_string(),
+            "/home/gooseob/projects/taraskevizer/test/texts/bewiki-20261001-pages-articles-multistream_10M.xml".to_string(),
         ]
     };
 

@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 
 use crate::config::Alphabet;
-use crate::text::{highlight_diff_word, replace_g_str};
 use crate::pipeline::{PipelineContext, TextWord};
+use crate::text::{highlight_diff_word, replace_g_str};
 
 pub fn step_highlight_diff(ctx: &mut PipelineContext) {
     let fix = ctx.cfg.wrappers.as_ref().and_then(|w| w.fix);

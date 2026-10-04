@@ -8,7 +8,7 @@
 //! # JS usage
 //!
 //! ```js
-//! import init, { tarask, alphabetic, phonetic, TaraskConfig, htmlConfigOptions, version } from 'taraskevizer-wasm';
+//! import init, { tarask, alphabetic, phonetic, TaraskConfig, htmlConfigOptions } from 'taraskevizer';
 //!
 //! await init();
 //!
@@ -16,9 +16,7 @@
 //! tarask('планета', new TaraskConfig({ abc: 'latin' })); // → 'planeta'
 //!
 //! const htmlCfg = htmlConfigOptions();
-//! tarask('энергія', htmlCfg); // → 'эн<tarF>э</tarF>р<tarH>ґ</tarH>ія'
-//!
-//! console.log(version());
+//! tarask('энергія', htmlCfg); // → 'эн<tarF>э</tarF>р<tarH>г</tarH>ія'
 //! ```
 
 use js_sys::Reflect;
@@ -587,13 +585,6 @@ pub fn html_config_options_js() -> TaraskConfig {
     }
 }
 
-/// Crate version (mirrors the `taraskevizer` npm package versioning).
-#[wasm_bindgen(js_name = version)]
-#[must_use]
-pub fn version_js() -> String {
-    env!("CARGO_PKG_VERSION").to_owned()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -848,10 +839,5 @@ mod tests {
             TaraskConfig::tarask_inner("жыццясцвярджальны план", Some(&cfg)),
             "жыц<tarF>ь</tarF>цяс<tarF>ь</tarF>ц<tarF>ь</tarF>вярджальны пл<tarF>я</tarF>н",
         );
-    }
-
-    #[test]
-    fn version_matches_package() {
-        assert_eq!(version_js(), env!("CARGO_PKG_VERSION"));
     }
 }

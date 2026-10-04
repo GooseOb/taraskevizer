@@ -5,7 +5,10 @@ use std::borrow::Cow;
 
 use crate::config::Alphabet;
 
-use super::{convert_arabic, convert_latin_ji_lower, convert_latin_ji_upper, convert_latin_lower, convert_latin_upper};
+use super::{
+    convert_arabic, convert_latin_ji_lower, convert_latin_ji_upper, convert_latin_lower,
+    convert_latin_upper,
+};
 
 /// Lower-case alphabet conversion, borrowing the input when the alphabet
 /// needs no conversion (cyrillic) so hot call sites pay no allocation.
