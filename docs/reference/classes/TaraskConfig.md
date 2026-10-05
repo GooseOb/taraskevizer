@@ -5,7 +5,7 @@ prev: true
 title: "TaraskConfig"
 ---
 
-Defined in: [config.ts:28](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L28)
+Defined in: [config.ts:28](https://github.com/GooseOb/taraskevizer/blob/836c46ad29b59ab3e73c3d4d32a6b14d63024605/src/config.ts#L28)
 
 Conversion options. Every field keeps its name (`doEscapeCapitalized`,
 `newLine`, …) and default. Only predefined wrapper sets are available
@@ -22,7 +22,7 @@ new TaraskConfig({ abc: 'latin', g: false })
 
 > **new TaraskConfig**(`options?`): `TaraskConfig`
 
-Defined in: [config.ts:54](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L54)
+Defined in: [config.ts:54](https://github.com/GooseOb/taraskevizer/blob/836c46ad29b59ab3e73c3d4d32a6b14d63024605/src/config.ts#L54)
 
 #### Parameters
 
@@ -40,7 +40,7 @@ Defined in: [config.ts:54](https://github.com/GooseOb/taraskevizer/blob/a3736cae
 
 > **abc**: [`TaraskAlphabet`](/taraskevizer/reference/type-aliases/taraskalphabet/) = `'cyrillic'`
 
-Defined in: [config.ts:30](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L30)
+Defined in: [config.ts:30](https://github.com/GooseOb/taraskevizer/blob/836c46ad29b59ab3e73c3d4d32a6b14d63024605/src/config.ts#L30)
 
 Alphabet: `"cyrillic"` (default), `"latin"`, `"latinJi"` or `"arabic"`.
 
@@ -50,7 +50,7 @@ Alphabet: `"cyrillic"` (default), `"latin"`, `"latinJi"` or `"arabic"`.
 
 > **doEscapeCapitalized**: `boolean` = `true`
 
-Defined in: [config.ts:37](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L37)
+Defined in: [config.ts:37](https://github.com/GooseOb/taraskevizer/blob/836c46ad29b59ab3e73c3d4d32a6b14d63024605/src/config.ts#L37)
 
 Whether capitalized words are protected from changes (default `true`).
 
@@ -60,7 +60,7 @@ Whether capitalized words are protected from changes (default `true`).
 
 > **g**: `boolean` = `true`
 
-Defined in: [config.ts:44](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L44)
+Defined in: [config.ts:44](https://github.com/GooseOb/taraskevizer/blob/836c46ad29b59ab3e73c3d4d32a6b14d63024605/src/config.ts#L44)
 
 Whether to convert `ґ→г`-style `г` into `ґ` where appropriate
 (default `true`; `false` in `htmlConfigOptions()`).
@@ -71,7 +71,7 @@ Whether to convert `ґ→г`-style `г` into `ґ` where appropriate
 
 > **j**: [`TaraskJ`](/taraskevizer/reference/type-aliases/taraskj/) = `'never'`
 
-Defined in: [config.ts:35](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L35)
+Defined in: [config.ts:35](https://github.com/GooseOb/taraskevizer/blob/836c46ad29b59ab3e73c3d4d32a6b14d63024605/src/config.ts#L35)
 
 When to replace `і` by `й` after vowels: `"never"` (default),
 `"random"` or `"always"`.
@@ -82,7 +82,7 @@ When to replace `і` by `й` after vowels: `"never"` (default),
 
 > **leftAngleBracket**: `string` = `'<'`
 
-Defined in: [config.ts:50](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L50)
+Defined in: [config.ts:50](https://github.com/GooseOb/taraskevizer/blob/836c46ad29b59ab3e73c3d4d32a6b14d63024605/src/config.ts#L50)
 
 Replacement for `"<"` (default `"<"`, `"&lt"` in HTML mode).
 
@@ -92,7 +92,7 @@ Replacement for `"<"` (default `"<"`, `"&lt"` in HTML mode).
 
 > **newLine**: `string` = '\n'
 
-Defined in: [config.ts:48](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L48)
+Defined in: [config.ts:48](https://github.com/GooseOb/taraskevizer/blob/836c46ad29b59ab3e73c3d4d32a6b14d63024605/src/config.ts#L48)
 
 Replacement for `"\n"` (default `"\n"`, `"<br>"` in HTML mode).
 
@@ -102,7 +102,7 @@ Replacement for `"\n"` (default `"\n"`, `"<br>"` in HTML mode).
 
 > **noFixPlaceholder**: `string` = ' \uE0FE '
 
-Defined in: [config.ts:52](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L52)
+Defined in: [config.ts:52](https://github.com/GooseOb/taraskevizer/blob/836c46ad29b59ab3e73c3d4d32a6b14d63024605/src/config.ts#L52)
 
 Placeholder for `<…>`-protected spans (default `" \uE0FE "`).
 
@@ -112,7 +112,7 @@ Placeholder for `<…>`-protected spans (default `" \uE0FE "`).
 
 > **variations**: [`TaraskVariations`](/taraskevizer/reference/type-aliases/taraskvariations/) = `'all'`
 
-Defined in: [config.ts:46](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L46)
+Defined in: [config.ts:46](https://github.com/GooseOb/taraskevizer/blob/836c46ad29b59ab3e73c3d4d32a6b14d63024605/src/config.ts#L46)
 
 Which word variation to keep: `"all"` (default), `"no"` or `"first"`.
 
@@ -122,6 +122,6 @@ Which word variation to keep: `"all"` (default), `"no"` or `"first"`.
 
 > **wrappers**: [`TaraskWrappers`](/taraskevizer/reference/type-aliases/taraskwrappers/) = `'none'`
 
-Defined in: [config.ts:39](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L39)
+Defined in: [config.ts:39](https://github.com/GooseOb/taraskevizer/blob/836c46ad29b59ab3e73c3d4d32a6b14d63024605/src/config.ts#L39)
 
 Active wrapper set: `"none"` (default), `"html"` or `"ansi"`.

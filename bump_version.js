@@ -38,141 +38,137 @@ const cratePaths = ['core', 'cli', 'wasm'].map((crate) =>
 const lockPath = join(root, 'taraskevizer-rs/Cargo.lock');
 const changelogPath = join(root, 'CHANGELOG.md');
 
-const main = async () => {
-	// All reads in parallel; the current version comes from package.json.
-	const [pkgRaw, ...rest] = await Promise.all(
-		[pkgPath, ...cratePaths, lockPath, changelogPath].map((path) =>
-			readFile(path, 'utf8')
-		)
-	);
-	const crateRaws = rest.slice(0, cratePaths.length);
-	const [lockRaw, changelogRaw] = rest.slice(cratePaths.length);
+// All reads in parallel; the current version comes from package.json.
+const [pkgRaw, ...rest] = await Promise.all(
+	[pkgPath, ...cratePaths, lockPath, changelogPath].map((path) =>
+		readFile(path, 'utf8')
+	)
+);
+const crateRaws = rest.slice(0, cratePaths.length);
+const [lockRaw, changelogRaw] = rest.slice(cratePaths.length);
 
-	const current = JSON.parse(pkgRaw).version;
-	if (typeof current !== 'string') {
-		fail('Could not read version from package.json');
+const current = JSON.parse(pkgRaw).version;
+if (typeof current !== 'string') {
+	fail('Could not read version from package.json');
+}
+
+let next;
+if (arg === 'patch' || arg === 'minor' || arg === 'major') {
+	const [major, minor, patch] = current.split('.').map(Number);
+	if ([major, minor, patch].some((n) => !Number.isInteger(n))) {
+		fail(`Current version ${current} is not plain X.Y.Z`);
 	}
-
-	let next;
-	if (arg === 'patch' || arg === 'minor' || arg === 'major') {
-		const [major, minor, patch] = current.split('.').map(Number);
-		if ([major, minor, patch].some((n) => !Number.isInteger(n))) {
-			fail(`Current version ${current} is not plain X.Y.Z`);
-		}
-		next =
-			arg === 'major'
-				? `${major + 1}.0.0`
-				: arg === 'minor'
-					? `${major}.${minor + 1}.0`
-					: `${major}.${minor}.${patch + 1}`;
-	} else {
-		next = arg.startsWith('v') ? arg.slice(1) : arg;
-		if (!/^\d+\.\d+\.\d+$/.test(next)) {
-			fail(`Invalid version: ${arg} (expected patch|minor|major or X.Y.Z)`);
-		}
+	next =
+		arg === 'major'
+			? `${major + 1}.0.0`
+			: arg === 'minor'
+				? `${major}.${minor + 1}.0`
+				: `${major}.${minor}.${patch + 1}`;
+} else {
+	next = arg.startsWith('v') ? arg.slice(1) : arg;
+	if (!/^\d+\.\d+\.\d+$/.test(next)) {
+		fail(`Invalid version: ${arg} (expected patch|minor|major or X.Y.Z)`);
 	}
+}
 
-	if (next === current) {
-		fail(`Already at version ${current}`);
-	}
+if (next === current) {
+	fail(`Already at version ${current}`);
+}
 
-	// Replace exactly once, counting hits so drift fails loudly.
-	const replaceOnce = (text, from, to) => {
-		let count = 0;
-		const out = text.replace(from, () => {
-			count += 1;
-			return to;
-		});
-		return [out, count];
-	};
-
-	// package.json, preserving tab indentation and trailing newline.
-	const [pkgReplaced, pkgCount] = replaceOnce(
-		pkgRaw,
-		`"version": "${current}"`,
-		`"version": "${next}"`
-	);
-	if (pkgCount !== 1) {
-		fail(`package.json: expected 1 replacement, got ${pkgCount}`);
-	}
-	const indent = pkgRaw.includes('\n\t"') ? '\t' : 2;
-	const newline = pkgRaw.endsWith('\n') ? '\n' : '';
-	const pkgOut = `${JSON.stringify(JSON.parse(pkgReplaced), null, indent)}${newline}`;
-
-	// Crate manifests.
-	const crateOuts = crateRaws.map((raw, i) => {
-		const [out, count] = replaceOnce(
-			raw,
-			`version = "${current}"`,
-			`version = "${next}"`
-		);
-		if (count !== 1) {
-			fail(`${cratePaths[i]}: expected 1 replacement, got ${count}`);
-		}
-		return out;
+// Replace exactly once, counting hits so drift fails loudly.
+const replaceOnce = (text, from, to) => {
+	let count = 0;
+	const out = text.replace(from, () => {
+		count += 1;
+		return to;
 	});
-
-	// Cargo.lock: only the three workspace package stanzas.
-	const lockNames = new Set([
-		'taraskevizer-core',
-		'taraskevizer-cli',
-		'taraskevizer-wasm',
-	]);
-	let lockPkgName = null;
-	let lockCount = 0;
-	const lockOut = lockRaw
-		.split('\n')
-		.map((line) => {
-			const nameMatch = /^name = "(.*)"$/.exec(line);
-			if (nameMatch) {
-				lockPkgName = nameMatch[1];
-				return line;
-			}
-			if (
-				lockPkgName &&
-				lockNames.has(lockPkgName) &&
-				line === `version = "${current}"`
-			) {
-				lockCount += 1;
-				lockPkgName = null; // one version line per stanza
-				return `version = "${next}"`;
-			}
-			return line;
-		})
-		.join('\n');
-	if (lockCount !== lockNames.size) {
-		fail(
-			`taraskevizer-rs/Cargo.lock: expected ${lockNames.size} replacement(s), got ${lockCount}`
-		);
-	}
-
-	// CHANGELOG.md: promote ## [Unreleased], or insert a new section on top.
-	let changelogOut;
-	if (changelogRaw.includes('## [Unreleased]')) {
-		changelogOut = changelogRaw.replace('## [Unreleased]', `## [${next}]`);
-	} else {
-		changelogOut = changelogRaw.replace(/^## \[/m, `## [${next}]\n\n$&`);
-	}
-	if (changelogOut === changelogRaw) {
-		fail('CHANGELOG.md: no version section found to update');
-	}
-
-	// All writes in parallel (distinct files, so no conflicts).
-	await Promise.all([
-		writeFile(pkgPath, pkgOut),
-		...cratePaths.map((path, i) => writeFile(path, crateOuts[i])),
-		writeFile(lockPath, lockOut),
-		writeFile(changelogPath, changelogOut),
-	]);
-
-	console.log(`package.json: ${current} -> ${next}`);
-	for (const path of cratePaths) {
-		console.log(`${path.slice(root.length + 1)}: ${current} -> ${next}`);
-	}
-	console.log(
-		`taraskevizer-rs/Cargo.lock: ${current} -> ${next} (${lockCount} entries)`
-	);
-	console.log(`CHANGELOG.md: section [${next}] ready`);
+	return [out, count];
 };
 
-main().catch((err) => fail(err.message ?? err));
+// package.json, preserving tab indentation and trailing newline.
+const [pkgReplaced, pkgCount] = replaceOnce(
+	pkgRaw,
+	`"version": "${current}"`,
+	`"version": "${next}"`
+);
+if (pkgCount !== 1) {
+	fail(`package.json: expected 1 replacement, got ${pkgCount}`);
+}
+const indent = pkgRaw.includes('\n\t"') ? '\t' : 2;
+const newline = pkgRaw.endsWith('\n') ? '\n' : '';
+const pkgOut = `${JSON.stringify(JSON.parse(pkgReplaced), null, indent)}${newline}`;
+
+// Crate manifests.
+const crateOuts = crateRaws.map((raw, i) => {
+	const [out, count] = replaceOnce(
+		raw,
+		`version = "${current}"`,
+		`version = "${next}"`
+	);
+	if (count !== 1) {
+		fail(`${cratePaths[i]}: expected 1 replacement, got ${count}`);
+	}
+	return out;
+});
+
+// Cargo.lock: only the three workspace package stanzas.
+const lockNames = new Set([
+	'taraskevizer-core',
+	'taraskevizer-cli',
+	'taraskevizer-wasm',
+]);
+let lockPkgName = null;
+let lockCount = 0;
+const lockOut = lockRaw
+	.split('\n')
+	.map((line) => {
+		const nameMatch = /^name = "(.*)"$/.exec(line);
+		if (nameMatch) {
+			lockPkgName = nameMatch[1];
+			return line;
+		}
+		if (
+			lockPkgName &&
+			lockNames.has(lockPkgName) &&
+			line === `version = "${current}"`
+		) {
+			lockCount += 1;
+			lockPkgName = null; // one version line per stanza
+			return `version = "${next}"`;
+		}
+		return line;
+	})
+	.join('\n');
+if (lockCount !== lockNames.size) {
+	fail(
+		`taraskevizer-rs/Cargo.lock: expected ${lockNames.size} replacement(s), got ${lockCount}`
+	);
+}
+
+// CHANGELOG.md: promote ## [Unreleased], or insert a new section on top.
+let changelogOut;
+if (changelogRaw.includes('## [Unreleased]')) {
+	changelogOut = changelogRaw.replace('## [Unreleased]', `## [${next}]`);
+} else {
+	changelogOut = changelogRaw.replace(/^## \[/m, `## [${next}]\n\n$&`);
+}
+if (changelogOut === changelogRaw) {
+	fail('CHANGELOG.md: no version section found to update');
+}
+
+// All writes in parallel (distinct files, so no conflicts).
+await Promise.all([
+	writeFile(pkgPath, pkgOut),
+	...cratePaths.map((path, i) => writeFile(path, crateOuts[i])),
+	writeFile(lockPath, lockOut),
+	writeFile(changelogPath, changelogOut),
+]);
+
+console.log(`package.json: ${current} -> ${next}`);
+for (const path of cratePaths) {
+	console.log(`${path.slice(root.length + 1)}: ${current} -> ${next}`);
+}
+console.log(
+	`taraskevizer-rs/Cargo.lock: ${current} -> ${next} (${lockCount} entries)`
+);
+console.log(`CHANGELOG.md: section [${next}] ready`);

@@ -228,19 +228,25 @@ fn main() {
         };
         if !input.is_empty() {
             const CHUNK_SIZE: usize = 16_000;
-            let _ = io::stderr().write_all(b"Splitting input into chunks...\n");
+            let splitting_start = std::time::Instant::now();
+            let _ = io::stderr().write_all(b"Splitting input into chunks... ");
             let nchunks = input.len().div_ceil(CHUNK_SIZE);
             // Borrowed ranges: same boundaries as before, no per-chunk copies.
             let ranges = split_into_chunks(&input, nchunks);
             let nchars = input.len();
+            let _ = io::stderr().write_fmt(format_args!(
+                "done in {:.2}s\n",
+                splitting_start.elapsed().as_secs_f64()
+            ));
             // Stream results out as chunks complete: peak memory stays ~1x
             // input (input string only) instead of ~3x (input + chunk copies
             // + collected results), so multi-GB dumps no longer OOM.
             let stdout = io::stdout();
             let mut out = io::BufWriter::with_capacity(1 << 20, stdout.lock());
             if !cli.single_thread && ranges.len() > 1 {
+                let processing_start = std::time::Instant::now();
                 let _ = io::stderr().write_fmt(format_args!(
-                    "Processing {} chars in {} chunks...\n",
+                    "Processing {} chars in {} chunks... ",
                     nchars,
                     ranges.len(),
                 ));
@@ -280,7 +286,17 @@ fn main() {
                     }
                     gstart = gend;
                 }
+                let _ = io::stderr().write_fmt(format_args!(
+                    "done in {:.2}s\n",
+                    processing_start.elapsed().as_secs_f64()
+                ));
             } else {
+                let processing_start = std::time::Instant::now();
+                let _ = io::stderr().write_fmt(format_args!(
+                    "Processing {} chars in {} chunks (single-threaded)... ",
+                    nchars,
+                    ranges.len(),
+                ));
                 let debug_chunks = std::env::var("TARASK_DEBUG_CHUNKS").is_ok();
                 for (i, &(s, e)) in ranges.iter().enumerate() {
                     if debug_chunks {
@@ -289,6 +305,10 @@ fn main() {
                     let result = run_mode(mode, &input[s..e], &cfg);
                     let _ = out.write_all(result.as_bytes());
                 }
+                let _ = io::stderr().write_fmt(format_args!(
+                    "done in {:.2}s\n",
+                    processing_start.elapsed().as_secs_f64()
+                ));
             }
             let _ = out.flush();
         }

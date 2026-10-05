@@ -7,4 +7,4 @@ title: "TaraskJ"
 
 > **TaraskJ** = `"never"` \| `"random"` \| `"always"`
 
-Defined in: [config.ts:14](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L14)
+Defined in: [config.ts:14](https://github.com/GooseOb/taraskevizer/blob/836c46ad29b59ab3e73c3d4d32a6b14d63024605/src/config.ts#L14)

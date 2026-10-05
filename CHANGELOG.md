@@ -8,6 +8,15 @@ workflow extracts the section matching the tag and prepends it to the release
 body. `generate_release_notes` stays on, so GitHub still appends the
 auto-generated compare link below it.
 
+## [11.0.3]
+
+### Fixed
+
+- Chunking no longer treats an escaped `\>` as closing an angle-bracket
+  tag, so cuts stay suppressed until a real `>` (e.g. inside `<math>` spans
+  using TeX spacing like `\>`).
+- Chunking no longer has a 1MB limit on the size of a chunk
+
 ## [11.0.2]
 
 ### Added

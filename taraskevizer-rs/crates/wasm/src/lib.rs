@@ -88,7 +88,7 @@ fn parse_abc(s: &str) -> Result<Alphabet, ConfigError> {
     let normalized: String = s
         .chars()
         .filter(|c| *c != '-' && *c != '_')
-        .flat_map(|c| c.to_lowercase())
+        .flat_map(char::to_lowercase)
         .collect();
     match normalized.as_str() {
         "cyrillic" => Ok(Alphabet::Cyrillic),
@@ -494,13 +494,14 @@ pub fn phonetic_js(text: &str, config: JsValue) -> Result<String, JsError> {
     Ok(taraskevizer_core::phonetic(text, &cfg))
 }
 
-/// Split text into worker-ready chunks for parallel conversion.
+/// Split text into `n` worker-ready chunks for parallel conversion.
 ///
 /// Mirrors the CLI's chunking (`taraskevizer_core::text::split_into_chunks`):
-/// cuts after a spacing char at/after `len / n` bytes, never inside `<…>`
-/// tags or after apostrophe-likes, capped at 1 MiB per chunk. Returns owned
-/// strings (not byte offsets) because Rust byte offsets don't map to JS
-/// UTF-16 indices for non-ASCII text.
+/// cuts after a spacing char at/after every `len / n` bytes, never inside
+/// `<…>` tags or after apostrophe-likes. There is no upper bound on chunk
+/// size, so cuts always land on delimiters and chunked conversion matches a
+/// single call. Returns owned strings (not byte offsets) because Rust byte
+/// offsets don't map to JS UTF-16 indices for non-ASCII text.
 ///
 /// Convert each chunk with [`tarask_js`] (in `Worker`s, each with its own
 /// WASM instance) and concatenate the results in order:
@@ -513,7 +514,7 @@ pub fn phonetic_js(text: &str, config: JsValue) -> Result<String, JsError> {
 pub fn split_into_chunks_js(text: &str, n: usize) -> js_sys::Array {
     taraskevizer_core::text::split_into_chunks(text, n)
         .iter()
-        .map(|&(s, e)| JsValue::from(text[s..e].to_owned()))
+        .map(|&(s, e)| JsValue::from(&text[s..e]))
         .collect()
 }
 
@@ -740,6 +741,54 @@ mod tests {
             let out = WasmConfig::tarask_inner("яна і ён", Some(&cfg));
             assert!(out == "яна і ён" || out == "яна й ён", "got {out:?}");
         }
+    }
+
+    fn reassemble(text: &str, n: usize) -> Vec<String> {
+        taraskevizer_core::text::split_into_chunks(text, n)
+            .iter()
+            .map(|&(s, e)| text[s..e].to_owned())
+            .collect()
+    }
+
+    #[test]
+    fn split_chunks_reassemble() {
+        // Template-ish words (like the `{{...}}` corruption report) plus
+        // variation words, cut into many chunks.
+        let text = "{{Храналагічны пералік}}\n".repeat(2000)
+            + &"экалёгія краін Сярэдняй Азіі. ".repeat(2000);
+        for n in [0, 1, 2, 8, 64] {
+            let chunks = reassemble(&text, n);
+            assert!(!chunks.is_empty());
+            assert!(chunks.iter().all(|c| !c.is_empty()));
+            assert_eq!(chunks.concat(), text, "n = {n}");
+        }
+    }
+
+    #[test]
+    fn split_chunks_chunked_conversion_matches_direct() {
+        // The 30M-slice corruption report (`{{Храналагічны пералік}}`,
+        // `(краін|краінаў)`): chunked conversion must match a single call.
+        // Small text, small chunks — the wide-target case is pinned by the
+        // core `large_target_cuts_at_delimiters` test instead (splitting is
+        // cheap, conversion is what costs).
+        let text = "{{Храналагічны пералік}}, экалёгія краін Сярэдняй Азіі. ".repeat(20);
+        for n in [2, 4] {
+            let chunks = reassemble(&text, n);
+            assert!(chunks.len() > 1);
+            let joined: String = chunks
+                .iter()
+                .map(|c| WasmConfig::tarask_inner(c, None))
+                .collect();
+            assert_eq!(joined, WasmConfig::tarask_inner(&text, None), "n = {n}");
+        }
+    }
+
+    #[test]
+    fn split_chunks_edges() {
+        assert_eq!(reassemble("", 4), vec![String::new()]);
+        assert_eq!(reassemble("abc", 0), vec!["abc".to_owned()]);
+        assert_eq!(reassemble("abc", 1), vec!["abc".to_owned()]);
+        assert_eq!(reassemble("a b c", 100), vec!["a b c".to_owned()]);
     }
 
     #[cfg(target_arch = "wasm32")]
