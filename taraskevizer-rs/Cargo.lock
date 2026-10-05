@@ -574,7 +574,7 @@ dependencies = [
 
 [[package]]
 name = "taraskevizer-cli"
-version = "11.0.0"
+version = "11.0.1"
 dependencies = [
  "clap",
  "num_cpus",
@@ -584,7 +584,7 @@ dependencies = [
 
 [[package]]
 name = "taraskevizer-core"
-version = "11.0.0"
+version = "11.0.1"
 dependencies = [
  "fancy-regex",
  "memchr",
@@ -597,7 +597,7 @@ dependencies = [
 
 [[package]]
 name = "taraskevizer-wasm"
-version = "11.0.0"
+version = "11.0.1"
 dependencies = [
  "getrandom",
  "js-sys",

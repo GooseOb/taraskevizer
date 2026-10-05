@@ -9,13 +9,8 @@ title: "taraskevizer"
 
 - [TaraskConfig](/taraskevizer/reference/classes/taraskconfig/)
 
-## Interfaces
-
-- [TaraskOptions](/taraskevizer/reference/interfaces/taraskoptions/)
-
 ## Type Aliases
 
-- [ConfigLike](/taraskevizer/reference/type-aliases/configlike/)
 - [TaraskAlphabet](/taraskevizer/reference/type-aliases/taraskalphabet/)
 - [TaraskJ](/taraskevizer/reference/type-aliases/taraskj/)
 - [TaraskVariations](/taraskevizer/reference/type-aliases/taraskvariations/)

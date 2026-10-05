@@ -5,6 +5,9 @@
  * typed layer over it: top-level pipelines, option types and the browser
  * helper for interactive HTML output.
  *
+ * Conversion options are owned by TypeScript (see `./config.js`): the WASM
+ * side only parses the resulting shape, it never manages the config object.
+ *
  * The pipelines are synchronous, but the WebAssembly module needs one
  * asynchronous initialization first (the `node` entry does it on import):
  *
@@ -20,56 +23,33 @@
  */
 import init, {
 	alphabetic as alphabeticPipeline,
-	htmlConfigOptions as htmlConfigOptionsBase,
 	phonetic as phoneticPipeline,
 	tarask as taraskPipeline,
-	TaraskConfig as TaraskConfigBase,
 } from './wasm/taraskevizer_wasm.js';
+import { htmlConfigOptions, TaraskConfig } from './config.js';
 import type {
 	TaraskAlphabet,
 	TaraskJ,
-	TaraskOptions,
 	TaraskVariations,
 	TaraskWrappers,
-} from './wasm/taraskevizer_wasm.js';
+} from './config.js';
 
-export type {
-	TaraskAlphabet,
-	TaraskJ,
-	TaraskOptions,
-	TaraskVariations,
-	TaraskWrappers,
-};
+export type { TaraskAlphabet, TaraskJ, TaraskVariations, TaraskWrappers };
 export { createInteractiveTags } from './html-tag-interactions.js';
-export { init };
-
-/** Config accepted by the pipelines: an instance, a plain object, or omitted. */
-export type ConfigLike = TaraskConfig | TaraskOptions | null | undefined;
-
-/**
- * Conversion options. Mirrors the previous `TaraskConfig` API: every field
- * keeps its name (`doEscapeCapitalized`, `newLine`, …) and defaults.
- * Only predefined wrapper sets are available (`wrappers: 'none' | 'html' |
- * 'ansi'`); arbitrary callback wrappers cannot cross the WASM boundary.
- */
-export class TaraskConfig extends TaraskConfigBase {
-	constructor(options?: TaraskOptions) {
-		super(options);
-	}
-}
-
-/** Predefined configuration for HTML output (wrappers + `<br>` newlines). */
-export const htmlConfigOptions = (): TaraskConfig =>
-	htmlConfigOptionsBase() as TaraskConfig;
+export { htmlConfigOptions, init, TaraskConfig };
 
 /** Convert academic orthography to classical (Taraskievica). */
-export const tarask = (text: string, config?: ConfigLike): string =>
+export const tarask = (text: string, config?: Partial<TaraskConfig>): string =>
 	taraskPipeline(text, config);
 
 /** Alphabet-only conversion (no Taraskevization). */
-export const alphabetic = (text: string, config?: ConfigLike): string =>
-	alphabeticPipeline(text, config);
+export const alphabetic = (
+	text: string,
+	config?: Partial<TaraskConfig>
+): string => alphabeticPipeline(text, config);
 
 /** Phonetic conversion. */
-export const phonetic = (text: string, config?: ConfigLike): string =>
-	phoneticPipeline(text, config);
+export const phonetic = (
+	text: string,
+	config?: Partial<TaraskConfig>
+): string => phoneticPipeline(text, config);

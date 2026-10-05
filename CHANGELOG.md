@@ -8,6 +8,12 @@ workflow extracts the section matching the tag and prepends it to the release
 body. `generate_release_notes` stays on, so GitHub still appends the
 auto-generated compare link below it.
 
+## [11.0.1]
+
+### Changed
+
+`TaraskConfig` and `htmlConfigOptions` are now managed by TS, not WASM. So you don't have to call `await init()` before using them.
+
 ## [11.0.0]
 
 ### JSON BREAKING CHANGES
@@ -48,7 +54,7 @@ auto-generated compare link below it.
   `lib`, `wrappers` and `alphabets` namespace imports) and the
   JavaScript implementation of the CLI.
 
-## Performance
+### Performance
 
 - On 30MB slice of Wikipedia dump, the Rust CLI is 6-10x faster than the JS CLI. (parallel enabled for both)
 - If used as a JS library (WASM module), might be slower on small inputs due to the overhead of crossing the WASM boundary.

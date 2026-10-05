@@ -7,7 +7,7 @@ title: "alphabetic"
 
 > **alphabetic**(`text`, `config?`): `string`
 
-Defined in: [index.ts:70](https://github.com/GooseOb/taraskevizer/blob/ac801db8bb7595f43c3cc25af94c04cfdeaad4c1/src/index.ts#L70)
+Defined in: [index.ts:46](https://github.com/GooseOb/taraskevizer/blob/f961046d449e43071ffa7b9a32044940361ce274/src/index.ts#L46)
 
 Alphabet-only conversion (no Taraskevization).
 
@@ -19,7 +19,7 @@ Alphabet-only conversion (no Taraskevization).
 
 ### config?
 
-[`ConfigLike`](/taraskevizer/reference/type-aliases/configlike/)
+`Partial`\<[`TaraskConfig`](/taraskevizer/reference/classes/taraskconfig/)\>
 
 ## Returns
 

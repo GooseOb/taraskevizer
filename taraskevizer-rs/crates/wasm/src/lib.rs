@@ -1,19 +1,22 @@
 //! WASM bindings for `taraskevizer`.
 //!
-//! Exposes the core pipelines ([`tarask`], [`alphabetic`], [`phonetic`]) and
-//! a [`TaraskConfig`] class mirroring the JS `TaraskConfig` field names
-//! (`doEscapeCapitalized`, `newLine`, …), so web front-ends can migrate from
-//! the TypeScript implementation with minimal changes.
+//! Exposes the core pipelines ([`tarask`], [`alphabetic`], [`phonetic`]).
+//! Conversion options are owned by TypeScript (`src/config.ts`): the
+//! `TaraskConfig` class and `htmlConfigOptions()` live there as plain JS
+//! values, and the pipeline functions below only parse the resulting shape
+//! (a `TaraskConfig` instance or a plain options object) via `Reflect`.
 //!
 //! # JS usage
 //!
 //! ```js
-//! import init, { tarask, alphabetic, phonetic, TaraskConfig, htmlConfigOptions } from 'taraskevizer';
+//! import init, { tarask, alphabetic, phonetic } from 'taraskevizer';
+//! import { TaraskConfig, htmlConfigOptions } from 'taraskevizer';
 //!
 //! await init();
 //!
 //! tarask('планета'); // default config → 'плянэта'
 //! tarask('планета', new TaraskConfig({ abc: 'latin' })); // → 'planeta'
+//! tarask('планета', { abc: 'latin' }); // plain object also works
 //!
 //! const htmlCfg = htmlConfigOptions();
 //! tarask('энергія', htmlCfg); // → 'эн<tarF>э</tarF>р<tarH>г</tarH>ія'
@@ -25,28 +28,6 @@ use taraskevizer_core::{
     wrappers::{ANSI_COLOR_WRAPPERS, HTML_WRAPPERS},
 };
 use wasm_bindgen::prelude::*;
-
-/// String-union types for the generated `.d.ts` (documentation only;
-/// getters/setters are typed as `string` by `wasm-bindgen`).
-#[wasm_bindgen(typescript_custom_section)]
-const TS_TYPES: &'static str = r#"
-export type TaraskAlphabet = "cyrillic" | "latin" | "latinJi" | "arabic";
-export type TaraskJ = "never" | "random" | "always";
-export type TaraskVariations = "all" | "no" | "first";
-export type TaraskWrappers = "none" | "html" | "ansi";
-
-export interface TaraskOptions {
-  abc?: TaraskAlphabet;
-  j?: TaraskJ;
-  doEscapeCapitalized?: boolean;
-  wrappers?: TaraskWrappers;
-  g?: boolean;
-  variations?: TaraskVariations;
-  newLine?: string;
-  leftAngleBracket?: string;
-  noFixPlaceholder?: string;
-}
-"#;
 
 /// Which predefined wrapper set is active.
 ///
@@ -72,6 +53,7 @@ impl WrappersKind {
         };
     }
 
+    #[cfg(test)]
     fn as_str(self) -> &'static str {
         match self {
             Self::None => "none",
@@ -244,19 +226,19 @@ fn read_options(value: &JsValue) -> Result<PartialOptions, JsError> {
     })
 }
 
-/// Configurable options for the conversion pipelines.
+/// Parsed conversion options for the pipelines.
 ///
-/// Mirrors the JS `TaraskConfig` field names. Wrappers are limited to the
-/// predefined sets (`"none"`, `"html"`, `"ansi"`); arbitrary JS callbacks
-/// cannot cross the WASM boundary.
-#[wasm_bindgen]
+/// Pure-Rust helper: the `TaraskConfig` class itself is owned by TypeScript
+/// (`src/config.ts`). Instances of that class — like plain options objects —
+/// are plain JS objects, so [`read_options`] picks their fields up via
+/// `Reflect` and this struct only applies the validated values.
 #[derive(Debug)]
-pub struct TaraskConfig {
+struct WasmConfig {
     inner: CoreConfig,
     wrappers_kind: WrappersKind,
 }
 
-impl Default for TaraskConfig {
+impl Default for WasmConfig {
     fn default() -> Self {
         Self {
             inner: CoreConfig::default(),
@@ -265,30 +247,12 @@ impl Default for TaraskConfig {
     }
 }
 
-#[wasm_bindgen]
-impl TaraskConfig {
-    /// Create a config, optionally from a plain object.
-    ///
-    /// ```js
-    /// new TaraskConfig() // defaults
-    /// new TaraskConfig({ abc: 'latin', g: false })
-    /// ```
-    ///
-    /// # Errors
-    ///
-    /// Returns an error when `options` is neither `undefined`/`null` nor an
-    /// options object with valid field values.
-    #[wasm_bindgen(constructor)]
-    pub fn new(options: JsValue) -> Result<TaraskConfig, JsError> {
-        let opts = read_options(&options)?;
-        let mut cfg = Self::default();
-        cfg.apply_options(&opts)?;
-        Ok(cfg)
-    }
-
+/// Test-only accessors mirroring the TS `TaraskConfig` getters/setters, so
+/// the same validation and pipeline behavior stays covered natively.
+#[cfg(test)]
+impl WasmConfig {
     /// Alphabet: `"cyrillic"` (default), `"latin"`, `"latinJi"` or `"arabic"`.
-    #[wasm_bindgen(getter)]
-    pub fn abc(&self) -> String {
+    fn abc(&self) -> String {
         match self.inner.abc {
             Alphabet::Cyrillic => "cyrillic",
             Alphabet::Latin => "latin",
@@ -303,16 +267,14 @@ impl TaraskConfig {
     /// # Errors
     ///
     /// Returns an error for unknown alphabet names.
-    #[wasm_bindgen(setter)]
-    pub fn set_abc(&mut self, value: String) -> Result<(), JsError> {
+    fn set_abc(&mut self, value: String) -> Result<(), ConfigError> {
         self.inner.abc = parse_abc(&value)?;
         Ok(())
     }
 
     /// When to replace `і` by `й` after vowels: `"never"` (default),
     /// `"random"` or `"always"`.
-    #[wasm_bindgen(getter)]
-    pub fn j(&self) -> String {
+    fn j(&self) -> String {
         match self.inner.j {
             JMode::Never => "never",
             JMode::Random => "random",
@@ -326,27 +288,18 @@ impl TaraskConfig {
     /// # Errors
     ///
     /// Returns an error for unknown mode names.
-    #[wasm_bindgen(setter)]
-    pub fn set_j(&mut self, value: String) -> Result<(), JsError> {
+    fn set_j(&mut self, value: String) -> Result<(), ConfigError> {
         self.inner.j = parse_j(&value)?;
         Ok(())
     }
 
     /// Whether capitalized words are protected from changes (default `true`).
-    #[wasm_bindgen(getter, js_name = doEscapeCapitalized)]
-    pub fn do_escape_capitalized(&self) -> bool {
+    fn do_escape_capitalized(&self) -> bool {
         self.inner.do_escape_capitalized
     }
 
-    /// Set `doEscapeCapitalized`.
-    #[wasm_bindgen(setter, js_name = doEscapeCapitalized)]
-    pub fn set_do_escape_capitalized(&mut self, value: bool) {
-        self.inner.do_escape_capitalized = value;
-    }
-
     /// Active wrapper set: `"none"` (default), `"html"` or `"ansi"`.
-    #[wasm_bindgen(getter)]
-    pub fn wrappers(&self) -> String {
+    fn wrappers(&self) -> String {
         self.wrappers_kind.as_str().to_owned()
     }
 
@@ -355,8 +308,7 @@ impl TaraskConfig {
     /// # Errors
     ///
     /// Returns an error for unknown wrapper names.
-    #[wasm_bindgen(setter)]
-    pub fn set_wrappers(&mut self, value: String) -> Result<(), JsError> {
+    fn set_wrappers(&mut self, value: String) -> Result<(), ConfigError> {
         let kind = parse_wrappers(&value)?;
         self.wrappers_kind = kind;
         kind.apply_to(&mut self.inner);
@@ -364,21 +316,13 @@ impl TaraskConfig {
     }
 
     /// Whether to convert `ґ→г`-style `г` into `ґ` where appropriate
-    /// (default `true`; `false` in [`html_config_options`]).
-    #[wasm_bindgen(getter)]
-    pub fn g(&self) -> bool {
+    /// (default `true`; `false` in the TS `htmlConfigOptions()`).
+    fn g(&self) -> bool {
         self.inner.g
     }
 
-    /// Set `g`.
-    #[wasm_bindgen(setter)]
-    pub fn set_g(&mut self, value: bool) {
-        self.inner.g = value;
-    }
-
     /// Which word variation to keep: `"all"` (default), `"no"` or `"first"`.
-    #[wasm_bindgen(getter)]
-    pub fn variations(&self) -> String {
+    fn variations(&self) -> String {
         match self.inner.variations {
             VariationMode::All => "all",
             VariationMode::No => "no",
@@ -392,50 +336,28 @@ impl TaraskConfig {
     /// # Errors
     ///
     /// Returns an error for unknown variation names.
-    #[wasm_bindgen(setter)]
-    pub fn set_variations(&mut self, value: String) -> Result<(), JsError> {
+    fn set_variations(&mut self, value: String) -> Result<(), ConfigError> {
         self.inner.variations = parse_variations(&value)?;
         Ok(())
     }
 
     /// Replacement for `"\n"` (default `"\n"`, `"<br>"` in HTML mode).
-    #[wasm_bindgen(getter, js_name = newLine)]
-    pub fn new_line(&self) -> String {
+    fn new_line(&self) -> String {
         self.inner.new_line.clone()
     }
 
-    /// Set `newLine`.
-    #[wasm_bindgen(setter, js_name = newLine)]
-    pub fn set_new_line(&mut self, value: String) {
-        self.inner.new_line = value;
-    }
-
     /// Replacement for `"<"` (default `"<"`, `"&lt"` in HTML mode).
-    #[wasm_bindgen(getter, js_name = leftAngleBracket)]
-    pub fn left_angle_bracket(&self) -> String {
+    fn left_angle_bracket(&self) -> String {
         self.inner.left_angle_bracket.clone()
     }
 
-    /// Set `leftAngleBracket`.
-    #[wasm_bindgen(setter, js_name = leftAngleBracket)]
-    pub fn set_left_angle_bracket(&mut self, value: String) {
-        self.inner.left_angle_bracket = value;
-    }
-
     /// Placeholder for `<…>`-protected spans (default `" \u{e0fe} "`).
-    #[wasm_bindgen(getter, js_name = noFixPlaceholder)]
-    pub fn no_fix_placeholder(&self) -> String {
+    fn no_fix_placeholder(&self) -> String {
         self.inner.no_fix_placeholder.clone()
-    }
-
-    /// Set `noFixPlaceholder`.
-    #[wasm_bindgen(setter, js_name = noFixPlaceholder)]
-    pub fn set_no_fix_placeholder(&mut self, value: String) {
-        self.inner.no_fix_placeholder = value;
     }
 }
 
-impl TaraskConfig {
+impl WasmConfig {
     /// Apply validated [`PartialOptions`] onto this config.
     ///
     /// Pure Rust (no JS interop), so this is directly unit-testable on
@@ -506,7 +428,7 @@ impl TaraskConfig {
 
 /// Resolve the `config` argument accepted by the pipeline wrappers.
 ///
-/// Accepts `undefined`/`null` (defaults), a `TaraskConfig` instance (read
+/// Accepts `undefined`/`null` (defaults), a TS `TaraskConfig` instance (read
 /// through its getters, reusable across calls) or a plain options object:
 ///
 /// ```js
@@ -521,7 +443,7 @@ impl TaraskConfig {
 /// invalid.
 fn resolve_config(config: &JsValue) -> Result<CoreConfig, JsError> {
     let opts = read_options(config)?;
-    let mut cfg = TaraskConfig::default();
+    let mut cfg = WasmConfig::default();
     cfg.apply_options(&opts)?;
     Ok(cfg.inner)
 }
@@ -572,39 +494,21 @@ pub fn phonetic_js(text: &str, config: JsValue) -> Result<String, JsError> {
     Ok(taraskevizer_core::phonetic(text, &cfg))
 }
 
-/// Predefined configuration for HTML output.
-///
-/// Mirrors `htmlConfigOptions` in the reference: HTML wrappers, no `ґ→г`
-/// conversion, `"<br>"` newlines and `"&lt"` for `"<"`.
-#[wasm_bindgen(js_name = htmlConfigOptions)]
-#[must_use]
-pub fn html_config_options_js() -> TaraskConfig {
-    TaraskConfig {
-        inner: taraskevizer_core::html_config_options(),
-        wrappers_kind: WrappersKind::Html,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(target_arch = "wasm32")]
     use wasm_bindgen_test::wasm_bindgen_test;
 
-    fn cfg_with(abc: &str) -> TaraskConfig {
-        let mut cfg = TaraskConfig::default();
+    fn cfg_with(abc: &str) -> WasmConfig {
+        let mut cfg = WasmConfig::default();
         cfg.set_abc(abc.to_owned()).expect("valid test alphabet");
         cfg
     }
 
-    // Any `JsValue` method call aborts on native targets (they are extern
-    // imports), so `JsValue`-based tests only run on wasm32 under
-    // `wasm-pack test` / browser CI, not under `cargo test`. The same logic
-    // is covered natively above via `parse_*`, `apply_options` and the
-    // `*_inner` pipelines.
-    #[cfg(target_arch = "wasm32")]
-    #[wasm_bindgen_test]
+    #[test]
     fn default_config_matches_core_defaults() {
-        let cfg = TaraskConfig::new(JsValue::UNDEFINED).expect("default ctor");
+        let cfg = WasmConfig::default();
         assert_eq!(cfg.abc(), "cyrillic");
         assert_eq!(cfg.j(), "never");
         assert!(cfg.do_escape_capitalized());
@@ -613,13 +517,6 @@ mod tests {
         assert_eq!(cfg.variations(), "all");
         assert_eq!(cfg.new_line(), "\n");
         assert_eq!(cfg.left_angle_bracket(), "<");
-    }
-
-    #[cfg(target_arch = "wasm32")]
-    #[wasm_bindgen_test]
-    fn null_options_give_defaults() {
-        let cfg = TaraskConfig::new(JsValue::NULL).expect("null ctor");
-        assert_eq!(cfg.abc(), "cyrillic");
     }
 
     #[test]
@@ -643,9 +540,9 @@ mod tests {
 
     #[test]
     fn apply_options_covers_all_fields() {
-        // Same path the constructor takes for a fully-specified object, but
+        // Same path the pipelines take for a fully-specified object, but
         // with a hand-built struct so it runs natively.
-        let mut cfg = TaraskConfig::default();
+        let mut cfg = WasmConfig::default();
         cfg.apply_options(&PartialOptions {
             abc: Some("latin".to_owned()),
             j: Some("always".to_owned()),
@@ -671,7 +568,7 @@ mod tests {
 
     #[test]
     fn apply_options_rejects_bad_values() {
-        let mut cfg = TaraskConfig::default();
+        let mut cfg = WasmConfig::default();
         let opts = PartialOptions {
             abc: Some("klingon".to_owned()),
             ..PartialOptions::default()
@@ -681,28 +578,25 @@ mod tests {
 
     #[test]
     fn wrappers_setter_syncs_pipeline_output() {
-        let mut cfg = TaraskConfig::default();
+        let mut cfg = WasmConfig::default();
         cfg.set_wrappers("html".to_owned()).expect("valid wrappers");
         assert_eq!(cfg.wrappers(), "html");
         assert_eq!(
-            TaraskConfig::tarask_inner("энергія", Some(&cfg)),
+            WasmConfig::tarask_inner("энергія", Some(&cfg)),
             "эн<tarF>э</tarF>р<tarH>ґ</tarH>ія"
         );
     }
 
     #[test]
     fn tarask_default_pipeline() {
-        assert_eq!(TaraskConfig::tarask_inner("планета", None), "плянэта");
-        assert_eq!(
-            TaraskConfig::tarask_inner("гродна", None),
-            "(гродна|горадня)"
-        );
+        assert_eq!(WasmConfig::tarask_inner("планета", None), "плянэта");
+        assert_eq!(WasmConfig::tarask_inner("гродна", None), "(гродна|горадня)");
     }
 
     #[test]
     fn tarask_with_latin_config() {
         let cfg = cfg_with("latin");
-        assert_eq!(TaraskConfig::tarask_inner("планета", Some(&cfg)), "planeta");
+        assert_eq!(WasmConfig::tarask_inner("планета", Some(&cfg)), "planeta");
     }
 
     #[test]
@@ -715,35 +609,32 @@ mod tests {
 
     #[test]
     fn tarask_itoj_modes() {
-        let mut cfg = TaraskConfig::default();
+        let mut cfg = WasmConfig::default();
         cfg.set_j("always".to_owned()).expect("valid j");
-        assert_eq!(
-            TaraskConfig::tarask_inner("яна і ён", Some(&cfg)),
-            "яна й ён"
-        );
-        assert_eq!(TaraskConfig::tarask_inner("яна і ён", None), "яна і ён");
+        assert_eq!(WasmConfig::tarask_inner("яна і ён", Some(&cfg)), "яна й ён");
+        assert_eq!(WasmConfig::tarask_inner("яна і ён", None), "яна і ён");
     }
 
     #[test]
     fn tarask_variation_modes() {
-        let mut cfg = TaraskConfig::default();
+        let mut cfg = WasmConfig::default();
         cfg.set_variations("no".to_owned())
             .expect("valid variations");
-        assert_eq!(TaraskConfig::tarask_inner("гродна", Some(&cfg)), "гродна");
+        assert_eq!(WasmConfig::tarask_inner("гродна", Some(&cfg)), "гродна");
         cfg.set_variations("first".to_owned())
             .expect("valid variations");
-        assert_eq!(TaraskConfig::tarask_inner("гродна", Some(&cfg)), "горадня");
+        assert_eq!(WasmConfig::tarask_inner("гродна", Some(&cfg)), "горадня");
     }
 
     #[test]
     fn alphabetic_and_phonetic_pipelines() {
         let latin = cfg_with("latin");
         assert_eq!(
-            TaraskConfig::alphabetic_inner("планета", Some(&latin)),
+            WasmConfig::alphabetic_inner("планета", Some(&latin)),
             "płanieta"
         );
         assert_eq!(
-            TaraskConfig::phonetic_inner("не маю часу", None),
+            WasmConfig::phonetic_inner("не маю часу", None),
             "ня маю часу"
         );
     }
@@ -771,7 +662,7 @@ mod tests {
         // fail loudly instead of silently using defaults.
         assert!(resolve_config(&JsValue::from_str("latin")).is_err());
         assert!(resolve_config(&JsValue::from_f64(42.0)).is_err());
-        assert!(TaraskConfig::new(JsValue::TRUE).is_err());
+        assert!(resolve_config(&JsValue::TRUE).is_err());
     }
 
     // Reads every field out of a real JS object, including type errors and
@@ -813,30 +704,35 @@ mod tests {
 
         let bad_enum: JsValue = Object::new().into();
         set(&bad_enum, "abc", &JsValue::from_str("klingon"));
-        assert!(TaraskConfig::new(bad_enum).is_err());
+        assert!(resolve_config(&bad_enum).is_err());
     }
 
     // `j: "random"` draws from `getrandom` (the `js` backend on wasm32):
     // smoke-test that it produces one of the two valid forms.
     #[test]
     fn jrandom_produces_valid_forms() {
-        let mut cfg = TaraskConfig::default();
+        let mut cfg = WasmConfig::default();
         cfg.set_j("random".to_owned()).expect("valid j");
         for _ in 0..10 {
-            let out = TaraskConfig::tarask_inner("яна і ён", Some(&cfg));
+            let out = WasmConfig::tarask_inner("яна і ён", Some(&cfg));
             assert!(out == "яна і ён" || out == "яна й ён", "got {out:?}");
         }
     }
 
     #[test]
     fn html_config_options_mirror_reference() {
-        let cfg = html_config_options_js();
+        // Mirrors the TS `htmlConfigOptions()`: HTML wrappers, no `g`,
+        // `<br>` newlines and `"&lt"` for `<`.
+        let cfg = WasmConfig {
+            inner: taraskevizer_core::html_config_options(),
+            wrappers_kind: WrappersKind::Html,
+        };
         assert_eq!(cfg.wrappers(), "html");
         assert!(!cfg.g());
         assert_eq!(cfg.new_line(), "<br>");
         assert_eq!(cfg.left_angle_bracket(), "&lt");
         assert_eq!(
-            TaraskConfig::tarask_inner("жыццясцвярджальны план", Some(&cfg)),
+            WasmConfig::tarask_inner("жыццясцвярджальны план", Some(&cfg)),
             "жыц<tarF>ь</tarF>цяс<tarF>ь</tarF>ц<tarF>ь</tarF>вярджальны пл<tarF>я</tarF>н",
         );
     }

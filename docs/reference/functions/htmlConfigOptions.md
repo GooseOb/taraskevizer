@@ -7,9 +7,10 @@ title: "htmlConfigOptions"
 
 > **htmlConfigOptions**(): [`TaraskConfig`](/taraskevizer/reference/classes/taraskconfig/)
 
-Defined in: [index.ts:62](https://github.com/GooseOb/taraskevizer/blob/ac801db8bb7595f43c3cc25af94c04cfdeaad4c1/src/index.ts#L62)
+Defined in: [config.ts:63](https://github.com/GooseOb/taraskevizer/blob/f961046d449e43071ffa7b9a32044940361ce274/src/config.ts#L63)
 
-Predefined configuration for HTML output (wrappers + `<br>` newlines).
+Predefined configuration for HTML output: HTML wrappers, no `ґ→г`
+conversion, `"<br>"` newlines and `"&lt"` for `"<"`.
 
 ## Returns
 
