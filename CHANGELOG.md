@@ -8,6 +8,16 @@ workflow extracts the section matching the tag and prepends it to the release
 body. `generate_release_notes` stays on, so GitHub still appends the
 auto-generated compare link below it.
 
+## [11.0.2]
+
+### Added
+
+- New `splitIntoChunks(text, chunks)` export (JS/WASM) for parallel
+  conversion in `Worker`s: splits text into worker-ready `string[]` chunks
+  using the same boundaries the native CLI feeds to rayon. Convert each
+  chunk with `tarask` / `alphabetic` / `phonetic` (each worker with its own
+  WASM instance) and concatenate the results in order.
+
 ## [11.0.1]
 
 ### Changed
@@ -42,9 +52,6 @@ auto-generated compare link below it.
   `wrappers: 'none' | 'html' | 'ansi'`); arbitrary callback wrappers can no
   longer cross the WASM boundary. `htmlConfigOptions` is now a function
   returning the preset.
-- Diff highlighting no longer ignores words that carry variations.
-- CLI `--help` usage is pinned to `tarask` regardless of the binary file name.
-- npm and Rust crate versions are released in lockstep.
 - Diff highlighting is now more percise, and does not highlight parts that are handled by the `variations` step
   e.g. `с[ь]мяе[сь]ся`, not `с[ьмяесь]ся`, `у (а|ва)кне`, not `у [(а|ва)]кне`
 

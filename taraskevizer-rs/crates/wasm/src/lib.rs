@@ -494,6 +494,29 @@ pub fn phonetic_js(text: &str, config: JsValue) -> Result<String, JsError> {
     Ok(taraskevizer_core::phonetic(text, &cfg))
 }
 
+/// Split text into worker-ready chunks for parallel conversion.
+///
+/// Mirrors the CLI's chunking (`taraskevizer_core::text::split_into_chunks`):
+/// cuts after a spacing char at/after `len / n` bytes, never inside `<…>`
+/// tags or after apostrophe-likes, capped at 1 MiB per chunk. Returns owned
+/// strings (not byte offsets) because Rust byte offsets don't map to JS
+/// UTF-16 indices for non-ASCII text.
+///
+/// Convert each chunk with [`tarask_js`] (in `Worker`s, each with its own
+/// WASM instance) and concatenate the results in order:
+///
+/// ```js
+/// const chunks = splitIntoChunks(bigText, navigator.hardwareConcurrency);
+/// const out = (await Promise.all(chunks.map((c) => convertInWorker(c)))).join('');
+/// ```
+#[wasm_bindgen(js_name = splitIntoChunks)]
+pub fn split_into_chunks_js(text: &str, n: usize) -> js_sys::Array {
+    taraskevizer_core::text::split_into_chunks(text, n)
+        .iter()
+        .map(|&(s, e)| JsValue::from(text[s..e].to_owned()))
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -717,6 +740,19 @@ mod tests {
             let out = WasmConfig::tarask_inner("яна і ён", Some(&cfg));
             assert!(out == "яна і ён" || out == "яна й ён", "got {out:?}");
         }
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen_test]
+    fn split_chunks_js_returns_strings() {
+        let text = "слова, ".repeat(20_000);
+        let arr = split_into_chunks_js(&text, 4);
+        assert!(arr.length() > 1);
+        let mut reassembled = String::new();
+        for v in arr.iter() {
+            reassembled.push_str(&v.as_string().expect("each chunk is a string"));
+        }
+        assert_eq!(reassembled, text);
     }
 
     #[test]

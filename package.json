@@ -1,6 +1,6 @@
 {
 	"name": "taraskevizer",
-	"version": "11.0.1",
+	"version": "11.0.2",
 	"author": "GooseOb",
 	"bin": {
 		"tarask": "dist/cli.js"

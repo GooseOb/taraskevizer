@@ -23,4 +23,5 @@ title: "taraskevizer"
 - [htmlConfigOptions](/taraskevizer/reference/functions/htmlconfigoptions/)
 - [init](/taraskevizer/reference/functions/init/)
 - [phonetic](/taraskevizer/reference/functions/phonetic/)
+- [splitIntoChunks](/taraskevizer/reference/functions/splitintochunks/)
 - [tarask](/taraskevizer/reference/functions/tarask/)

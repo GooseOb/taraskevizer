@@ -24,6 +24,7 @@
 import init, {
 	alphabetic as alphabeticPipeline,
 	phonetic as phoneticPipeline,
+	splitIntoChunks as splitIntoChunksPipeline,
 	tarask as taraskPipeline,
 } from './wasm/taraskevizer_wasm.js';
 import { htmlConfigOptions, TaraskConfig } from './config.js';
@@ -53,3 +54,22 @@ export const phonetic = (
 	text: string,
 	config?: Partial<TaraskConfig>
 ): string => phoneticPipeline(text, config);
+
+/**
+ * Split text into worker-ready chunks for parallel conversion.
+ *
+ * Same boundaries the native CLI feeds to rayon: cuts after a spacing char
+ * at/after `len / chunks` bytes, never inside `<…>` tags or after
+ * apostrophe-likes, capped at 1 MiB per chunk. Returns owned strings (not
+ * byte offsets) because Rust byte offsets don't map to JS UTF-16 indices.
+ *
+ * Convert each chunk (in `Worker`s, each with its own WASM instance) and
+ * concatenate the results in order:
+ *
+ * ```js
+ * const chunks = splitIntoChunks(bigText, navigator.hardwareConcurrency);
+ * const out = (await Promise.all(chunks.map((c) => convertInWorker(c)))).join('');
+ * ```
+ */
+export const splitIntoChunks = (text: string, chunks: number): string[] =>
+	splitIntoChunksPipeline(text, chunks);

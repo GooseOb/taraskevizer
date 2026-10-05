@@ -7,7 +7,7 @@ title: "phonetic"
 
 > **phonetic**(`text`, `config?`): `string`
 
-Defined in: [index.ts:52](https://github.com/GooseOb/taraskevizer/blob/f961046d449e43071ffa7b9a32044940361ce274/src/index.ts#L52)
+Defined in: [index.ts:53](https://github.com/GooseOb/taraskevizer/blob/a9f96a8d4a7e190e1113414385a56ad2c02e146b/src/index.ts#L53)
 
 Phonetic conversion.
 
