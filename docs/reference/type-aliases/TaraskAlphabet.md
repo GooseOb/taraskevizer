@@ -7,7 +7,7 @@ title: "TaraskAlphabet"
 
 > **TaraskAlphabet** = `"cyrillic"` \| `"latin"` \| `"latinJi"` \| `"arabic"`
 
-Defined in: [config.ts:13](https://github.com/GooseOb/taraskevizer/blob/a9f96a8d4a7e190e1113414385a56ad2c02e146b/src/config.ts#L13)
+Defined in: [config.ts:13](https://github.com/GooseOb/taraskevizer/blob/a3736cae79c7c5ceaa665b3650c8158cdc5a65ae/src/config.ts#L13)
 
 Conversion options for the taraskevizer pipelines.
 
