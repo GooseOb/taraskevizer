@@ -1,6 +1,6 @@
 [package]
 name = "taraskevizer-cli"
-version = "11.0.3"
+version = "11.0.4"
 edition = "2021"
 description = "CLI for taraskevizer — Belarusian orthography converter"
 

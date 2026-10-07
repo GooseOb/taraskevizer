@@ -1,3 +1,4 @@
+pub mod flat_wordlist;
 pub mod json;
 pub mod loader;
 pub mod phonetic;

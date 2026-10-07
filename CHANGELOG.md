@@ -8,6 +8,20 @@ workflow extracts the section matching the tag and prepends it to the release
 body. `generate_release_notes` stays on, so GitHub still appends the
 auto-generated compare link below it.
 
+## [11.0.4]
+
+### Fixed
+
+- Wordlist batches were not independent. Batches now are smaller but independent so they can be safely combined in one pattern.
+
+### Changed
+
+- "яўрэі" -> "(яў|габ)рэі" instead of "габрэі"
+
+### Added
+
+- "ласо" -> "лясо"
+
 ## [11.0.3]
 
 ### Fixed

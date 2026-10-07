@@ -1,6 +1,6 @@
 [package]
 name = "taraskevizer-core"
-version = "11.0.3"
+version = "11.0.4"
 edition = "2021"
 description = "Belarusian orthography converter (Narkamauka → Taraskevica)"
 
