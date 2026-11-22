@@ -1,6 +1,6 @@
 If you're looking for JSON dictionaries, check out the github releases.
 
-[Go to full API documentation](https://gooseob.github.io/taraskevizer/) (temporarily, [this link](https://notgooseob.github.io/taraskevizer/))
+[Go to full API documentation](https://gooseob.github.io/taraskevizer/)
 
 # Using \<script> tag
 
